@@ -9,7 +9,10 @@ android {
     compileSdk = 35
 
     defaultConfig {
-        minSdk = 26
+        // Low minSdk so the design system never constrains a consumer (Compose Material 3
+        // supports 21+). Consumers set their own, higher, minSdk as needed. dynamicColor is
+        // already guarded by Build.VERSION >= S at runtime.
+        minSdk = 24
         consumerProguardFiles("consumer-rules.pro")
     }
 
