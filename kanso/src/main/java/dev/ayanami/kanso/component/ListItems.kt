@@ -16,6 +16,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import dev.ayanami.kanso.theme.Kanso
 
@@ -54,15 +55,20 @@ fun KansoListItem(
     }
 }
 
-/** A key/value status row: a muted [label] on the left, an emphasised [value] on the right. */
+/**
+ * A key/value status row: a muted [label] on the left, an emphasised [value] on the right.
+ * Both sides are weighted so a long value wraps within its own half (right-aligned) instead of
+ * starving the label into a one-character-per-line column.
+ */
 @Composable
 fun KansoStatusRow(label: String, value: String, modifier: Modifier = Modifier) {
     Row(
         modifier.fillMaxWidth().padding(vertical = Kanso.spacing.xs),
-        verticalAlignment = Alignment.CenterVertically,
+        verticalAlignment = Alignment.Top,
     ) {
         Text(label, style = Kanso.typography.bodyMedium, color = Kanso.colors.onSurfaceVariant,
-            modifier = Modifier.weight(1f))
-        Text(value, style = Kanso.typography.bodyMedium, color = Kanso.colors.onSurface)
+            modifier = Modifier.weight(1f).padding(end = Kanso.spacing.sm))
+        Text(value, style = Kanso.typography.bodyMedium, color = Kanso.colors.onSurface,
+            textAlign = TextAlign.End, modifier = Modifier.weight(1f))
     }
 }
