@@ -1,0 +1,17 @@
+# Gradle / Android build
+.gradle/
+.kotlin/
+build/
+*/build/
+local.properties
+.cxx/
+
+# IDE
+.idea/
+*.iml
+.DS_Store
+
+# Keystores / secrets — never commit
+*.jks
+*.keystore
+keystore.properties

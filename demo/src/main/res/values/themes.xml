@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--
+      A minimal window theme used only until Compose takes over the first frame. No action bar,
+      transparent system bars (the activity goes edge-to-edge and KansoTheme paints the bar icon
+      contrast). Framework Material parent so no appcompat/Views-Material dependency is needed.
+    -->
+    <style name="Theme.Kanso.Splash" parent="@android:style/Theme.Material.Light.NoActionBar">
+        <item name="android:windowBackground">?android:attr/colorBackground</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+    </style>
+</resources>
