@@ -91,7 +91,7 @@ Add your own with `KansoBrand("name", Color(0xFF……))`.
 ```
 
 Toolchain: AGP 8.7.3 · Gradle 8.9 · Kotlin 2.0.21 (+ the Compose compiler plugin) · JDK 17 ·
-compileSdk 35 · minSdk 26.
+compileSdk 35 · minSdk 24 (`:kanso` library; the `:demo` app is minSdk 26).
 
 ## License
 
