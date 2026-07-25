@@ -38,7 +38,7 @@ dependencies {
     // `api` so consuming apps inherit the same aligned versions from the :kanso submodule.
     // `platform` publishes a floor, not a ceiling — a consumer that wants a newer Compose
     // declares its own BOM and wins.
-    val composeBom = platform("androidx.compose:compose-bom:2026.06.00")
+    val composeBom = platform("androidx.compose:compose-bom:2026.06.01")
     api(composeBom)
 
     // `api` is reserved for artifacts that appear in kanso's OWN public signatures, so a
