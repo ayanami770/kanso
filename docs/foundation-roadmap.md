@@ -6,7 +6,7 @@ including by people who did not write it.
 This document is a **proposal**, not a changelog.
 
 > **Status.** Landed: 1.1 (colour engine + contrast tests), 1.3, 1.4, 1.6, 2.5, 2.6, 2.7, and
-> 2.1, 2.2, 2.3, 2.4, 2.8, 2.9. Considered and **declined**: 1.2. Items are marked below; their
+> 2.1–2.9 and 3.1–3.6. Considered and **declined**: 1.2, and the publishing half of 1.5. Items are marked below; their
 > prose is left in the original tense on purpose — it records why each change was or was not
 > made. Everything unmarked is still open.
 
@@ -181,7 +181,7 @@ same PR.
 > in a sandbox without a Gradle cache. The first job of this workflow may be discovering that it
 > does not.
 
-### 1.5 Publish to Maven Central with a real version, tags and a CHANGELOG — `M`
+### 1.5 Publish to Maven Central — `M` — ❌ not adopted (tags + CHANGELOG kept)
 
 Add the vanniktech `maven-publish` plugin (current 0.37.x) with `publishToMavenCentral()` and
 `signAllPublications()`. Do **not** also add an `android { publishing { singleVariant } }` block —
@@ -196,7 +196,32 @@ you screenshot-test against kanso.
 
 The submodule and the artifact coexist; migrate the fleet one app at a time.
 
-*Depends on 1.3, 1.4.*
+**Decision: publishing not adopted; the versioning half kept.**
+
+The audit reasoned "a third party cannot write a dependency line at all" → blocker. That is a true
+statement about the repo and a wrong conclusion about the work, because it only matters if a third
+party wants to. kanso's consumers are four apps with one owner, consumed by submodule, and no
+outside demand exists. This was the one item on the list whose value depended entirely on a
+consumer who does not exist.
+
+Not publishing also turned out to be *actively* valuable rather than merely deferrable. Three
+breaking changes landed in this cycle — the `api` surface cleanup (1.3), removing `KansoBrands`
+(1.6) and explicit API mode (3.2) — and each was free precisely because there was no published
+artifact to protect. Item 1.3 says so in its own text. Under a published 1.0 each would have cost
+a major version, a migration note and a deprecation cycle, on a library whose shape was still
+moving. Publishing buys reach and sells the freedom to be wrong; kanso needed the second more.
+
+**Kept:** `CHANGELOG.md` and git tags. Those carry their weight without a Maven coordinate — four
+apps move a submodule pointer and until now "what changed" was answerable only by reading SHAs.
+The SemVer policy above stands as written, including the visual-output clause.
+
+**Revisit when** any of these is true, and not before: someone outside the fleet asks to use it; a
+repository with a different owner or CI becomes a consumer; or submodule updates start being
+painful to coordinate across the four apps. At that point the work is a day — the Gradle
+configuration needs no account, and only the upload needs Sonatype credentials, a verified
+namespace and a GPG key.
+
+*Depended on 1.3, 1.4.*
 
 ### 1.6 Rewrite the README for strangers — `M`, breaking — ✅ done
 
