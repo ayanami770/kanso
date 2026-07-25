@@ -130,10 +130,10 @@ implementation("androidx.compose.material:material-icons-extended")  // version 
 |---|---|
 | `minSdk` | 24 (`:demo` is 26) |
 | `compileSdk` | 35 |
-| Compose | BOM 2026.06.00, exposed via `api` — this sets your **floor**; declare a newer BOM to move past it |
-| Kotlin | 2.0.21, with the Compose compiler plugin |
+| Compose | BOM 2026.06.01, exposed via `api` — this sets your **floor**; declare a newer BOM to move past it |
+| Kotlin | 2.4.10 (AGP 9's built-in Kotlin), with the Compose compiler plugin |
 | JDK | 17 |
-| AGP / Gradle | 8.7.3 / 8.9 |
+| AGP / Gradle | 9.3.1 / 9.6.1 |
 
 ## Tokens
 
@@ -156,9 +156,10 @@ implementation("androidx.compose.material:material-icons-extended")  // version 
 ./gradlew :kanso:testDebugUnitTest   # the colour-contrast and typography contracts
 ./gradlew :kanso:assembleRelease     # the library
 ./gradlew :demo:assembleDebug        # the gallery app
+./gradlew :kanso:lintRelease         # the consumer-facing lint gate
 ```
 
-CI runs all three on every push and pull request.
+CI runs all four on every push and pull request.
 
 ## Status
 
