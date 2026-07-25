@@ -1,0 +1,232 @@
+/*
+ * Copyright 2026 ayanami770
+ * Licensed under the Apache License, Version 2.0.
+ */
+package dev.ayanami.kanso.component
+
+import android.content.res.Configuration
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Switch
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.graphics.vector.path
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import dev.ayanami.kanso.theme.Kanso
+import dev.ayanami.kanso.theme.KansoTheme
+
+/**
+ * The configurations every kanso component is reviewed in.
+ *
+ * Every layout defect this library has had was a render-at-a-non-default-configuration bug:
+ * a header that ellipsised at 200% font scale, an empty state whose call-to-action fell off a
+ * bounded parent, a list row that dropped under the 48dp touch target. None are visible while
+ * developing at default settings, which is exactly why they survived. Rendering all four
+ * configurations side by side is the cheapest way to keep catching them.
+ *
+ * Dark mode is here rather than in a separate annotation because a colour-scheme bug and a
+ * layout bug look identical in a single-configuration preview. RTL uses Arabic; kanso uses
+ * start/end throughout, so a preview that mirrors cleanly is the evidence for that claim.
+ */
+@Preview(name = "light", group = "theme")
+@Preview(name = "dark", group = "theme", uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Preview(name = "font 200%", group = "a11y", fontScale = 2f)
+@Preview(name = "rtl", group = "a11y", locale = "ar")
+internal annotation class KansoPreviews
+
+/**
+ * Hosts a preview in the kanso theme on a real themed surface.
+ *
+ * `dynamicColor = false` on purpose: previews must show the brand scheme, which is the thing
+ * under review, not a wallpaper-derived one.
+ */
+@Composable
+private fun PreviewHost(content: @Composable () -> Unit) {
+    KansoTheme(dynamicColor = false) {
+        Surface(color = Kanso.colors.surface) {
+            Box(Modifier.padding(Kanso.spacing.lg)) { content() }
+        }
+    }
+}
+
+/**
+ * A stand-in icon for the previews, drawn here rather than taken from material-icons-core.
+ * kanso deliberately ships no icon set — a consumer chooses their own — and pulling one in so
+ * that development previews can render would put it on every consumer's runtime classpath.
+ * The previews are checking layout, not iconography, so one neutral glyph is enough.
+ */
+private val PreviewIcon: ImageVector = ImageVector.Builder(
+    name = "kanso_preview_icon",
+    defaultWidth = 24.dp,
+    defaultHeight = 24.dp,
+    viewportWidth = 24f,
+    viewportHeight = 24f,
+).apply {
+    // Icon() tints the whole vector, so this fill is only a placeholder.
+    path(fill = SolidColor(Color.Black)) {
+        moveTo(12f, 2f)
+        curveTo(6.48f, 2f, 2f, 6.48f, 2f, 12f)
+        reflectiveCurveToRelative(4.48f, 10f, 10f, 10f)
+        reflectiveCurveToRelative(10f, -4.48f, 10f, -10f)
+        reflectiveCurveTo(17.52f, 2f, 12f, 2f)
+        close()
+    }
+}.build()
+
+// ---- buttons --------------------------------------------------------------------------
+
+@KansoPreviews
+@Composable
+private fun KansoButtonPreview() = PreviewHost {
+    Column {
+        KansoButtonStyle.entries.forEach { style ->
+            KansoButton(
+                text = style.name,
+                onClick = {},
+                style = style,
+                icon = PreviewIcon,
+                modifier = Modifier.padding(bottom = Kanso.spacing.sm),
+            )
+        }
+    }
+}
+
+/**
+ * The loading state must not change the button's width — compare this against
+ * [KansoButtonPreview] at the same configuration.
+ */
+@KansoPreviews
+@Composable
+private fun KansoButtonLoadingPreview() = PreviewHost {
+    Column {
+        KansoButton("Save changes", onClick = {})
+        KansoButton(
+            "Save changes",
+            onClick = {},
+            loading = true,
+            modifier = Modifier.padding(top = Kanso.spacing.sm),
+        )
+        KansoButton(
+            "Save changes",
+            onClick = {},
+            enabled = false,
+            modifier = Modifier.padding(top = Kanso.spacing.sm),
+        )
+    }
+}
+
+// ---- fields ---------------------------------------------------------------------------
+
+@KansoPreviews
+@Composable
+private fun KansoTextFieldPreview() = PreviewHost {
+    Column {
+        KansoTextField(
+            value = "ayanami",
+            onValueChange = {},
+            label = "Display name",
+            supporting = "Shown to peers on the control channel.",
+        )
+        KansoTextField(
+            value = "1234",
+            onValueChange = {},
+            label = "Control PIN",
+            isError = true,
+            errorText = "PIN must be at least 6 digits.",
+            modifier = Modifier.padding(top = Kanso.spacing.md),
+        )
+    }
+}
+
+// ---- surfaces -------------------------------------------------------------------------
+
+@KansoPreviews
+@Composable
+private fun KansoCardPreview() = PreviewHost {
+    KansoCard(title = "Connection", subtitle = "Encrypted transport status") {
+        KansoStatusRow("Protocol", "TLS 1.3")
+        KansoStatusRow("Cipher", "TLS_AES_256_GCM_SHA384")
+    }
+}
+
+/** A long title is the case that used to ellipsise — it must wrap at every font scale. */
+@KansoPreviews
+@Composable
+private fun KansoSectionHeaderPreview() = PreviewHost {
+    Column {
+        KansoSectionHeader("Encrypted transport", supporting = "Applies to every channel.")
+        KansoSectionHeader("Encrypted transport configuration and peer verification")
+    }
+}
+
+// ---- list items -----------------------------------------------------------------------
+
+@KansoPreviews
+@Composable
+private fun KansoListItemPreview() = PreviewHost {
+    Column {
+        KansoListItem(
+            headline = "Search peers",
+            supporting = "Discover devices on the local network",
+            icon = PreviewIcon,
+            onClick = {},
+        )
+        KansoListItem(
+            headline = "Background sync",
+            icon = PreviewIcon,
+            trailing = { Switch(checked = true, onCheckedChange = {}) },
+        )
+        KansoListItem(headline = "No icon, no trailing, not clickable")
+    }
+}
+
+/** A long value must wrap in its own half rather than starving the label. */
+@KansoPreviews
+@Composable
+private fun KansoStatusRowPreview() = PreviewHost {
+    Column {
+        KansoStatusRow("Last sync", "2 minutes ago")
+        KansoStatusRow("Fingerprint", "SHA256:pOxq7l9mNc5vVQr2wZ8kT1hYbJ4uE6aD0fGsX3iL")
+    }
+}
+
+// ---- states ---------------------------------------------------------------------------
+
+/** The call-to-action is the first thing lost when this overflows — it must stay visible. */
+@KansoPreviews
+@Composable
+private fun KansoEmptyStatePreview() = PreviewHost {
+    KansoEmptyState(
+        icon = PreviewIcon,
+        title = "Nothing here yet",
+        description = "Empty, loading and error states share one visual language so every " +
+            "screen feels the same.",
+        action = { KansoButton("Add a peer", onClick = {}) },
+    )
+}
+
+@KansoPreviews
+@Composable
+private fun KansoLoadingStatePreview() = PreviewHost {
+    KansoLoadingState(label = "Establishing session…")
+}
+
+// ---- scaffold -------------------------------------------------------------------------
+
+@KansoPreviews
+@Composable
+private fun KansoScaffoldPreview() = KansoTheme(dynamicColor = false) {
+    KansoScaffold(title = "Peers") { inner ->
+        Column(Modifier.padding(inner).padding(horizontal = Kanso.spacing.screen)) {
+            KansoSectionHeader("Nearby")
+            KansoListItem(headline = "dao-node", supporting = "192.168.1.24", onClick = {})
+            KansoListItem(headline = "edge-01", supporting = "192.168.1.31", onClick = {})
+        }
+    }
+}

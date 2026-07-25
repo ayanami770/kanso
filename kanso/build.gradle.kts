@@ -63,6 +63,11 @@ dependencies {
     // Nothing from core-ktx reaches kanso's public API.
     implementation("androidx.core:core-ktx:1.13.1")
 
+    // The @Preview annotations in component/Previews.kt. `implementation`, not `api`: the
+    // previews are kanso's own development tooling and appear in no public signature, so a
+    // consumer that wants @Preview declares it themselves.
+    implementation("androidx.compose.ui:ui-tooling-preview")
+
     debugImplementation("androidx.compose.ui:ui-tooling")
 
     // The colour engine is pure Kotlin (no android.graphics), so its contract — every seed
