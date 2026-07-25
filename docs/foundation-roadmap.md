@@ -507,7 +507,7 @@ than what it replaces. Do **not** add a publishable `:version-catalog` module �
 second version stream to save consumers one line. The catalog organizes versions; Dependabot is
 what actually prevents the next 20-month drift, so land them together.
 
-### 3.4 Deepen CI: scoped screenshot goldens and a minified demo — `M`
+### 3.4 Deepen CI: scoped screenshot goldens and a minified demo — `M` — ✅ done
 
 A design system's regressions are overwhelmingly visual and none are currently detectable — commit
 `6ccba05` ("weight both sides so long values wrap") is exactly the class of bug a golden pins
@@ -533,6 +533,18 @@ precedence, and `KansoScaffold` rendering at all — it is the only component no
 exercises.
 
 *Depends on 1.4, 2.9.*
+
+**As implemented:** all of it. 8 goldens (4 components × font scale 1.0 and 2.0), 9 behaviour
+tests, and `:demo:assembleRelease` minified — which is what finally executes `consumer-rules.pro`'s
+never-tested claim that a pure-Compose library needs no keep rules. It holds. 33 tests total. The
+section-header golden shows a fix rather than just a state: the long title wraps across three lines
+at 200% instead of ellipsising.
+
+One test assumption was wrong and is worth recording. A `VisualTransformation`-masked field still
+reports its raw value through `EditableText` semantics, so `onNodeWithText` cannot tell masked from
+revealed — correct Compose behaviour, since masking is presentation rather than semantics. The
+reveal toggle is asserted through its content description instead, which is both the state a
+screen-reader user actually receives and the part kanso owns.
 
 ### 3.5 Do the adaptive story properly, or not at all — `M` — ✅ done (the cheap 80%)
 
