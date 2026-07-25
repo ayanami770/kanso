@@ -66,9 +66,31 @@ defines its brand where it defines everything else about itself.
 > KansoTheme(brand = MyBrand, dynamicColor = false) { … }
 > ```
 
-To go further than a seed — override individual roles, or supply your own type family — nest a
-`MaterialTheme` inside `KansoTheme`, or start from `kansoLightColorScheme(seed).copy(primary = …)`.
-First-class parameters for this are on the [roadmap](docs/foundation-roadmap.md).
+Every other axis of the theme is a parameter, so adopting kanso never means forking it:
+
+```kotlin
+KansoTheme(
+    brand = MyBrand,
+    typography = kansoTypography(MyFontFamily),        // the M3 scale in your own face
+    shapes = Shapes(medium = RoundedCornerShape(4.dp)),
+    spacing = KansoSpacing(screen = 24.dp),
+) { … }
+```
+
+`kansoTypography(family)` inherits every size, weight, line height and letter spacing from
+Material 3 and changes only the family, so a brand font cannot accidentally rescale the type
+system. Pass `displayFamily` separately if your display face differs from your text face.
+
+For a scheme that is *nearly* the seeded one, override the roles you care about and pass the
+result as `colorScheme` — it takes precedence over both `dynamicColor` and `brand`:
+
+```kotlin
+KansoTheme(colorScheme = kansoLightColorScheme(seed).copy(primary = Color(0xFF1B5E20))) { … }
+```
+
+`Kanso.brand` reads back the brand in force, for a splash screen or a chart series that needs the
+raw seed — `Kanso.colors.primary` is a derived tone, and under dynamic colour it has no
+relationship to the brand at all.
 
 ## Installing
 
@@ -131,7 +153,7 @@ implementation("androidx.compose.material:material-icons-extended")  // version 
 ## Build
 
 ```bash
-./gradlew :kanso:testDebugUnitTest   # the colour-contrast contract
+./gradlew :kanso:testDebugUnitTest   # the colour-contrast and typography contracts
 ./gradlew :kanso:assembleRelease     # the library
 ./gradlew :demo:assembleDebug        # the gallery app
 ```
@@ -141,7 +163,7 @@ CI runs all three on every push and pull request.
 ## Status
 
 kanso started as a private design system for four apps and is being generalised. What that still
-needs — publishing, first-class theme parameters, adaptive layout, the rest — is written down in
+needs — publishing, adaptive layout, the rest — is written down in
 [docs/foundation-roadmap.md](docs/foundation-roadmap.md), including an explicit list of things
 that are already right and should be left alone.
 
