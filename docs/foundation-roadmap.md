@@ -384,7 +384,7 @@ under Material You — a device-dependent failure that will not show up on the d
 
 *Depends on 2.1.*
 
-### 2.9 `@Preview` multipreviews across every component — `S`
+### 2.9 `@Preview` multipreviews across every component — `S` — ✅ done
 
 The library pays for `ui-tooling-preview` on the classpath and uses none of it. **Every layout
 defect in this roadmap** — the 44dp row, the clipped empty state, the truncated header, the
@@ -398,7 +398,21 @@ already preview-safe via its `!view.isInEditMode` guard.
 
 Highest defects-caught-per-hour item in the roadmap.
 
-*Depends on 1.1.*
+**As implemented:** four explicit `@Preview` configurations rather than the three stock
+multipreviews. `@PreviewScreenSizes` was dropped — kanso has no adaptive behaviour yet (3.5), so
+a component rendered at tablet width shows nothing a phone-width one does not, and it would have
+tripled the matrix for no signal. `@PreviewFontScale`'s six steps collapsed to the one that
+actually breaks layouts, 200%. Result: 10 preview functions × 4 configurations = 40 renders
+covering all nine components.
+
+Two corrections to the plan. It is **not** "zero dependency changes": 1.3 had already removed
+`ui-tooling-preview` from `api`, correctly, since nothing used it — it comes back here as
+`implementation`, which is the right classification for kanso's own tooling. And the previews
+needed an icon, but material3 no longer brings `material-icons-core` transitively; rather than
+add an icon set to a library that deliberately ships none, `Previews.kt` draws one `ImageVector`
+inline.
+
+*Depended on 1.1.*
 
 ---
 
