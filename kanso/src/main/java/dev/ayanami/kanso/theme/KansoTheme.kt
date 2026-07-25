@@ -53,6 +53,10 @@ import androidx.core.view.WindowCompat
  * [colorScheme]. Supplying [colorScheme] takes precedence over both [dynamicColor] and [brand];
  * [brand] is still published to [Kanso.brand] either way, so a splash screen or a chart can read
  * the app's raw seed no matter which scheme is in force.
+ *
+ * [extendedColors] supplies success / warning / info; it defaults to kanso's own light or dark
+ * set and, like Material 3's error palette, is fixed rather than seed-derived so that "success"
+ * reads as success under every brand.
  */
 @Composable
 fun KansoTheme(
@@ -60,6 +64,7 @@ fun KansoTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     dynamicColor: Boolean = true,
     colorScheme: ColorScheme? = null,
+    extendedColors: KansoExtendedColors? = null,
     typography: Typography = KansoTypography,
     shapes: Shapes = KansoShapes,
     spacing: KansoSpacing = KansoSpacing(),
@@ -85,8 +90,14 @@ fun KansoTheme(
         }
     }
 
+    // Resolved after the scheme, and keyed off darkTheme rather than the seed: anything
+    // derived inside the seed builders would disappear on the dynamic-colour path.
+    val resolvedExtendedColors = extendedColors
+        ?: if (darkTheme) KansoDarkExtendedColors else KansoLightExtendedColors
+
     CompositionLocalProvider(
         LocalKansoBrand provides brand,
+        LocalKansoExtendedColors provides resolvedExtendedColors,
         LocalKansoSpacing provides spacing,
         LocalKansoElevation provides elevation,
     ) {
@@ -120,6 +131,10 @@ object Kanso {
         @Composable @ReadOnlyComposable get() = LocalKansoElevation.current
     val colors
         @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme
+
+    /** success / warning / info — the roles Material 3 leaves to you. */
+    val extendedColors: KansoExtendedColors
+        @Composable @ReadOnlyComposable get() = LocalKansoExtendedColors.current
     val typography
         @Composable @ReadOnlyComposable get() = MaterialTheme.typography
     val shapes

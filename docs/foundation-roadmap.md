@@ -6,7 +6,7 @@ including by people who did not write it.
 This document is a **proposal**, not a changelog.
 
 > **Status.** Landed: 1.1 (colour engine + contrast tests), 1.3, 1.4, 1.6, 2.5, 2.6, 2.7, and
-> the masking half of 2.2. Considered and **declined**: 1.2. Items are marked below; their
+> 2.1, 2.2, 2.3, 2.4, 2.8, 2.9. Considered and **declined**: 1.2. Items are marked below; their
 > prose is left in the original tense on purpose — it records why each change was or was not
 > made. Everything unmarked is still open.
 
@@ -256,7 +256,7 @@ papered over. kanso's own components use no emphasized style, so only a consumer
 stock M3 Expressive component is affected. `TypographyTest` pins that the builder changes the
 family and nothing else.
 
-### 2.2 Widen `KansoTextField`, add `KansoPasswordField` — `M` — ⬦ partially done
+### 2.2 Widen `KansoTextField`, add `KansoPasswordField` — `M` — ✅ done
 
 The library's own demo renders a "Control PIN" in cleartext (`MainActivity.kt:256-264`) because
 there is no `visualTransformation` — `KeyboardType.NumberPassword` selects the numeric-password
@@ -298,7 +298,7 @@ observable proof that `KansoScaffold` absorbs it rather than leaking it.
 the `Color.Unspecified` default falls back to `Kanso.colors.background` — Scaffold's own default —
 rather than hard-coding a colour a consumer might have re-themed.
 
-### 2.4 Give components the two seams they actually lack — `M`
+### 2.4 Give components the two seams they actually lack — `M` — ✅ done
 
 A destructive red button and a full-bleed card are the two things genuinely inexpressible today.
 
@@ -387,7 +387,7 @@ Separately, delete `maxLines = 1, overflow = Ellipsis` from `KansoSectionHeader`
 "Encrypted tra…" at 200% scale, and removing it is pixel-identical for every existing single-line
 call site.
 
-### 2.8 Extended semantic colors: success / warning / info — `M`
+### 2.8 Extended semantic colors: success / warning / info — `M` — ✅ done
 
 Every consuming app needs pass/fail, in-range/out-of-range, valid/expiring **by name**, and today
 each invents its own `Color(0xFF2E7D32)` outside the design system — precisely the token drift a

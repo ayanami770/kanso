@@ -7,6 +7,7 @@ package dev.ayanami.kanso.component
 import android.content.res.Configuration
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -128,6 +129,23 @@ private fun KansoButtonLoadingPreview() = PreviewHost {
 
 // ---- fields ---------------------------------------------------------------------------
 
+/** The reveal toggle in both states, with the masked default beside it. */
+@KansoPreviews
+@Composable
+private fun KansoPasswordFieldPreview() = PreviewHost {
+    Column {
+        KansoPasswordField(value = "hunter2", onValueChange = {}, label = "Password")
+        KansoPasswordField(
+            value = "1234",
+            onValueChange = {},
+            label = "Control PIN",
+            numeric = true,
+            isError = true,
+            errorText = "PIN must be at least 6 digits.",
+        )
+    }
+}
+
 @KansoPreviews
 @Composable
 private fun KansoTextFieldPreview() = PreviewHost {
@@ -150,6 +168,64 @@ private fun KansoTextFieldPreview() = PreviewHost {
 }
 
 // ---- surfaces -------------------------------------------------------------------------
+
+/** The seams added for real screens: a clickable card, a title row action, no padding. */
+@KansoPreviews
+@Composable
+private fun KansoCardSeamsPreview() = PreviewHost {
+    Column {
+        KansoCard(
+            title = "Peers",
+            titleTrailing = { KansoButton("See all", onClick = {}, style = KansoButtonStyle.Text) },
+            onClick = {},
+        ) {
+            KansoStatusRow("Online", "3")
+        }
+        KansoCard(contentPadding = PaddingValues(Kanso.spacing.none)) {
+            KansoListItem(headline = "Edge-to-edge row", onClick = {})
+        }
+    }
+}
+
+/** Destructive sits beside Filled so the emphasis difference is visible, not asserted. */
+@KansoPreviews
+@Composable
+private fun KansoDestructiveButtonPreview() = PreviewHost {
+    Column {
+        KansoButton("Save", onClick = {})
+        KansoButton(
+            "Delete everything",
+            onClick = {},
+            style = KansoButtonStyle.Destructive,
+            modifier = Modifier.padding(top = Kanso.spacing.sm),
+        )
+    }
+}
+
+/** The extended roles, which are fixed literals rather than seed-derived. */
+@KansoPreviews
+@Composable
+private fun KansoExtendedColorsPreview() = PreviewHost {
+    Column {
+        listOf(
+            "Success" to (Kanso.extendedColors.successContainer to Kanso.extendedColors.onSuccessContainer),
+            "Warning" to (Kanso.extendedColors.warningContainer to Kanso.extendedColors.onWarningContainer),
+            "Info" to (Kanso.extendedColors.infoContainer to Kanso.extendedColors.onInfoContainer),
+        ).forEach { (label, pair) ->
+            Surface(
+                color = pair.first,
+                shape = Kanso.shapes.small,
+                modifier = Modifier.padding(bottom = Kanso.spacing.sm),
+            ) {
+                Text(
+                    label,
+                    color = pair.second,
+                    modifier = Modifier.padding(Kanso.spacing.md),
+                )
+            }
+        }
+    }
+}
 
 @KansoPreviews
 @Composable
