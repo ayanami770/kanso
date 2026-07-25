@@ -175,6 +175,50 @@ class ColorContrastTest {
         )
     }
 
+    /**
+     * The extended roles are fixed literals, so unlike the seeded ones they are not protected
+     * by the tone system — nothing stops a hand-picked hex from being unreadable. Pinned here
+     * for exactly that reason.
+     */
+    @Test
+    fun `extended semantic colours meet AA in both schemes`() {
+        listOf(
+            "light" to KansoLightExtendedColors,
+            "dark" to KansoDarkExtendedColors,
+        ).forEach { (mode, e) ->
+            listOf(
+                "success/onSuccess" to (e.success to e.onSuccess),
+                "successContainer/on" to (e.successContainer to e.onSuccessContainer),
+                "warning/onWarning" to (e.warning to e.onWarning),
+                "warningContainer/on" to (e.warningContainer to e.onWarningContainer),
+                "info/onInfo" to (e.info to e.onInfo),
+                "infoContainer/on" to (e.infoContainer to e.onInfoContainer),
+            ).forEach { (name, pair) ->
+                val ratio = contrast(pair.first, pair.second)
+                assertTrue("$mode $name = ${"%.2f".format(ratio)}", ratio >= aa)
+            }
+        }
+    }
+
+    /**
+     * Each extended role must also be legible as text straight on the surface, which is how a
+     * status label is most often used — not only inside its own container.
+     */
+    @Test
+    fun `extended roles are legible on the scheme surface`() {
+        listOf(
+            "light" to (kansoLightColorScheme(KansoDefaultBrand.seed) to KansoLightExtendedColors),
+            "dark" to (kansoDarkColorScheme(KansoDefaultBrand.seed) to KansoDarkExtendedColors),
+        ).forEach { (mode, pair) ->
+            val (scheme, e) = pair
+            listOf("success" to e.success, "warning" to e.warning, "info" to e.info)
+                .forEach { (name, color) ->
+                    val ratio = contrast(scheme.surface, color)
+                    assertTrue("$mode $name on surface = ${"%.2f".format(ratio)}", ratio >= aa)
+                }
+        }
+    }
+
     // ---- seed handling ----------------------------------------------------------------
 
     /**

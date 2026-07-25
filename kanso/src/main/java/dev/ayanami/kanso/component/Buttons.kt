@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.FilledTonalButton
@@ -29,8 +30,14 @@ import androidx.compose.ui.unit.dp
 import dev.ayanami.kanso.R
 import dev.ayanami.kanso.theme.Kanso
 
-/** Emphasis levels for [KansoButton], mapped to the Material 3 button hierarchy. */
-enum class KansoButtonStyle { Filled, Tonal, Outlined, Text, Elevated }
+/**
+ * Emphasis levels for [KansoButton], mapped to the Material 3 button hierarchy.
+ *
+ * [Destructive] is a filled button resolved against the error role rather than a raw `colors`
+ * override, so "this action deletes something" is a decision the design system makes once
+ * instead of every screen re-deriving it.
+ */
+enum class KansoButtonStyle { Filled, Tonal, Outlined, Text, Elevated, Destructive }
 
 private val IconSize = 18.dp
 
@@ -90,6 +97,16 @@ fun KansoButton(
     when (style) {
         KansoButtonStyle.Filled ->
             Button(onClick, buttonModifier, enabled = on) { content() }
+        KansoButtonStyle.Destructive ->
+            Button(
+                onClick,
+                buttonModifier,
+                enabled = on,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Kanso.colors.error,
+                    contentColor = Kanso.colors.onError,
+                ),
+            ) { content() }
         KansoButtonStyle.Tonal ->
             FilledTonalButton(onClick, buttonModifier, enabled = on) { content() }
         KansoButtonStyle.Outlined ->

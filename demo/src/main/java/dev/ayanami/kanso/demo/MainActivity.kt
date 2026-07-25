@@ -44,14 +44,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.PasswordVisualTransformation
 import dev.ayanami.kanso.component.KansoButton
 import dev.ayanami.kanso.component.KansoButtonStyle
 import dev.ayanami.kanso.component.KansoCard
 import dev.ayanami.kanso.component.KansoEmptyState
 import dev.ayanami.kanso.component.KansoListItem
 import dev.ayanami.kanso.component.KansoLoadingState
+import dev.ayanami.kanso.component.KansoPasswordField
 import dev.ayanami.kanso.component.KansoScaffold
 import dev.ayanami.kanso.component.KansoSectionHeader
 import dev.ayanami.kanso.component.KansoStatusRow
@@ -254,13 +253,11 @@ private fun FormsScreen(inner: PaddingValues) {
                 supporting = "Shown to peers on the control channel.",
             )
             Column(Modifier.padding(top = Kanso.spacing.md)) {
-                KansoTextField(
+                KansoPasswordField(
                     value = pin,
                     onValueChange = { pin = it },
                     label = "Control PIN",
-                    keyboardType = KeyboardType.NumberPassword,
-                    // NumberPassword only picks the keyboard; Compose still draws the glyphs.
-                    visualTransformation = PasswordVisualTransformation(),
+                    numeric = true,
                     isError = pinError,
                     errorText = "PIN must be at least 6 digits.",
                     supporting = "Pairs this device with the proxy.",

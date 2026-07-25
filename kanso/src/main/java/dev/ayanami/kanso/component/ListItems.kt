@@ -29,7 +29,9 @@ private val MinTouchTarget = 48.dp
 private val LeadingIconSize = 24.dp
 
 /**
- * A one/two-line list row with an optional leading [icon] and trailing content.
+ * A one/two-line list row with an optional leading [icon] or [leading] slot, and trailing
+ * content. Use [leading] for an avatar or a checkbox — anything that is not an [ImageVector];
+ * it takes precedence over [icon].
  *
  * The headline and supporting line are merged into a single accessibility node, so a screen
  * reader reads the row as one item rather than two disconnected stops. A row with [onClick]
@@ -42,6 +44,7 @@ fun KansoListItem(
     modifier: Modifier = Modifier,
     supporting: String? = null,
     icon: ImageVector? = null,
+    leading: @Composable (() -> Unit)? = null,
     onClick: (() -> Unit)? = null,
     trailing: @Composable (() -> Unit)? = null,
 ) {
@@ -62,13 +65,20 @@ fun KansoListItem(
             .padding(vertical = Kanso.spacing.md),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        if (icon != null) {
-            Icon(
-                icon,
-                contentDescription = null,
-                tint = Kanso.colors.primary,
-                modifier = Modifier.size(LeadingIconSize),
-            )
+        // `icon` is the shorthand; `leading` is the escape hatch for an avatar, a checkbox or
+        // anything else that is not an ImageVector. An explicit `leading` wins.
+        val leadingSlot = leading ?: icon?.let {
+            {
+                Icon(
+                    it,
+                    contentDescription = null,
+                    tint = Kanso.colors.primary,
+                    modifier = Modifier.size(LeadingIconSize),
+                )
+            }
+        }
+        if (leadingSlot != null) {
+            leadingSlot()
             Spacer(Modifier.size(Kanso.spacing.lg))
         }
         Column(Modifier.weight(1f)) {
