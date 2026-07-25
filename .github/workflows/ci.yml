@@ -44,8 +44,16 @@ jobs:
       - name: Unit tests
         run: ./gradlew :kanso:testDebugUnitTest
 
+      # verifyRoborazziDebug runs the screenshot goldens; it supersedes testDebugUnitTest,
+      # which it invokes. Kept as one step so a pixel diff and a failed assertion surface
+      # together rather than one masking the other.
+      - name: Screenshot goldens
+        run: ./gradlew :kanso:verifyRoborazziDebug
+
+      # :demo:assembleRelease is minified, so this is what actually runs R8 over kanso's
+      # output and executes consumer-rules.pro's claim that it needs no keep rules.
       - name: Build library and demo
-        run: ./gradlew :kanso:assembleRelease :demo:assembleDebug
+        run: ./gradlew :kanso:assembleRelease :demo:assembleDebug :demo:assembleRelease
 
       # Lint is a consumer-facing gate for a library in a way it is not for an app: it catches
       # an unguarded API-level call against the advertised minSdk, and a consumer cannot lint
@@ -59,4 +67,14 @@ jobs:
         with:
           name: test-report
           path: kanso/build/reports/tests/
+          if-no-files-found: ignore
+
+      # The actual/expected/diff triptych for any golden that moved — without it a pixel
+      # failure is unactionable from the log alone.
+      - name: Upload screenshot diffs
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: screenshot-diffs
+          path: kanso/build/outputs/roborazzi/
           if-no-files-found: ignore

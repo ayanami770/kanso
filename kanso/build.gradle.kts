@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.roborazzi)
 }
 
 android {
@@ -24,6 +25,12 @@ android {
         // catches an unguarded API-level call against the advertised minSdk 24, and a consumer
         // cannot lint kanso's compiled code themselves.
         abortOnError = true
+    }
+
+    testOptions {
+        // Compose UI tests need real resources; Robolectric supplies the Android runtime so
+        // these still run on the JVM, with no emulator.
+        unitTests.isIncludeAndroidResources = true
     }
 
     compileOptions {
@@ -84,4 +91,22 @@ dependencies {
     // `testOptions.unitTests.isReturnDefaultValues`: stubbed framework calls return zeroes,
     // which would collapse every seed onto one hue and pass against a broken scheme.
     testImplementation(libs.junit)
+
+    // Behaviour tests for the contracts that live in a single expression and would otherwise
+    // only be checked by reading the code: that `loading` really swallows a click, that
+    // errorText really wins over supporting. Robolectric keeps them on the JVM.
+    testImplementation(libs.robolectric)
+    testImplementation(libs.androidx.test.ext.junit)
+    testImplementation(platform(libs.compose.bom))
+    testImplementation(libs.compose.ui.test.junit4)
+    debugImplementation(libs.compose.ui.test.manifest)
+
+    // Screenshot goldens, scoped to the text-layout-sensitive components at the two font
+    // scales that actually break them. Roborazzi rather than Paparazzi (which cannot run
+    // interaction tests) or AGP's screenshotTest (still alpha, and it renders only @Preview
+    // functions): it shares the Robolectric runtime, so goldens, behaviour tests and the pure
+    // colour tests all run in one invocation with no emulator.
+    testImplementation(libs.roborazzi)
+    testImplementation(libs.roborazzi.compose)
+    testImplementation(libs.roborazzi.junit.rule)
 }

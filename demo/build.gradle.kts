@@ -19,7 +19,11 @@ android {
 
     buildTypes {
         release {
-            isMinifyEnabled = false
+            // Minified so R8 actually runs over kanso's output. kanso's consumer-rules.pro
+            // asserts a pure-Compose library needs no keep rules; this is what executes that
+            // assertion instead of a consuming app discovering it at release time.
+            isMinifyEnabled = true
+            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }
     }
 
