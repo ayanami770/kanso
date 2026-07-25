@@ -298,6 +298,31 @@ private fun KansoLoadingStatePreview() = PreviewHost {
     KansoLoadingState(label = "Establishing session…")
 }
 
+// ---- content container ----------------------------------------------------------------
+
+/**
+ * Only meaningful at a wide window — hence the extra device preview here rather than on the
+ * shared annotation, where it would triple the matrix for components that have no adaptive
+ * behaviour to show.
+ */
+@Preview(name = "tablet", device = "spec:width=1280dp,height=800dp,dpi=240")
+@Preview(name = "phone", device = "spec:width=411dp,height=891dp,dpi=420")
+@Composable
+private fun KansoContentContainerPreview() = PreviewHost {
+    KansoContentContainer {
+        KansoCard(title = "Readable width") {
+            Text(
+                "Every kanso component fills the width it is given. On a phone that is right; " +
+                    "on a 1280dp window it runs body text to about 160 characters a line, " +
+                    "roughly three times what stays comfortable to read. This container caps " +
+                    "it and centres what is left.",
+                style = Kanso.typography.bodyMedium,
+                color = Kanso.colors.onSurface,
+            )
+        }
+    }
+}
+
 // ---- scaffold -------------------------------------------------------------------------
 
 @KansoPreviews

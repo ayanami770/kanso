@@ -471,7 +471,7 @@ root build. `jvmTarget` moved out of the deleted `android.kotlinOptions` block i
 
 *Depends on 1.4.*
 
-### 3.2 `explicitApi()` and published Dokka docs — `S`
+### 3.2 `explicitApi()` and published Dokka docs — `S` — ⬦ partially done
 
 Everything not marked otherwise is public by Kotlin default, so internal helpers can leak into the
 contract by accident, and three accessors on `object Kanso` have inferred return types. Roughly 23
@@ -486,6 +486,11 @@ Explicitly defer binary-compatibility validation. The kotlinx BCV plugin is in m
 its `com.android.library` support is not the drop-in it appears to be, and a committed ABI baseline
 with nothing to check it against is ceremony. Revisit with the Kotlin Gradle plugin's built-in
 `abiValidation` once there is a published artifact and a second release to compare against.
+
+**As implemented:** `explicitApi()` only. It flagged 49 declarations — every public symbol now
+carries an explicit modifier and return type, including the three `object Kanso` accessors that
+had inferred ones. **Dokka is deliberately deferred with 1.5**: its whole payoff here is the
+javadoc jar Maven Central requires, and there is no publishing yet for it to feed.
 
 *Depends on 1.5.*
 
@@ -529,7 +534,7 @@ exercises.
 
 *Depends on 1.4, 2.9.*
 
-### 3.5 Do the adaptive story properly, or not at all — `M`
+### 3.5 Do the adaptive story properly, or not at all — `M` — ✅ done (the cheap 80%)
 
 Every container calls `fillMaxWidth()` with no maximum, so on a 1280dp window body text runs at
 ~160 characters per line — the most visible "this was built for a phone" symptom an evaluator hits
@@ -550,9 +555,16 @@ nothing.
 Either delete the unused window-size-class dependency in the same release as real adaptive work, or
 keep it — but do not leave it ambiguous.
 
+**As implemented:** the cheap 80% — `KansoContentContainer` plus a `contentMaxWidth = 640.dp`
+token, and the demo shell wrapped in it. The prediction held exactly: **no component needed
+changing**, because each applies the caller's modifier first, so an outer `widthIn(max = …)` is
+what their `fillMaxWidth()` resolves against. The window-size-class dependency was already gone,
+removed in 1.3 rather than left ambiguous. A rail or list-detail layout is still open, and should
+wrap Material's `NavigationSuiteScaffold` rather than hand-roll a width switch.
+
 *Depends on 2.3.*
 
-### 3.6 One `CONTRIBUTING.md` — `S`
+### 3.6 One `CONTRIBUTING.md` — `S` — ✅ done
 
 Nothing tells an outside contributor what a correct kanso component looks like. The one genuinely
 useful design rule in the codebase — Filled for the single primary action, Tonal/Outlined for

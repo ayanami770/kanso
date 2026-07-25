@@ -39,7 +39,7 @@ private val LeadingIconSize = 24.dp
  * guarantee once the user shrinks their font scale.
  */
 @Composable
-fun KansoListItem(
+public fun KansoListItem(
     headline: String,
     modifier: Modifier = Modifier,
     supporting: String? = null,
@@ -103,7 +103,7 @@ fun KansoListItem(
  * association that is the entire point of the row.
  */
 @Composable
-fun KansoStatusRow(label: String, value: String, modifier: Modifier = Modifier) {
+public fun KansoStatusRow(label: String, value: String, modifier: Modifier = Modifier) {
     Row(
         modifier
             .fillMaxWidth()

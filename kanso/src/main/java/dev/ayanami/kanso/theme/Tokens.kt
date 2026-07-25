@@ -5,6 +5,7 @@
 package dev.ayanami.kanso.theme
 
 import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.ProvidableCompositionLocal
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -15,7 +16,7 @@ import androidx.compose.ui.unit.dp
  * yourself hard-coding a `.dp` gap in more than two places, add a token here instead.)
  */
 @Immutable
-data class KansoSpacing(
+public data class KansoSpacing(
     val none: Dp = 0.dp,
     val xxs: Dp = 2.dp,
     val xs: Dp = 4.dp,
@@ -29,13 +30,20 @@ data class KansoSpacing(
     val screen: Dp = 16.dp,
     /** Vertical gap between stacked cards / sections. */
     val section: Dp = 12.dp,
+    /**
+     * The widest a column of body text should get. Beyond roughly this, line length passes the
+     * point where the eye reliably finds the next line — see [KansoContentContainer], which is
+     * what applies it.
+     */
+    val contentMaxWidth: Dp = 640.dp,
 )
 
-val LocalKansoSpacing = staticCompositionLocalOf { KansoSpacing() }
+public val LocalKansoSpacing: ProvidableCompositionLocal<KansoSpacing> =
+    staticCompositionLocalOf { KansoSpacing() }
 
 /** Elevation tokens (Material 3 tonal + shadow levels). */
 @Immutable
-data class KansoElevation(
+public data class KansoElevation(
     val level0: Dp = 0.dp,
     val level1: Dp = 1.dp,
     val level2: Dp = 3.dp,
@@ -44,4 +52,5 @@ data class KansoElevation(
     val level5: Dp = 12.dp,
 )
 
-val LocalKansoElevation = staticCompositionLocalOf { KansoElevation() }
+public val LocalKansoElevation: ProvidableCompositionLocal<KansoElevation> =
+    staticCompositionLocalOf { KansoElevation() }

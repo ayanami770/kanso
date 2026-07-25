@@ -37,7 +37,7 @@ import dev.ayanami.kanso.theme.Kanso
  * override, so "this action deletes something" is a decision the design system makes once
  * instead of every screen re-deriving it.
  */
-enum class KansoButtonStyle { Filled, Tonal, Outlined, Text, Elevated, Destructive }
+public enum class KansoButtonStyle { Filled, Tonal, Outlined, Text, Elevated, Destructive }
 
 private val IconSize = 18.dp
 
@@ -50,7 +50,7 @@ private val IconSize = 18.dp
  * so the button never changes width the instant work starts.
  */
 @Composable
-fun KansoButton(
+public fun KansoButton(
     text: String,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,

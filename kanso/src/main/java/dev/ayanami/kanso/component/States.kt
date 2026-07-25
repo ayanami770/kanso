@@ -36,7 +36,7 @@ private val EmptyStateIconSize = 56.dp
  * height and throws.
  */
 @Composable
-fun KansoEmptyState(
+public fun KansoEmptyState(
     icon: ImageVector,
     title: String,
     modifier: Modifier = Modifier,
@@ -75,7 +75,7 @@ fun KansoEmptyState(
  * See [KansoEmptyState] for when to pass [scrollState].
  */
 @Composable
-fun KansoLoadingState(
+public fun KansoLoadingState(
     modifier: Modifier = Modifier,
     label: String? = null,
     scrollState: ScrollState? = null,

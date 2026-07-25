@@ -9,7 +9,7 @@ import androidx.compose.material3.Shapes
 import androidx.compose.ui.unit.dp
 
 /** kanso shapes — Material 3 corner scale (extraSmall … extraLarge). */
-val KansoShapes = Shapes(
+public val KansoShapes: Shapes = Shapes(
     extraSmall = RoundedCornerShape(4.dp),
     small = RoundedCornerShape(8.dp),
     medium = RoundedCornerShape(12.dp),

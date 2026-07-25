@@ -39,7 +39,7 @@ import dev.ayanami.kanso.theme.Kanso
  * image or a full-bleed list.
  */
 @Composable
-fun KansoCard(
+public fun KansoCard(
     modifier: Modifier = Modifier,
     title: String? = null,
     subtitle: String? = null,
@@ -104,7 +104,7 @@ fun KansoCard(
  * into "Encrypted tra…". [trailing] takes the "See all" link that belongs on the title row.
  */
 @Composable
-fun KansoSectionHeader(
+public fun KansoSectionHeader(
     title: String,
     modifier: Modifier = Modifier,
     supporting: String? = null,

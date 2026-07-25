@@ -13,7 +13,7 @@ import androidx.compose.ui.text.font.FontFamily
  *
  * To use your own type family, build one with [kansoTypography] and hand it to `KansoTheme`.
  */
-val KansoTypography = Typography()
+public val KansoTypography: Typography = Typography()
 
 /**
  * The Material 3 type scale rendered in your own font.
@@ -35,7 +35,7 @@ val KansoTypography = Typography()
  * for a stock Expressive component will see it render in the default face. Revisit if material3
  * opens those up.
  */
-fun kansoTypography(
+public fun kansoTypography(
     bodyFamily: FontFamily,
     displayFamily: FontFamily = bodyFamily,
 ): Typography {

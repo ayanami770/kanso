@@ -5,6 +5,7 @@
 package dev.ayanami.kanso.theme
 
 import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.ProvidableCompositionLocal
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
 
@@ -25,7 +26,7 @@ import androidx.compose.ui.graphics.Color
  * `ColorContrastTest`.
  */
 @Immutable
-data class KansoExtendedColors(
+public data class KansoExtendedColors(
     val success: Color,
     val onSuccess: Color,
     val successContainer: Color,
@@ -41,7 +42,7 @@ data class KansoExtendedColors(
 )
 
 /** Extended roles for a light scheme. */
-val KansoLightExtendedColors = KansoExtendedColors(
+public val KansoLightExtendedColors: KansoExtendedColors = KansoExtendedColors(
     success = Color(0xFF2E6B34),
     onSuccess = Color(0xFFFFFFFF),
     successContainer = Color(0xFFB1F1AE),
@@ -57,7 +58,7 @@ val KansoLightExtendedColors = KansoExtendedColors(
 )
 
 /** Extended roles for a dark scheme. */
-val KansoDarkExtendedColors = KansoExtendedColors(
+public val KansoDarkExtendedColors: KansoExtendedColors = KansoExtendedColors(
     success = Color(0xFF96D593),
     onSuccess = Color(0xFF00390B),
     successContainer = Color(0xFF14521E),
@@ -72,4 +73,5 @@ val KansoDarkExtendedColors = KansoExtendedColors(
     onInfoContainer = Color(0xFFD3E4FF),
 )
 
-val LocalKansoExtendedColors = staticCompositionLocalOf { KansoLightExtendedColors }
+public val LocalKansoExtendedColors: ProvidableCompositionLocal<KansoExtendedColors> =
+    staticCompositionLocalOf { KansoLightExtendedColors }
