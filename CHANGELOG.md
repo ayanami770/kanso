@@ -91,20 +91,44 @@ together on purpose, while there is no published artifact to protect.
 - Toolchain: AGP 8.7.3 → 9.3.1, Kotlin 2.0.21 → 2.4.10, Gradle 8.9 → 9.6.1, compose-bom
   2026.06.00 → 2026.06.01. AGP 9 has built-in Kotlin support, so the
   `org.jetbrains.kotlin.android` plugin is gone.
-- Lint is re-enabled. `checkReleaseBuilds = false` was a workaround for an AGP 8.7 lint crash,
-  never a policy; the upgrade resolved it.
+- Lint is re-enabled, reversing 0.1.1. `checkReleaseBuilds = false` was a workaround for an AGP
+  8.7 lint crash, never a policy; the toolchain upgrade resolved it.
 - `dynamicColor` still defaults to `true` and still wins over the seed. Flipping it was
   considered and declined — the user's system-wide colour preference outranks the app's brand.
   It is now documented rather than surprising; pass `dynamicColor = false` if your brand must
   hold.
 
-## [0.1.0] — 2026-07-24
+## [0.1.3] — 2026-07-01
 
-Initial shape: `KansoTheme`, the spacing and elevation tokens, and nine components, consumed as a
-git submodule by four apps.
+### Changed
+
+- `minSdk` 26 → 24 on `:kanso`, so the design system never constrains a consumer. Compose
+  Material 3 supports 21+, and `dynamicColor` was already guarded at runtime.
+
+## [0.1.2] — 2026-07-01
+
+### Fixed
+
+- `KansoStatusRow` starved its label when the value was long. Both sides are weighted, so a long
+  value wraps within its own half instead of squeezing the label to one character per line.
+
+## [0.1.1] — 2026-07-01
+
+### Changed
+
+- Release-blocking lint disabled — AGP 8.7's bundled lint crashed analysing Compose sources under
+  Kotlin 2.0.x. A workaround, not a policy; reversed in 0.2.0.
+
+## [0.1.0] — 2026-07-01
+
+Initial release: `KansoTheme`, the spacing and elevation tokens, and nine components, consumed as
+a git submodule by four apps.
 
 [keepachangelog]: https://keepachangelog.com/en/1.1.0/
 [semver]: https://semver.org/spec/v2.0.0.html
 [Unreleased]: https://github.com/ayanami770/kanso/compare/v0.2.0...HEAD
-[0.2.0]: https://github.com/ayanami770/kanso/compare/v0.1.0...v0.2.0
+[0.2.0]: https://github.com/ayanami770/kanso/compare/v0.1.3...v0.2.0
+[0.1.3]: https://github.com/ayanami770/kanso/compare/v0.1.2...v0.1.3
+[0.1.2]: https://github.com/ayanami770/kanso/compare/v0.1.1...v0.1.2
+[0.1.1]: https://github.com/ayanami770/kanso/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/ayanami770/kanso/releases/tag/v0.1.0
