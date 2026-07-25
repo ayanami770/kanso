@@ -33,6 +33,16 @@ android {
 
 dependencies {
     // The whole design system — theme, tokens, components — inherited transitively (Compose
-    // BOM, material3, navigation, icons) from :kanso's `api` dependencies.
+    // The design system — theme, tokens, components. The aligned Compose BOM and the Compose
+    // artifacts in kanso's public API (material3, foundation, runtime, ui, ui-graphics,
+    // ui-text, ui-unit) come with it.
     implementation(project(":kanso"))
+
+    // Everything below is the DEMO's own choice, not something kanso imposes. That is the
+    // point of the split: an app picks its own activity plumbing and its own icon set, and a
+    // design system has no business deciding either. The gallery happens to want both.
+    implementation("androidx.activity:activity-compose:1.9.3")
+    implementation("androidx.compose.material:material-icons-extended")
+
+    debugImplementation("androidx.compose.ui:ui-tooling")
 }

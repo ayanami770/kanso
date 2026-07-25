@@ -20,8 +20,10 @@ own brand accent.
 - **A component library** — buttons (one emphasis system, five weights), cards + section headers,
   text fields with error states, a scaffold + top app bar, list/status rows, and empty/loading
   states. Every component reads from the tokens, never hard-coded values.
-- **Aligned versions** — a single Compose BOM is exposed via `api`, so consuming apps inherit the
-  same aligned Compose/Material3/navigation/icon versions from the submodule.
+- **Aligned versions, and nothing more** — a single Compose BOM is exposed via `api`, so consuming
+  apps inherit the same aligned Compose and Material 3 versions. `api` carries only the artifacts
+  that appear in kanso's own public signatures; your activity plumbing, icon set and navigation
+  library stay your choice. The BOM is a floor, not a ceiling — declare a newer one and it wins.
 
 ## Modules
 
