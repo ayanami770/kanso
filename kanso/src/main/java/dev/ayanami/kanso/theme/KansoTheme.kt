@@ -14,7 +14,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.SideEffect
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
@@ -27,6 +26,12 @@ import androidx.core.view.WindowCompat
  *  - edge-to-edge system-bar icon contrast that follows light/dark.
  *
  * Usage (in an app):  setContent { KansoTheme(brand = MyBrand) { AppRoot() } }
+ *
+ * **[dynamicColor] defaults to true, and it wins over [brand].** On Android 12+ the scheme
+ * comes from the user's wallpaper and the seed is never read, so the call above renders in
+ * Material You rather than in MyBrand on most current devices. That is deliberate — the user's
+ * system-wide colour preference outranks the app's — but if your brand identity has to hold,
+ * pass `dynamicColor = false`. Below Android 12 the seed is always used.
  */
 @Composable
 fun KansoTheme(
@@ -85,11 +90,7 @@ object Kanso {
         @Composable @ReadOnlyComposable get() = MaterialTheme.shapes
 }
 
-/** A few ready-made brand seeds for the ayanami770 apps (per-app accent). */
-object KansoBrands {
-    val Kanso = KansoDefaultBrand
-    val Lms = KansoBrand("LMSA", Color(0xFF006A60))          // secure teal
-    val CertWatch = KansoBrand("CertWatch", Color(0xFF3F5AA6)) // trust blue
-    val Semicon = KansoBrand("Semicon News", Color(0xFF8A4F00)) // amber/silicon
-    val Medcal = KansoBrand("medcal", Color(0xFF386A20))       // clinical green
-}
+// `KansoBrands` used to live here, holding the seeds of one author's four private apps. A
+// design system that hard-codes its first consumers into its public API cannot be adopted by
+// anyone else without shipping someone else's brand list, so the seeds moved into :demo where
+// they are sample data. Define your own: `KansoBrand("my app", Color(0xFF6750A4))`.

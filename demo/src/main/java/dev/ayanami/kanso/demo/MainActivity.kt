@@ -46,6 +46,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.text.input.KeyboardType
@@ -61,7 +62,7 @@ import dev.ayanami.kanso.component.KansoStatusRow
 import dev.ayanami.kanso.component.KansoTextField
 import dev.ayanami.kanso.theme.Kanso
 import dev.ayanami.kanso.theme.KansoBrand
-import dev.ayanami.kanso.theme.KansoBrands
+import dev.ayanami.kanso.theme.KansoDefaultBrand
 import dev.ayanami.kanso.theme.KansoTheme
 
 class MainActivity : ComponentActivity() {
@@ -72,12 +73,18 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+/**
+ * Sample seeds for the brand switcher — deliberately the gallery's own data rather than the
+ * library's. A design system should not ship a list of its consumers; an app defines its brand
+ * where it defines everything else about itself. These five are here to show that one seed
+ * really does produce a whole coherent scheme, across hues that behave very differently.
+ */
 private val Brands = listOf(
-    KansoBrands.Kanso,
-    KansoBrands.Lms,
-    KansoBrands.CertWatch,
-    KansoBrands.Semicon,
-    KansoBrands.Medcal,
+    KansoDefaultBrand,
+    KansoBrand("LMSA", Color(0xFF006A60)),          // secure teal
+    KansoBrand("CertWatch", Color(0xFF3F5AA6)),     // trust blue
+    KansoBrand("Semicon News", Color(0xFF8A4F00)),  // amber/silicon
+    KansoBrand("medcal", Color(0xFF386A20)),        // clinical green
 )
 
 private enum class Tab(val label: String, val icon: ImageVector) {
