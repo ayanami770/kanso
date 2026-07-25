@@ -7,7 +7,9 @@ package dev.ayanami.kanso.component
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Icon
@@ -16,11 +18,24 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import dev.ayanami.kanso.theme.Kanso
 
-/** A one/two-line list row with an optional leading [icon] and trailing content. */
+/** The Material minimum touch target — a tappable row must clear this at any font scale. */
+private val MinTouchTarget = 48.dp
+
+private val LeadingIconSize = 24.dp
+
+/**
+ * A one/two-line list row with an optional leading [icon] and trailing content.
+ *
+ * The headline and supporting line are merged into a single accessibility node, so a screen
+ * reader reads the row as one item rather than two disconnected stops. A row with [onClick]
+ * is also held to the minimum touch target, which the vertical padding alone does not
+ * guarantee once the user shrinks their font scale.
+ */
 @Composable
 fun KansoListItem(
     headline: String,
@@ -33,14 +48,28 @@ fun KansoListItem(
     Row(
         modifier
             .fillMaxWidth()
-            .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier)
+            .then(
+                if (onClick != null) {
+                    // `clickable` merges descendants itself, so this path already reads as a
+                    // single node.
+                    Modifier
+                        .heightIn(min = MinTouchTarget)
+                        .clickable(onClick = onClick)
+                } else {
+                    Modifier.semantics(mergeDescendants = true) {}
+                },
+            )
             .padding(vertical = Kanso.spacing.md),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         if (icon != null) {
-            Icon(icon, contentDescription = null, tint = Kanso.colors.primary,
-                modifier = Modifier.size(24.dp).padding(end = Kanso.spacing.none))
-            androidx.compose.foundation.layout.Spacer(Modifier.size(Kanso.spacing.lg))
+            Icon(
+                icon,
+                contentDescription = null,
+                tint = Kanso.colors.primary,
+                modifier = Modifier.size(LeadingIconSize),
+            )
+            Spacer(Modifier.size(Kanso.spacing.lg))
         }
         Column(Modifier.weight(1f)) {
             Text(headline, style = Kanso.typography.bodyLarge, color = Kanso.colors.onSurface)
@@ -49,7 +78,7 @@ fun KansoListItem(
             }
         }
         if (trailing != null) {
-            androidx.compose.foundation.layout.Spacer(Modifier.size(Kanso.spacing.md))
+            Spacer(Modifier.size(Kanso.spacing.md))
             trailing()
         }
     }
@@ -59,11 +88,17 @@ fun KansoListItem(
  * A key/value status row: a muted [label] on the left, an emphasised [value] on the right.
  * Both sides are weighted so a long value wraps within its own half (right-aligned) instead of
  * starving the label into a one-character-per-line column.
+ *
+ * The pair is merged into one accessibility node — read apart, a label and its value lose the
+ * association that is the entire point of the row.
  */
 @Composable
 fun KansoStatusRow(label: String, value: String, modifier: Modifier = Modifier) {
     Row(
-        modifier.fillMaxWidth().padding(vertical = Kanso.spacing.xs),
+        modifier
+            .fillMaxWidth()
+            .semantics(mergeDescendants = true) {}
+            .padding(vertical = Kanso.spacing.xs),
         verticalAlignment = Alignment.Top,
     ) {
         Text(label, style = Kanso.typography.bodyMedium, color = Kanso.colors.onSurfaceVariant,

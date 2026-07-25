@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Strings kanso components announce to accessibility services. They are never drawn on
+  screen, so they carry no visual weight — but they must be translatable, which is why they
+  live here rather than as Kotlin string literals.
+-->
+<resources>
+    <!-- Announced by KansoButton while its `loading` spinner is showing. -->
+    <string name="kanso_loading">Loading</string>
+</resources>
