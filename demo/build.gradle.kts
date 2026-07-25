@@ -1,7 +1,6 @@
 plugins {
-    id("com.android.application")
-    id("org.jetbrains.kotlin.android")
-    id("org.jetbrains.kotlin.plugin.compose")
+    alias(libs.plugins.android.application)
+    alias(libs.plugins.kotlin.compose)
 }
 
 android {
@@ -28,11 +27,13 @@ android {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
-    kotlinOptions { jvmTarget = "17" }
+}
+
+kotlin {
+    compilerOptions { jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17) }
 }
 
 dependencies {
-    // The whole design system — theme, tokens, components — inherited transitively (Compose
     // The design system — theme, tokens, components. The aligned Compose BOM and the Compose
     // artifacts in kanso's public API (material3, foundation, runtime, ui, ui-graphics,
     // ui-text, ui-unit) come with it.
@@ -41,8 +42,8 @@ dependencies {
     // Everything below is the DEMO's own choice, not something kanso imposes. That is the
     // point of the split: an app picks its own activity plumbing and its own icon set, and a
     // design system has no business deciding either. The gallery happens to want both.
-    implementation("androidx.activity:activity-compose:1.9.3")
-    implementation("androidx.compose.material:material-icons-extended")
+    implementation(libs.androidx.activity.compose)
+    implementation(libs.compose.material.icons.extended)
 
-    debugImplementation("androidx.compose.ui:ui-tooling")
+    debugImplementation(libs.compose.ui.tooling)
 }

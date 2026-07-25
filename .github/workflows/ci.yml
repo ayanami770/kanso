@@ -1,8 +1,8 @@
 # kanso CI — proves the library compiles and that the colour engine still meets its contract.
 #
-# Deliberately minimal: build + unit tests, nothing else. Gates for tasks that do not exist
-# yet (apiCheck, screenshot verification) would only make this workflow red from day one, and
-# a workflow nobody trusts is worse than no workflow. Add each gate with the task it checks.
+# Each gate lands with the task it checks — a workflow that is red from day one is one nobody
+# trusts. Build and unit tests came first; lint joined once the toolchain upgrade fixed the
+# crash that had forced it off.
 #
 # kanso is consumed as a git submodule, so a broken `main` breaks every app that depends on it
 # at their next `git submodule update` — this job is what stops that.
@@ -46,6 +46,12 @@ jobs:
 
       - name: Build library and demo
         run: ./gradlew :kanso:assembleRelease :demo:assembleDebug
+
+      # Lint is a consumer-facing gate for a library in a way it is not for an app: it catches
+      # an unguarded API-level call against the advertised minSdk, and a consumer cannot lint
+      # kanso's compiled code themselves. It was disabled for a toolchain crash, not a policy.
+      - name: Lint
+        run: ./gradlew :kanso:lintRelease
 
       - name: Upload test report
         if: failure()
