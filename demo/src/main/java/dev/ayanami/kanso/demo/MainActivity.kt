@@ -47,6 +47,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import dev.ayanami.kanso.component.KansoButton
 import dev.ayanami.kanso.component.KansoButtonStyle
 import dev.ayanami.kanso.component.KansoCard
+import dev.ayanami.kanso.component.KansoContentContainer
 import dev.ayanami.kanso.component.KansoEmptyState
 import dev.ayanami.kanso.component.KansoListItem
 import dev.ayanami.kanso.component.KansoLoadingState
@@ -159,10 +160,16 @@ private fun DemoShell(
             }
         },
     ) { inner ->
-        when (tab) {
-            Tab.Gallery -> GalleryScreen(inner, brandName, dark, dynamic, onToggleDynamic)
-            Tab.Forms -> FormsScreen(inner)
-            Tab.States -> StatesScreen(inner)
+        // Caps content width for the whole gallery. A no-op on a phone; on a tablet or a
+        // resized window it is the difference between readable prose and a 160-character line.
+        // No component needed changing for this to work — each one applies the caller's
+        // modifier first, so this outer constraint is what their fillMaxWidth() resolves to.
+        KansoContentContainer {
+            when (tab) {
+                Tab.Gallery -> GalleryScreen(inner, brandName, dark, dynamic, onToggleDynamic)
+                Tab.Forms -> FormsScreen(inner)
+                Tab.States -> StatesScreen(inner)
+            }
         }
     }
 }
@@ -173,6 +180,7 @@ private fun screenColumn(inner: PaddingValues): Modifier =
         .fillMaxSize()
         .padding(inner)
         .verticalScroll(rememberScrollState())
+
 
 @Composable
 private fun GalleryScreen(

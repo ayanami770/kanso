@@ -35,6 +35,11 @@ android {
 // AGP 9 removed the `android.kotlinOptions` block; jvmTarget moves to the Kotlin plugin.
 kotlin {
     compilerOptions { jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17) }
+
+    // Everything is public by Kotlin default, so an internal helper can drift into the public
+    // contract by accident and nobody notices until a consumer depends on it. Explicit API mode
+    // makes every symbol a deliberate choice and requires a declared return type on each one.
+    explicitApi()
 }
 
 dependencies {

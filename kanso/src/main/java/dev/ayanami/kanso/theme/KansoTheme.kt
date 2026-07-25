@@ -15,6 +15,7 @@ import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.ProvidableCompositionLocal
 import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.staticCompositionLocalOf
@@ -59,7 +60,7 @@ import androidx.core.view.WindowCompat
  * reads as success under every brand.
  */
 @Composable
-fun KansoTheme(
+public fun KansoTheme(
     brand: KansoBrand = KansoDefaultBrand,
     darkTheme: Boolean = isSystemInDarkTheme(),
     dynamicColor: Boolean = true,
@@ -115,29 +116,30 @@ fun KansoTheme(
  * name and raw seed — `Kanso.colors.primary` is a derived tone, not the seed, and under dynamic
  * colour it has no relationship to the brand at all.
  */
-val LocalKansoBrand = staticCompositionLocalOf { KansoDefaultBrand }
+public val LocalKansoBrand: ProvidableCompositionLocal<KansoBrand> =
+    staticCompositionLocalOf { KansoDefaultBrand }
 
 /**
  * Ergonomic accessors for the current theme, so components read
  * `Kanso.spacing.lg` / `Kanso.colors.primary` instead of the longer CompositionLocal /
  * MaterialTheme paths.
  */
-object Kanso {
-    val brand: KansoBrand
+public object Kanso {
+    public val brand: KansoBrand
         @Composable @ReadOnlyComposable get() = LocalKansoBrand.current
-    val spacing: KansoSpacing
+    public val spacing: KansoSpacing
         @Composable @ReadOnlyComposable get() = LocalKansoSpacing.current
-    val elevation: KansoElevation
+    public val elevation: KansoElevation
         @Composable @ReadOnlyComposable get() = LocalKansoElevation.current
-    val colors
+    public val colors: ColorScheme
         @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme
 
     /** success / warning / info — the roles Material 3 leaves to you. */
-    val extendedColors: KansoExtendedColors
+    public val extendedColors: KansoExtendedColors
         @Composable @ReadOnlyComposable get() = LocalKansoExtendedColors.current
-    val typography
+    public val typography: Typography
         @Composable @ReadOnlyComposable get() = MaterialTheme.typography
-    val shapes
+    public val shapes: Shapes
         @Composable @ReadOnlyComposable get() = MaterialTheme.shapes
 }
 

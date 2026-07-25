@@ -41,7 +41,7 @@ import dev.ayanami.kanso.theme.Kanso
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun KansoScaffold(
+public fun KansoScaffold(
     title: String,
     modifier: Modifier = Modifier,
     navigationIcon: @Composable () -> Unit = {},

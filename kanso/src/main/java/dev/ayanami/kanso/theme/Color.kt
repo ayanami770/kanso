@@ -21,10 +21,10 @@ import kotlin.math.sqrt
  * value — the "shared system + per-app accent" model. On Android 12+ dynamic colour can
  * override this from the wallpaper.
  */
-data class KansoBrand(val name: String, val seed: Color)
+public data class KansoBrand(val name: String, val seed: Color)
 
 /** The default kanso brand — a calm, secure teal. */
-val KansoDefaultBrand = KansoBrand("kanso", Color(0xFF006A60))
+public val KansoDefaultBrand: KansoBrand = KansoBrand("kanso", Color(0xFF006A60))
 
 // ---- tone system ----------------------------------------------------------------------
 // Material 3's "tone" (0..100) is CIE L*. L* is a function of luminance alone, so the
@@ -179,7 +179,7 @@ private val ErrorContainerDark = Color(0xFF93000A)
 private val OnErrorContainerDark = Color(0xFFFFDAD6)
 
 /** Build a light Material 3 [ColorScheme] whose accent tones come from [seed]. */
-fun kansoLightColorScheme(seed: Color): ColorScheme {
+public fun kansoLightColorScheme(seed: Color): ColorScheme {
     val t = KansoTones(seed)
     return lightColorScheme(
         primary = t.primary(40), onPrimary = t.primary(100),
@@ -204,7 +204,7 @@ fun kansoLightColorScheme(seed: Color): ColorScheme {
 }
 
 /** Build a dark Material 3 [ColorScheme] whose accent tones come from [seed]. */
-fun kansoDarkColorScheme(seed: Color): ColorScheme {
+public fun kansoDarkColorScheme(seed: Color): ColorScheme {
     val t = KansoTones(seed)
     return darkColorScheme(
         primary = t.primary(80), onPrimary = t.primary(20),

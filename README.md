@@ -161,6 +161,11 @@ implementation("androidx.compose.material:material-icons-extended")  // version 
 
 CI runs all four on every push and pull request.
 
+## Contributing
+
+[CONTRIBUTING.md](CONTRIBUTING.md) — what a correct kanso component looks like, in about thirty
+lines. The public API is in explicit API mode, so every exported symbol is a deliberate choice.
+
 ## Status
 
 kanso started as a private design system for four apps and is being generalised. What that still

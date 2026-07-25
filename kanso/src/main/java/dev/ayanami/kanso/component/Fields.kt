@@ -39,7 +39,7 @@ import dev.ayanami.kanso.R
  * the keyboard but does *not* mask what is drawn.
  */
 @Composable
-fun KansoTextField(
+public fun KansoTextField(
     value: String,
     onValueChange: (String) -> Unit,
     label: String,
@@ -102,7 +102,7 @@ fun KansoTextField(
  * reader announces whether the value is currently shown or hidden.
  */
 @Composable
-fun KansoPasswordField(
+public fun KansoPasswordField(
     value: String,
     onValueChange: (String) -> Unit,
     label: String,
