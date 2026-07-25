@@ -63,7 +63,7 @@ jobs:
 
       - name: Upload test report
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: test-report
           path: kanso/build/reports/tests/
@@ -73,7 +73,7 @@ jobs:
       # failure is unactionable from the log alone.
       - name: Upload screenshot diffs
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: screenshot-diffs
           path: kanso/build/outputs/roborazzi/
