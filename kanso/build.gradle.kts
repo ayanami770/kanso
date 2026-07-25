@@ -46,9 +46,9 @@ dependencies {
     api("androidx.compose.ui:ui-tooling-preview")
     api("androidx.compose.foundation:foundation")
     api("androidx.compose.material:material-icons-extended")
-    api("androidx.activity:activity-compose:1.9.3")
-    api("androidx.navigation:navigation-compose:2.8.4")
-    api("androidx.core:core-ktx:1.13.1")
+    api("androidx.activity:activity-compose:1.13.0")
+    api("androidx.navigation:navigation-compose:2.9.8")
+    api("androidx.core:core-ktx:1.19.0")
 
     debugImplementation("androidx.compose.ui:ui-tooling")
 
