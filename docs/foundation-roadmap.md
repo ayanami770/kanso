@@ -272,7 +272,7 @@ component is what a design system should be selling.
 Skip a `fillWidth: Boolean` escape hatch: `Modifier.width(96.dp)` already yields 96dp, because the
 outer constraint is fixed before the inner `fillMaxWidth()` resolves.
 
-### 2.3 Add the missing `KansoScaffold` slots, migrate the demo onto it — `M`
+### 2.3 Add the missing `KansoScaffold` slots, migrate the demo onto it — `M` — ✅ done
 
 `KansoScaffold` has no `bottomBar`, so the gallery app cannot use it and hand-rolls a raw M3
 `Scaffold` + `TopAppBar` + `NavigationBar` (`MainActivity.kt:107, :121-160`) — paying its own
@@ -287,6 +287,16 @@ every keyboard show and contradicts the insets parameter.
 
 Then migrate the demo shell onto it — that migration *is* the regression test for whether the
 scaffold is actually general.
+
+**As implemented:** all four slots plus the insets passthrough, and the demo migrated. The
+migration paid off immediately: the demo's `@OptIn(ExperimentalMaterial3Api::class)` and five
+imports — `Scaffold`, `TopAppBar`, `TopAppBarDefaults`, `nestedScroll`, `ExperimentalMaterial3Api`
+— all became dead. The gallery now declares no experimental opt-in at all, which is the
+observable proof that `KansoScaffold` absorbs it rather than leaking it.
+
+`ScaffoldDefaults` turned out to expose only `contentWindowInsets`, not a `containerColor`, so
+the `Color.Unspecified` default falls back to `Kanso.colors.background` — Scaffold's own default —
+rather than hard-coding a colour a consumer might have re-themed.
 
 ### 2.4 Give components the two seams they actually lack — `M`
 

@@ -30,15 +30,11 @@ import androidx.compose.material.icons.outlined.Layers
 import androidx.compose.material.icons.outlined.Widgets
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -48,7 +44,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import dev.ayanami.kanso.component.KansoButton
@@ -57,6 +52,7 @@ import dev.ayanami.kanso.component.KansoCard
 import dev.ayanami.kanso.component.KansoEmptyState
 import dev.ayanami.kanso.component.KansoListItem
 import dev.ayanami.kanso.component.KansoLoadingState
+import dev.ayanami.kanso.component.KansoScaffold
 import dev.ayanami.kanso.component.KansoSectionHeader
 import dev.ayanami.kanso.component.KansoStatusRow
 import dev.ayanami.kanso.component.KansoTextField
@@ -112,7 +108,6 @@ private fun DemoApp() {
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun DemoShell(
     brandName: String,
@@ -124,35 +119,33 @@ private fun DemoShell(
 ) {
     var tab by remember { mutableStateOf(Tab.Gallery) }
     var menuOpen by remember { mutableStateOf(false) }
-    val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
 
-    Scaffold(
-        modifier = Modifier.fillMaxSize().nestedScroll(scrollBehavior.nestedScrollConnection),
-        topBar = {
-            TopAppBar(
-                title = { Text("kanso") },
-                scrollBehavior = scrollBehavior,
-                actions = {
-                    // Brand accent switcher — shows the "shared system + per-app accent" model live.
-                    IconButton(onClick = { menuOpen = true }) {
-                        Icon(Icons.Filled.Palette, contentDescription = "Brand")
-                    }
-                    DropdownMenu(expanded = menuOpen, onDismissRequest = { menuOpen = false }) {
-                        Brands.forEachIndexed { i, b ->
-                            DropdownMenuItem(
-                                text = { Text(b.name) },
-                                onClick = { onPickBrand(i); menuOpen = false },
-                            )
-                        }
-                    }
-                    IconButton(onClick = onToggleDark) {
-                        Icon(
-                            if (dark) Icons.Filled.LightMode else Icons.Filled.DarkMode,
-                            contentDescription = "Toggle dark mode",
-                        )
-                    }
-                },
-            )
+    // The gallery runs on KansoScaffold rather than a hand-rolled Scaffold on purpose: if the
+    // showcase cannot use the library's own screen shell, no real app with bottom navigation
+    // can either. Note there is no @OptIn here — KansoScaffold absorbs the experimental
+    // Material 3 opt-in so consumers never inherit it.
+    KansoScaffold(
+        title = "kanso",
+        centeredTitle = false,
+        actions = {
+            // Brand accent switcher — shows the "shared system + per-app accent" model live.
+            IconButton(onClick = { menuOpen = true }) {
+                Icon(Icons.Filled.Palette, contentDescription = "Brand")
+            }
+            DropdownMenu(expanded = menuOpen, onDismissRequest = { menuOpen = false }) {
+                Brands.forEachIndexed { i, b ->
+                    DropdownMenuItem(
+                        text = { Text(b.name) },
+                        onClick = { onPickBrand(i); menuOpen = false },
+                    )
+                }
+            }
+            IconButton(onClick = onToggleDark) {
+                Icon(
+                    if (dark) Icons.Filled.LightMode else Icons.Filled.DarkMode,
+                    contentDescription = "Toggle dark mode",
+                )
+            }
         },
         bottomBar = {
             NavigationBar {

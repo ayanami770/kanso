@@ -8,8 +8,13 @@ import android.content.res.Configuration
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -227,6 +232,35 @@ private fun KansoScaffoldPreview() = KansoTheme(dynamicColor = false) {
             KansoSectionHeader("Nearby")
             KansoListItem(headline = "dao-node", supporting = "192.168.1.24", onClick = {})
             KansoListItem(headline = "edge-01", supporting = "192.168.1.31", onClick = {})
+        }
+    }
+}
+
+/** The start-aligned bar with actions and a bottom bar — the shape a real app shell takes. */
+@KansoPreviews
+@Composable
+private fun KansoScaffoldWithBarsPreview() = KansoTheme(dynamicColor = false) {
+    KansoScaffold(
+        title = "Peers",
+        centeredTitle = false,
+        actions = {
+            IconButton(onClick = {}) { Icon(PreviewIcon, contentDescription = "Filter") }
+        },
+        bottomBar = {
+            NavigationBar {
+                listOf("Peers", "Activity", "Settings").forEachIndexed { i, label ->
+                    NavigationBarItem(
+                        selected = i == 0,
+                        onClick = {},
+                        icon = { Icon(PreviewIcon, contentDescription = null) },
+                        label = { Text(label) },
+                    )
+                }
+            }
+        },
+    ) { inner ->
+        Column(Modifier.padding(inner).padding(horizontal = Kanso.spacing.screen)) {
+            KansoListItem(headline = "dao-node", supporting = "192.168.1.24", onClick = {})
         }
     }
 }
