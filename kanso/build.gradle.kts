@@ -51,4 +51,10 @@ dependencies {
     api("androidx.core:core-ktx:1.13.1")
 
     debugImplementation("androidx.compose.ui:ui-tooling")
+
+    // The colour engine is pure Kotlin (no android.graphics), so its contract — every seed
+    // yields a WCAG AA scheme — is pinned by plain JVM tests. Deliberately NOT paired with
+    // `testOptions.unitTests.isReturnDefaultValues`: stubbed framework calls return zeroes,
+    // which would collapse every seed onto one hue and pass against a broken scheme.
+    testImplementation("junit:junit:4.13.2")
 }

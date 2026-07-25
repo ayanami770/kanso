@@ -3,7 +3,12 @@
 A review of what kanso needs in order to be adopted by apps outside the ayanami770 fleet —
 including by people who did not write it.
 
-This document is a **proposal**, not a changelog. Nothing here has been implemented.
+This document is a **proposal**, not a changelog.
+
+> **Status.** The defect-class items have since been fixed: 1.1 (colour engine + contrast
+> tests), 2.5, 2.6, 2.7, and the masking half of 2.2. They are marked **✅ done** below and
+> their prose is left in the past tense on purpose — it records why the change was made.
+> Everything else is still open.
 
 ---
 
@@ -90,7 +95,7 @@ It is also the ordering constraint for nearly everything else:
 stranger being able to get kanso, trust what it renders, and read documentation that matches the
 code.*
 
-### 1.1 Tone-accurate color math + a JVM contrast test — `L`, breaking
+### 1.1 Tone-accurate color math + a JVM contrast test — `L`, breaking — ✅ done
 
 Delete `hueOf()`'s `android.graphics.Color.colorToHSV` call (`Color.kt:28-32`) — it is the only
 Android framework call in the theme package and the sole reason no JVM test can cover the engine.
@@ -112,6 +117,14 @@ specification.
 > Do **not** set `unitTests.isReturnDefaultValues = true` as a shortcut. The stubbed void
 > `colorToHSV` leaves the out-array at zero, so every seed collapses to hue 0 — which happens to
 > pass at 7.29:1. The suite would go green against a red scheme.
+
+**As implemented:** the in-house route, so kanso stays dependency-free. MD3 tone is mapped to
+CIE L\* and colours are built in CIELCh(ab), then gamut-mapped into sRGB by reducing *chroma
+only*. Because L\* is a function of luminance alone and the mapping never moves it, contrast
+between two tones is hue-independent **by construction** rather than by tuning: `onPrimary` on
+`primary` now measures 6.42–6.46 across all 360 hues, against 3.17–9.79 before. Achromatic seeds
+take a neutral palette, and seed chroma is clamped into a 24–56 band instead of normalised away,
+so a muted navy and a vivid blue still differ by ~32 points of chroma.
 
 ### 1.2 Flip `dynamicColor` to default `false` — `S`, breaking
 
@@ -227,7 +240,7 @@ Also add `LocalKansoBrand` + `Kanso.brand`. `brand` is consumed and discarded to
 downstream can read the active brand's name or raw seed for a splash screen, chart series or debug
 badge — and `Kanso.colors.primary` is the derived tone, not the seed.
 
-### 2.2 Widen `KansoTextField`, add `KansoPasswordField` — `M`
+### 2.2 Widen `KansoTextField`, add `KansoPasswordField` — `M` — ⬦ partially done
 
 The library's own demo renders a "Control PIN" in cleartext (`MainActivity.kt:256-264`) because
 there is no `visualTransformation` — `KeyboardType.NumberPassword` selects the numeric-password
@@ -278,7 +291,7 @@ Explicitly do **not** add `colors` / `shape` / `contentPadding` / `interactionSo
 composables. That converts kanso into a pass-through wrapper and re-creates the divergence it
 exists to prevent.
 
-### 2.5 Fix the `KansoButton` loading state — `S`
+### 2.5 Fix the `KansoButton` loading state — `S` — ✅ done
 
 Three real defects in eleven lines of the most-used component (`Buttons.kt:43-53`):
 
@@ -296,7 +309,7 @@ Three real defects in eleven lines of the most-used component (`Buttons.kt:43-53
 While in the file, delete the dead `Row(horizontalArrangement = Arrangement.Center)` configuration
 at `Buttons.kt:44`, which is given no modifier and does nothing.
 
-### 2.6 Semantics and touch-target pass — `S`
+### 2.6 Semantics and touch-target pass — `S` — ✅ done
 
 Accessibility here is accidental — inherited from Material 3 underneath — and stops exactly where
 the library writes its own layout. There are zero occurrences of `semantics`, `Role`, `heightIn`
@@ -321,7 +334,13 @@ or `minimumInteractive` in `kanso/src`.
 Also delete the dead `.padding(end = Kanso.spacing.none)` at `ListItems.kt:42` — a no-op only
 because the token is 0.dp, and it would shrink the icon if anyone "fixed" it.
 
-### 2.7 Stop the state components clipping at large font scale — `S`
+**As implemented:** items 1, 2 and 4 as written. Item 3 landed only as the `semantics { error() }`
+half — the `isError = isError || errorText != null` derivation was **dropped**, because the demo
+(and so, presumably, the apps) passes a constant `errorText` and gates on `isError` alone.
+Deriving the flag would have pinned that field permanently in its error state. `isError` stays
+the sole gate; the message is what reaches the screen reader.
+
+### 2.7 Stop the state components clipping at large font scale — `S` — ✅ done
 
 `KansoEmptyState` and `KansoLoadingState` are `fillMaxSize()` + `Arrangement.Center` with no
 scroll anywhere in the library. The CTA button — the user's only escape from an empty state — is
