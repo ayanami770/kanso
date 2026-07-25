@@ -5,10 +5,10 @@ including by people who did not write it.
 
 This document is a **proposal**, not a changelog.
 
-> **Status.** The defect-class items have since been fixed: 1.1 (colour engine + contrast
-> tests), 2.5, 2.6, 2.7, and the masking half of 2.2. They are marked **✅ done** below and
-> their prose is left in the past tense on purpose — it records why the change was made.
-> Everything else is still open.
+> **Status.** Landed: 1.1 (colour engine + contrast tests), 1.3, 1.4, 1.6, 2.5, 2.6, 2.7, and
+> the masking half of 2.2. Considered and **declined**: 1.2. Items are marked below; their
+> prose is left in the original tense on purpose — it records why each change was or was not
+> made. Everything unmarked is still open.
 
 ---
 
@@ -126,7 +126,7 @@ between two tones is hue-independent **by construction** rather than by tuning: 
 take a neutral palette, and seed chroma is clamped into a 24–56 band instead of normalised away,
 so a muted navy and a vivid blue still differ by ~32 points of chroma.
 
-### 1.2 Flip `dynamicColor` to default `false` — `S`, breaking
+### 1.2 Flip `dynamicColor` to default `false` — `S`, breaking — ❌ not adopted
 
 On every Android 12+ device the wallpaper branch wins before the seed is ever read
 (`KansoTheme.kt:35, :39-44`), so `KansoTheme(brand = MyBrand)` — the exact call the README tells
@@ -138,9 +138,16 @@ One token, plus one README sentence. Reject a `KansoColorSource` tri-state enum 
 harmonization — speculative architecture for a ~950-line library, and harmonization forces in a
 dependency purely for `Blend.harmonize`.
 
-*Depends on 1.1.*
+**Decision: not adopted.** The default stays `true` — the user's system-wide colour preference
+outranks the app's brand, and flipping it would change the appearance of four shipping apps on
+every Android 12+ device. This was a product call, not a defect, so the fix is documentation
+rather than behaviour: the surprise is now stated plainly in the `KansoTheme` KDoc and in a
+README admonition, with `dynamicColor = false` given as the opt-out for brands that must hold.
+Revisit only if a consuming app reports the wallpaper scheme as a real problem.
 
-### 1.3 Fix the `api` dependency surface — `M`, breaking
+*Depended on 1.1.*
+
+### 1.3 Fix the `api` dependency surface — `M`, breaking — ✅ done
 
 Grep over `kanso/src` finds **zero** references to `Icons.`, `WindowSizeClass`, `Preview`,
 `androidx.navigation` or `androidx.activity`.
@@ -159,7 +166,7 @@ Grep over `kanso/src` finds **zero** references to `Icons.`, `WindowSizeClass`, 
 Then fix `demo/build.gradle.kts` to declare what it actually uses. If `:demo` compiles, the split
 is right. Getting this wrong in 1.0.0 makes the fix a major-version break.
 
-### 1.4 Add CI — `S`
+### 1.4 Add CI — `S` — ✅ done
 
 There is no `.github/`, so nothing proves the library even compiles. For a submodule-consumed
 library a broken `main` breaks all four apps simultaneously at their next `git submodule update`.
@@ -191,7 +198,7 @@ The submodule and the artifact coexist; migrate the fleet one app at a time.
 
 *Depends on 1.3, 1.4.*
 
-### 1.6 Rewrite the README for strangers — `M`, breaking
+### 1.6 Rewrite the README for strangers — `M`, breaking — ✅ done
 
 The README is written for one person who already owns four apps. It also states two things the
 code does not do, and documented rules the code violates are worse than no rules, because
