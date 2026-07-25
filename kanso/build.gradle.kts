@@ -36,19 +36,32 @@ android {
 dependencies {
     // Compose BOM: a single source of truth for every Compose artifact version. Exposed via
     // `api` so consuming apps inherit the same aligned versions from the :kanso submodule.
+    // `platform` publishes a floor, not a ceiling — a consumer that wants a newer Compose
+    // declares its own BOM and wins.
     val composeBom = platform("androidx.compose:compose-bom:2026.06.00")
     api(composeBom)
 
+    // `api` is reserved for artifacts that appear in kanso's OWN public signatures, so a
+    // consumer can name every type kanso hands them without declaring anything extra:
+    //   material3    ColorScheme, Typography, Shapes, SnackbarHostState
+    //   foundation   PaddingValues, RowScope, ColumnScope, ScrollState
+    //   runtime      @Composable, the ProvidableCompositionLocal token holders
+    //   ui           Modifier, Alignment
+    //   ui-graphics  Color, ImageVector
+    //   ui-text      KeyboardType, VisualTransformation, TextAlign
+    //   ui-unit      Dp, on every spacing and elevation token
+    // Anything not on that list is the consumer's choice to make, not kanso's to impose.
     api("androidx.compose.material3:material3")
-    api("androidx.compose.material3:material3-window-size-class")
+    api("androidx.compose.foundation:foundation")
+    api("androidx.compose.runtime:runtime")
     api("androidx.compose.ui:ui")
     api("androidx.compose.ui:ui-graphics")
-    api("androidx.compose.ui:ui-tooling-preview")
-    api("androidx.compose.foundation:foundation")
-    api("androidx.compose.material:material-icons-extended")
-    api("androidx.activity:activity-compose:1.9.3")
-    api("androidx.navigation:navigation-compose:2.8.4")
-    api("androidx.core:core-ktx:1.13.1")
+    api("androidx.compose.ui:ui-text")
+    api("androidx.compose.ui:ui-unit")
+
+    // Internal only — WindowCompat, for the edge-to-edge system-bar contrast in KansoTheme.
+    // Nothing from core-ktx reaches kanso's public API.
+    implementation("androidx.core:core-ktx:1.13.1")
 
     debugImplementation("androidx.compose.ui:ui-tooling")
 
