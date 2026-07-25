@@ -440,7 +440,7 @@ inline.
 *None of this blocks adoption; all of it is what keeps the library from decaying once other people
 depend on it.*
 
-### 3.1 Bring the toolchain current and re-enable lint — `M`, breaking
+### 3.1 Bring the toolchain current and re-enable lint — `M`, breaking — ✅ done
 
 Lint is off for release builds (`kanso/build.gradle.kts:21-27`) — and for a library, lint is the
 consumer-facing quality gate that catches unguarded API-level calls against the advertised minSdk
@@ -460,6 +460,14 @@ AGP and never evaluate kanso's root script.
 Hold off on `warningsAsErrors` / `checkDependencies` until CI exists and the real noise level is
 known. Add Slack's compose-lints separately — the components already put `modifier` first among
 optional params, so adoption should be near-clean.
+
+**As implemented:** AGP 9.3.1 / Kotlin 2.4.10 / Gradle 9.6.1, and `:kanso:lintRelease` now runs
+clean, so `checkReleaseBuilds = false` became `abortOnError = true` and lint is its own CI step.
+The migration was more than a version bump: **AGP 9 ships built-in Kotlin support and rejects the
+`org.jetbrains.kotlin.android` plugin outright**, so that plugin is gone from both modules and the
+root build. `jvmTarget` moved out of the deleted `android.kotlinOptions` block into
+`kotlin.compilerOptions`, which AGP's built-in Kotlin provides. The Compose compiler plugin stays.
+`warningsAsErrors` and compose-lints remain deferred as written.
 
 *Depends on 1.4.*
 
@@ -481,7 +489,7 @@ with nothing to check it against is ceremony. Revisit with the Kotlin Gradle plu
 
 *Depends on 1.5.*
 
-### 3.3 Version catalog and dependency-update automation — `S`
+### 3.3 Version catalog and dependency-update automation — `S` — ✅ done
 
 AGP is duplicated across two lines and Kotlin across two more — and in Kotlin 2.x the Kotlin plugin
 and the Compose compiler plugin falling out of lockstep is a hard build failure. This has already
