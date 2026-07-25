@@ -94,8 +94,9 @@ relationship to the brand at all.
 
 ## Installing
 
-kanso is not yet published to a Maven repository ([roadmap 1.5](docs/foundation-roadmap.md)).
-Today it is consumed as a git submodule:
+kanso is consumed as a git submodule. It is **not** published to a Maven repository, and that is
+a decision rather than a gap — [roadmap 1.5](docs/foundation-roadmap.md) records why, and what
+would change it. Releases are git tags; see [CHANGELOG.md](CHANGELOG.md).
 
 ```bash
 git submodule add https://github.com/ayanami770/kanso.git third_party/kanso
@@ -168,10 +169,11 @@ lines. The public API is in explicit API mode, so every exported symbol is a del
 
 ## Status
 
-kanso started as a private design system for four apps and is being generalised. What that still
-needs — publishing, adaptive layout, the rest — is written down in
-[docs/foundation-roadmap.md](docs/foundation-roadmap.md), including an explicit list of things
-that are already right and should be left alone.
+kanso started as a private design system for four apps and has been generalised.
+[docs/foundation-roadmap.md](docs/foundation-roadmap.md) records the whole exercise: what was
+done, what was considered and **declined** and why, and an explicit list of things that were
+already right and should be left alone. What remains open is the adaptive story beyond a content
+width cap — a navigation rail or list-detail layout.
 
 ## License
 
