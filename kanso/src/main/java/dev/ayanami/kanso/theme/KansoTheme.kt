@@ -7,13 +7,17 @@ package dev.ayanami.kanso.theme
 import android.app.Activity
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Shapes
+import androidx.compose.material3.Typography
 import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
@@ -22,7 +26,7 @@ import androidx.core.view.WindowCompat
  * The single theme entry point for every kanso app. Wraps [MaterialTheme] with:
  *  - a colour scheme derived from the app's [brand] seed (per-app accent), OR the wallpaper
  *    (Material You) when [dynamicColor] is on and the device is Android 12+,
- *  - the shared type / shape scales and the kanso spacing + elevation tokens,
+ *  - the type / shape scales and the kanso spacing + elevation tokens,
  *  - edge-to-edge system-bar icon contrast that follows light/dark.
  *
  * Usage (in an app):  setContent { KansoTheme(brand = MyBrand) { AppRoot() } }
@@ -32,16 +36,38 @@ import androidx.core.view.WindowCompat
  * Material You rather than in MyBrand on most current devices. That is deliberate — the user's
  * system-wide colour preference outranks the app's — but if your brand identity has to hold,
  * pass `dynamicColor = false`. Below Android 12 the seed is always used.
+ *
+ * Every other axis of the theme is a parameter, so an app can adopt kanso without forking it:
+ *
+ * ```
+ * KansoTheme(
+ *     brand = MyBrand,
+ *     typography = kansoTypography(MyFontFamily),   // the M3 scale in your face
+ *     shapes = Shapes(medium = RoundedCornerShape(4.dp)),
+ *     spacing = KansoSpacing(screen = 24.dp),
+ * ) { AppRoot() }
+ * ```
+ *
+ * For a scheme that is *nearly* the seeded one, start from the builder and override the roles
+ * you care about — `kansoLightColorScheme(seed).copy(primary = …)` — and pass the result as
+ * [colorScheme]. Supplying [colorScheme] takes precedence over both [dynamicColor] and [brand];
+ * [brand] is still published to [Kanso.brand] either way, so a splash screen or a chart can read
+ * the app's raw seed no matter which scheme is in force.
  */
 @Composable
 fun KansoTheme(
     brand: KansoBrand = KansoDefaultBrand,
     darkTheme: Boolean = isSystemInDarkTheme(),
     dynamicColor: Boolean = true,
+    colorScheme: ColorScheme? = null,
+    typography: Typography = KansoTypography,
+    shapes: Shapes = KansoShapes,
+    spacing: KansoSpacing = KansoSpacing(),
+    elevation: KansoElevation = KansoElevation(),
     content: @Composable () -> Unit,
 ) {
     val context = LocalContext.current
-    val colorScheme = when {
+    val resolvedColorScheme = colorScheme ?: when {
         dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S ->
             if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
         darkTheme -> kansoDarkColorScheme(brand.seed)
@@ -60,17 +86,25 @@ fun KansoTheme(
     }
 
     CompositionLocalProvider(
-        LocalKansoSpacing provides KansoSpacing(),
-        LocalKansoElevation provides KansoElevation(),
+        LocalKansoBrand provides brand,
+        LocalKansoSpacing provides spacing,
+        LocalKansoElevation provides elevation,
     ) {
         MaterialTheme(
-            colorScheme = colorScheme,
-            typography = KansoTypography,
-            shapes = KansoShapes,
+            colorScheme = resolvedColorScheme,
+            typography = typography,
+            shapes = shapes,
             content = content,
         )
     }
 }
+
+/**
+ * The brand in force. Provided by [KansoTheme] so anything downstream can read the app's own
+ * name and raw seed — `Kanso.colors.primary` is a derived tone, not the seed, and under dynamic
+ * colour it has no relationship to the brand at all.
+ */
+val LocalKansoBrand = staticCompositionLocalOf { KansoDefaultBrand }
 
 /**
  * Ergonomic accessors for the current theme, so components read
@@ -78,6 +112,8 @@ fun KansoTheme(
  * MaterialTheme paths.
  */
 object Kanso {
+    val brand: KansoBrand
+        @Composable @ReadOnlyComposable get() = LocalKansoBrand.current
     val spacing: KansoSpacing
         @Composable @ReadOnlyComposable get() = LocalKansoSpacing.current
     val elevation: KansoElevation

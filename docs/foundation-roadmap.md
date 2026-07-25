@@ -228,7 +228,7 @@ contributors copy the code.
 *A theme that accepts more than one knob, components that can express a login form and a bottom
 nav, and the accessibility fixes a design system exists to guarantee once rather than per-app.*
 
-### 2.1 Parameterize `KansoTheme` + a typography builder — `M`
+### 2.1 Parameterize `KansoTheme` + a typography builder — `M` — ✅ done
 
 Add defaulted params before `content`: `typography`, `shapes`, `spacing`, `elevation`, and one
 `colorScheme: ColorScheme? = null` that short-circuits derivation. Document
@@ -246,6 +246,15 @@ defaults) and no `KansoThemeConfig`.
 Also add `LocalKansoBrand` + `Kanso.brand`. `brand` is consumed and discarded today, so nothing
 downstream can read the active brand's name or raw seed for a splash screen, chart series or debug
 badge — and `Kanso.colors.primary` is the derived tone, not the seed.
+
+**As implemented:** all of the above. The `*Emphasized` warning turned out to be sharper than
+written — material3 1.4's `Typography` has 30 `TextStyle` fields, but the fifteen `*Emphasized`
+accessors and the 30-argument `copy` are `internal` to material3, so they can be neither read nor
+set from outside it. A brand family therefore cannot reach them at all; this is a material3
+limitation, not a gap in the builder, and it is documented on `kansoTypography` rather than
+papered over. kanso's own components use no emphasized style, so only a consumer reaching for a
+stock M3 Expressive component is affected. `TypographyTest` pins that the builder changes the
+family and nothing else.
 
 ### 2.2 Widen `KansoTextField`, add `KansoPasswordField` — `M` — ⬦ partially done
 
