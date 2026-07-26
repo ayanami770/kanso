@@ -21,13 +21,10 @@ and a small component library, so a screen you write reads the same as every oth
   varying with it: `onPrimary` on `primary` measures 6.42–6.46 across all 360 hues. That guarantee
   is [pinned by tests](kanso/src/test/java/dev/ayanami/kanso/theme/ColorContrastTest.kt), not
   asserted here.
-- **A component library** — buttons (one emphasis system, five weights), cards + section headers,
-  text fields with error states, a scaffold + top app bar, list/status rows, and empty/loading
-  states. Components read spacing, colour, type and shape from the tokens. The top app bar shows
-  the app's version right after the title by default — "CertWatch v5.33.11" — read from the
-  installed package and `v`-prefixed (`kansoAppVersionLabel()`) so it always states the build
-  actually running. Pass `version` to override the string (shown verbatim), or an empty string
-  to omit it.
+- **A component library** — eleven components covering a screen's structure, forms, lists and
+  states, listed below. Each reads spacing, colour, type and shape from the tokens, absorbs its
+  own Material 3 experimental opt-ins, and is reviewed in four configurations (light, dark, 200%
+  font scale, RTL) by a preview.
 - **Aligned versions, and nothing more** — a single Compose BOM is exposed via `api`, so consuming
   apps inherit the same aligned Compose and Material 3 versions. `api` carries only the artifacts
   that appear in kanso's own public signatures; your activity plumbing, icon set and navigation
@@ -140,13 +137,54 @@ implementation("androidx.compose.material:material-icons-extended")  // version 
 | JDK | 17 |
 | AGP / Gradle | 9.3.1 / 9.6.1 |
 
+## Components
+
+Everything is `Kanso`-prefixed and lives in `dev.ayanami.kanso.component`.
+
+### Structure
+
+| | |
+|---|---|
+| `KansoScaffold` | Screen shell — top app bar that reacts to scroll, `navigationIcon`, `actions`, `bottomBar`, FAB, snackbar host. The title is followed by the app's version — "CertWatch v5.33.11" — so every screen states the build actually running with no wiring; pass `version` for a different string, or `""` to omit it. `centeredTitle = false` for a start-aligned bar; `titleContent` replaces the whole title line, version included. Absorbs `ExperimentalMaterial3Api` so you never opt in. |
+| `kansoAppVersionLabel()` | The `v`-prefixed version of the installed package, read at composition. `KansoScaffold`'s default — call it directly if you want the same string elsewhere, such as an About screen. |
+| `KansoContentContainer` | Caps content width (`Kanso.spacing.contentMaxWidth`, 640dp) and centres it. A no-op on a phone; on a tablet it stops body text running to ~160 characters a line. Needs no changes to the components inside it. |
+| `KansoCard` | Grouped section as a filled card, with optional `title` (marked as a heading), `subtitle` and `titleTrailing` for a "See all" action. `onClick` routes to Material 3's clickable overload, so the ripple is clipped to the corners; `contentPadding = PaddingValues(0.dp)` for edge-to-edge content. |
+| `KansoSectionHeader` | Standalone section title for use outside a card, with optional supporting line and `trailing`. Wraps rather than truncating. |
+
+### Forms
+
+| | |
+|---|---|
+| `KansoButton` | One emphasis system, six weights — `Filled`, `Tonal`, `Outlined`, `Text`, `Elevated`, `Destructive`. Optional leading `icon`, and a `loading` state that disables the button, announces itself to a screen reader and does not change the button's width. |
+| `KansoTextField` | Outlined field with label, supporting text and an error state whose message reaches the semantics tree. `enabled`, `readOnly`, `placeholder`, leading/trailing icons, `minLines`, `imeAction`, `keyboardActions`, `visualTransformation`. |
+| `KansoPasswordField` | Masked field with a reveal toggle whose content description follows its state. `numeric = true` for a PIN, `revealable = false` for a value that must never be shown. |
+
+### Lists
+
+| | |
+|---|---|
+| `KansoListItem` | One/two-line row with an optional leading `icon` — or a `leading` slot for an avatar or checkbox — and trailing content. Merged into one accessibility node; a clickable row is held to the 48dp touch target. |
+| `KansoStatusRow` | Key/value row. Both halves are weighted, so a long value wraps in its own half instead of starving the label. Label and value are one screen-reader stop. |
+
+### States
+
+| | |
+|---|---|
+| `KansoEmptyState` | Centred icon, title, optional description and call-to-action. Pass `scrollState` when the parent does not already scroll, so the action stays reachable at a large font scale. |
+| `KansoLoadingState` | Centred progress indicator with an optional label. |
+
 ## Tokens
 
-- **Spacing** — a 4dp grid (`Kanso.spacing.xs … xxxl`, plus `screen` / `section`).
-- **Elevation** — Material 3 tonal + shadow levels (`Kanso.elevation.level0 … level5`).
-- **Colour / type / shape** — `Kanso.colors`, `Kanso.typography`, `Kanso.shapes`. These delegate
-  straight to the current `MaterialTheme` values, which is why every stock Material 3 component
-  and every third-party Compose library themes correctly under `KansoTheme` with no adapter.
+Read through the `Kanso` object, which is valid anywhere inside `KansoTheme`.
+
+| | |
+|---|---|
+| `Kanso.spacing` | A 4dp grid — `none`, `xxs … xxxl`, plus `screen`, `section` and `contentMaxWidth`. |
+| `Kanso.elevation` | Material 3 tonal + shadow levels, `level0 … level5`. |
+| `Kanso.colors` | The current `ColorScheme`. Delegates straight to `MaterialTheme.colorScheme`, which is why every stock Material 3 component and every third-party Compose library themes correctly under `KansoTheme` with no adapter. |
+| `Kanso.extendedColors` | `success` / `warning` / `info`, each with `on-`, `-Container` and `on-Container`. Fixed rather than seed-derived, for the same reason Material 3 fixes `error`: a hue rotation must not turn a warning green. Contrast is pinned by tests. |
+| `Kanso.typography` / `Kanso.shapes` | The current `Typography` and `Shapes`. |
+| `Kanso.brand` | The `KansoBrand` in force, for a splash screen or chart series that needs the raw seed — `Kanso.colors.primary` is a derived tone, and under dynamic colour bears no relation to the brand. |
 
 ## Modules
 
