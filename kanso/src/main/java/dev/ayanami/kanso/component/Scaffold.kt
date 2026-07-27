@@ -73,16 +73,11 @@ public fun KansoScaffold(
         if (version.isBlank()) {
             Text(title)
         } else {
-            // Baseline-aligned rather than centred: the version reads as a continuation of the
-            // name, not as a second element floating next to it.
+            // The version inherits the bar's own title style — it is part of the name the
+            // header states ("CertWatch v5.33.11"), not a caption beside it.
             Row(horizontalArrangement = Arrangement.spacedBy(Kanso.spacing.xs)) {
                 Text(title, Modifier.alignByBaseline())
-                Text(
-                    text = version,
-                    modifier = Modifier.alignByBaseline(),
-                    style = Kanso.typography.labelMedium,
-                    color = Kanso.colors.onSurfaceVariant,
-                )
+                Text(version, Modifier.alignByBaseline())
             }
         }
     }
