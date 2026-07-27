@@ -332,7 +332,7 @@ private fun KansoContentContainerPreview() = PreviewHost {
 @KansoPreviews
 @Composable
 private fun KansoScaffoldPreview() = KansoTheme(dynamicColor = false) {
-    KansoScaffold(title = "Peers", version = "1.4.2") { inner ->
+    KansoScaffold(title = "Peers", version = "v1.4.2") { inner ->
         Column(Modifier.padding(inner).padding(horizontal = Kanso.spacing.screen)) {
             KansoSectionHeader("Nearby")
             KansoListItem(headline = "dao-node", supporting = "192.168.1.24", onClick = {})
@@ -347,7 +347,7 @@ private fun KansoScaffoldPreview() = KansoTheme(dynamicColor = false) {
 private fun KansoScaffoldWithBarsPreview() = KansoTheme(dynamicColor = false) {
     KansoScaffold(
         title = "Peers",
-        version = "1.4.2",
+        version = "v1.4.2",
         centeredTitle = false,
         actions = {
             IconButton(onClick = {}) { Icon(PreviewIcon, contentDescription = "Filter") }

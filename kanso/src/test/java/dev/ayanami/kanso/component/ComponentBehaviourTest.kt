@@ -176,9 +176,9 @@ class ComponentBehaviourTest {
         compose.onNodeWithText("2.1.0").assertIsDisplayed()
     }
 
-    /** The default version is the installed package's versionName — a variable, not a literal. */
+    /** The default is the package's versionName, `v`-prefixed — a variable, not a literal. */
     @Test
-    fun `the default version is read from the package`() {
+    fun `the default version is read from the package and v-prefixed`() {
         val context = ApplicationProvider.getApplicationContext<Context>()
         @Suppress("DEPRECATION")
         val info = context.packageManager.getPackageInfo(context.packageName, 0)
@@ -189,7 +189,24 @@ class ComponentBehaviourTest {
                 KansoScaffold(title = "Peers") { Text("body") }
             }
         }
-        compose.onNodeWithText("7.7.7").assertIsDisplayed()
+        compose.onNodeWithText("v7.7.7").assertIsDisplayed()
+    }
+
+    /** A versionName that already carries the prefix must not become "vv…". */
+    @Test
+    fun `an already-prefixed versionName is not prefixed again`() {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        @Suppress("DEPRECATION")
+        val info = context.packageManager.getPackageInfo(context.packageName, 0)
+        info.versionName = "v8.0.0"
+        shadowOf(context.packageManager).installPackage(info)
+        compose.setContent {
+            KansoTheme(dynamicColor = false) {
+                KansoScaffold(title = "Peers") { Text("body") }
+            }
+        }
+        compose.onNodeWithText("v8.0.0").assertIsDisplayed()
+        compose.onNodeWithText("vv8.0.0").assertDoesNotExist()
     }
 
     /** titleContent replaces the whole title line — the version included. */

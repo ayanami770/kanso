@@ -35,11 +35,11 @@ import dev.ayanami.kanso.theme.Kanso
  * optional navigation icon + actions, an optional bottom bar and FAB, and a snackbar host. The
  * content receives the inner [PaddingValues] to consume the app-bar + system insets.
  *
- * The [title] is followed on the same line by the app's version, resolved from the installed
- * package by [kansoAppVersionName] — every kanso screen carries the running build's version with
- * no wiring, and the shown value can never drift from the build it shipped in. Pass [version] to
- * show a different string (a build variant, a git hash), or an empty string for the rare screen
- * that must not carry one.
+ * The [title] is followed on the same line by the app's version — "CertWatch v5.33.11" —
+ * resolved from the installed package by [kansoAppVersionLabel], so every kanso screen carries
+ * the running build's version with no wiring, and the shown value can never drift from the
+ * build it shipped in. Pass [version] to show a different string, rendered verbatim (a build
+ * variant, a git hash), or an empty string for the rare screen that must not carry one.
  *
  * The title is centred by default; pass `centeredTitle = false` for the start-aligned bar that
  * suits a screen with several actions, or [titleContent] to put something other than text there
@@ -62,7 +62,7 @@ public fun KansoScaffold(
     floatingActionButton: @Composable () -> Unit = {},
     bottomBar: @Composable () -> Unit = {},
     centeredTitle: Boolean = true,
-    version: String = kansoAppVersionName(),
+    version: String = kansoAppVersionLabel(),
     titleContent: (@Composable () -> Unit)? = null,
     containerColor: Color = Color.Unspecified,
     contentWindowInsets: WindowInsets = ScaffoldDefaults.contentWindowInsets,
@@ -113,14 +113,16 @@ public fun KansoScaffold(
 }
 
 /**
- * The `versionName` of the app kanso is running inside, read from the installed package. This is
- * what [KansoScaffold] shows after its title by default, and it is a variable rather than a
- * literal on purpose: the header always states the version of the build actually running, with
- * nothing for a release checklist to forget. Returns an empty string when the package declares
- * no `versionName` or cannot be resolved (a preview host, for instance).
+ * The version label of the app kanso is running inside: the installed package's `versionName`
+ * prefixed with `v` — `versionName = "5.33.11"` reads back as `"v5.33.11"`. This is what
+ * [KansoScaffold] shows after its title by default, and it is a variable rather than a literal
+ * on purpose: the header always states the version of the build actually running, with nothing
+ * for a release checklist to forget. A `versionName` that already starts with `v` is not
+ * prefixed again, and an empty string comes back when the package declares no `versionName` or
+ * cannot be resolved (a preview host, for instance).
  */
 @Composable
-public fun kansoAppVersionName(): String {
+public fun kansoAppVersionLabel(): String {
     val context = LocalContext.current
     return remember(context) {
         runCatching {
@@ -134,7 +136,9 @@ public fun kansoAppVersionName(): String {
                 @Suppress("DEPRECATION")
                 packageManager.getPackageInfo(context.packageName, 0)
             }
-            info.versionName.orEmpty()
+            val name = info.versionName.orEmpty()
+            if (name.isEmpty() || name.startsWith("v") || name.startsWith("V")) name
+            else "v$name"
         }.getOrDefault("")
     }
 }
