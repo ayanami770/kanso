@@ -325,10 +325,14 @@ private fun KansoContentContainerPreview() = PreviewHost {
 
 // ---- scaffold -------------------------------------------------------------------------
 
+/**
+ * The version is passed explicitly because a preview host resolves no real package — what is
+ * under review is the two-line title block the default produces in a running app.
+ */
 @KansoPreviews
 @Composable
 private fun KansoScaffoldPreview() = KansoTheme(dynamicColor = false) {
-    KansoScaffold(title = "Peers") { inner ->
+    KansoScaffold(title = "Peers", version = "1.4.2") { inner ->
         Column(Modifier.padding(inner).padding(horizontal = Kanso.spacing.screen)) {
             KansoSectionHeader("Nearby")
             KansoListItem(headline = "dao-node", supporting = "192.168.1.24", onClick = {})
@@ -343,6 +347,7 @@ private fun KansoScaffoldPreview() = KansoTheme(dynamicColor = false) {
 private fun KansoScaffoldWithBarsPreview() = KansoTheme(dynamicColor = false) {
     KansoScaffold(
         title = "Peers",
+        version = "1.4.2",
         centeredTitle = false,
         actions = {
             IconButton(onClick = {}) { Icon(PreviewIcon, contentDescription = "Filter") }

@@ -4,6 +4,9 @@
  */
 package dev.ayanami.kanso.component
 
+import android.content.pm.PackageManager
+import android.os.Build
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.WindowInsets
@@ -19,10 +22,12 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.takeOrElse
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalContext
 import dev.ayanami.kanso.theme.Kanso
 
 /**
@@ -30,9 +35,16 @@ import dev.ayanami.kanso.theme.Kanso
  * optional navigation icon + actions, an optional bottom bar and FAB, and a snackbar host. The
  * content receives the inner [PaddingValues] to consume the app-bar + system insets.
  *
+ * Under the [title] the bar shows the app's version, resolved from the installed package by
+ * [kansoAppVersionName] — every kanso screen carries the running build's version with no wiring,
+ * and the shown value can never drift from the build it shipped in. Pass [version] to show a
+ * different string (a build variant, a git hash), or an empty string for the rare screen that
+ * must not carry one.
+ *
  * The title is centred by default; pass `centeredTitle = false` for the start-aligned bar that
  * suits a screen with several actions, or [titleContent] to put something other than text there
- * — a logo, or a title with a subtitle. [titleContent] wins over [title] when both are given.
+ * — a logo, or a title with a subtitle. [titleContent] wins over [title] when both are given,
+ * and replaces the whole title block, version line included.
  *
  * The keyboard is deliberately *not* handled here. Applying `imePadding()` to the scaffold root
  * compresses the top bar every time the keyboard opens; a screen with a text field should apply
@@ -50,13 +62,30 @@ public fun KansoScaffold(
     floatingActionButton: @Composable () -> Unit = {},
     bottomBar: @Composable () -> Unit = {},
     centeredTitle: Boolean = true,
+    version: String = kansoAppVersionName(),
     titleContent: (@Composable () -> Unit)? = null,
     containerColor: Color = Color.Unspecified,
     contentWindowInsets: WindowInsets = ScaffoldDefaults.contentWindowInsets,
     content: @Composable (PaddingValues) -> Unit,
 ) {
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
-    val titleSlot: @Composable () -> Unit = titleContent ?: { Text(title) }
+    val titleSlot: @Composable () -> Unit = titleContent ?: {
+        if (version.isBlank()) {
+            Text(title)
+        } else {
+            Column(
+                horizontalAlignment =
+                    if (centeredTitle) Alignment.CenterHorizontally else Alignment.Start,
+            ) {
+                Text(title)
+                Text(
+                    text = version,
+                    style = Kanso.typography.labelMedium,
+                    color = Kanso.colors.onSurfaceVariant,
+                )
+            }
+        }
+    }
     Scaffold(
         modifier = modifier.fillMaxSize().nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
@@ -86,4 +115,31 @@ public fun KansoScaffold(
         contentWindowInsets = contentWindowInsets,
         content = content,
     )
+}
+
+/**
+ * The `versionName` of the app kanso is running inside, read from the installed package. This is
+ * what [KansoScaffold] shows under its title by default, and it is a variable rather than a
+ * literal on purpose: the header always states the version of the build actually running, with
+ * nothing for a release checklist to forget. Returns an empty string when the package declares
+ * no `versionName` or cannot be resolved (a preview host, for instance).
+ */
+@Composable
+public fun kansoAppVersionName(): String {
+    val context = LocalContext.current
+    return remember(context) {
+        runCatching {
+            val packageManager = context.packageManager
+            val info = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                packageManager.getPackageInfo(
+                    context.packageName,
+                    PackageManager.PackageInfoFlags.of(0),
+                )
+            } else {
+                @Suppress("DEPRECATION")
+                packageManager.getPackageInfo(context.packageName, 0)
+            }
+            info.versionName.orEmpty()
+        }.getOrDefault("")
+    }
 }
