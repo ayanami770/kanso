@@ -18,12 +18,12 @@ kanso is not published to a Maven repository, and that is deliberate — see
 
 ### Added
 
-- `KansoScaffold` shows the app's version under the title as part of the standard top app bar.
-  The value is a variable, not a literal: the new `kansoAppVersionName()` reads the installed
-  package's `versionName`, so the header always states the build actually running and there is
-  nothing for a release checklist to forget. Pass `version` to show a different string (a build
-  variant, a git hash) or an empty string to omit it; `titleContent` still replaces the whole
-  title block, version line included.
+- `KansoScaffold` shows the app's version after the title, on the same line, as part of the
+  standard top app bar. The value is a variable, not a literal: the new `kansoAppVersionName()`
+  reads the installed package's `versionName`, so the header always states the build actually
+  running and there is nothing for a release checklist to forget. Pass `version` to show a
+  different string (a build variant, a git hash) or an empty string to omit it; `titleContent`
+  still replaces the whole title line, version included.
 
 ## [0.2.0] — 2026-07-25
 

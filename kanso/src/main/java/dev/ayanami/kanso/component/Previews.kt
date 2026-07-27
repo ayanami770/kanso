@@ -327,7 +327,7 @@ private fun KansoContentContainerPreview() = PreviewHost {
 
 /**
  * The version is passed explicitly because a preview host resolves no real package — what is
- * under review is the two-line title block the default produces in a running app.
+ * under review is the title-then-version line the default produces in a running app.
  */
 @KansoPreviews
 @Composable

@@ -164,9 +164,9 @@ class ComponentBehaviourTest {
         compose.onNodeWithText("body").assertIsDisplayed()
     }
 
-    /** The version rides under the title as part of the standard bar, not as an opt-in. */
+    /** The version follows the title on the same line as part of the standard bar. */
     @Test
-    fun `the scaffold shows the version under the title`() {
+    fun `the scaffold shows the version after the title`() {
         compose.setContent {
             KansoTheme(dynamicColor = false) {
                 KansoScaffold(title = "Peers", version = "2.1.0") { Text("body") }
@@ -192,7 +192,7 @@ class ComponentBehaviourTest {
         compose.onNodeWithText("7.7.7").assertIsDisplayed()
     }
 
-    /** titleContent replaces the whole title block — the version line included. */
+    /** titleContent replaces the whole title line — the version included. */
     @Test
     fun `titleContent wins over title and version`() {
         compose.setContent {
