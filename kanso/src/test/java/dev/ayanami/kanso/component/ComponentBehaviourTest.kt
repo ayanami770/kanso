@@ -4,6 +4,7 @@
  */
 package dev.ayanami.kanso.component
 
+import android.content.Context
 import androidx.compose.material3.Text
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotEnabled
@@ -11,12 +12,14 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import dev.ayanami.kanso.theme.KansoTheme
 import org.junit.Assert.assertEquals
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.robolectric.Shadows.shadowOf
 
 /**
  * The component contracts that live in a single expression, where the only other check is
@@ -159,6 +162,68 @@ class ComponentBehaviourTest {
         compose.onNodeWithText("Peers").assertIsDisplayed()
         compose.onNodeWithText("nav").assertIsDisplayed()
         compose.onNodeWithText("body").assertIsDisplayed()
+    }
+
+    /** The version follows the title on the same line as part of the standard bar. */
+    @Test
+    fun `the scaffold shows the version after the title`() {
+        compose.setContent {
+            KansoTheme(dynamicColor = false) {
+                KansoScaffold(title = "Peers", version = "2.1.0") { Text("body") }
+            }
+        }
+        compose.onNodeWithText("Peers").assertIsDisplayed()
+        compose.onNodeWithText("2.1.0").assertIsDisplayed()
+    }
+
+    /** The default is the package's versionName, `v`-prefixed — a variable, not a literal. */
+    @Test
+    fun `the default version is read from the package and v-prefixed`() {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        @Suppress("DEPRECATION")
+        val info = context.packageManager.getPackageInfo(context.packageName, 0)
+        info.versionName = "7.7.7"
+        shadowOf(context.packageManager).installPackage(info)
+        compose.setContent {
+            KansoTheme(dynamicColor = false) {
+                KansoScaffold(title = "Peers") { Text("body") }
+            }
+        }
+        compose.onNodeWithText("v7.7.7").assertIsDisplayed()
+    }
+
+    /** A versionName that already carries the prefix must not become "vv…". */
+    @Test
+    fun `an already-prefixed versionName is not prefixed again`() {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        @Suppress("DEPRECATION")
+        val info = context.packageManager.getPackageInfo(context.packageName, 0)
+        info.versionName = "v8.0.0"
+        shadowOf(context.packageManager).installPackage(info)
+        compose.setContent {
+            KansoTheme(dynamicColor = false) {
+                KansoScaffold(title = "Peers") { Text("body") }
+            }
+        }
+        compose.onNodeWithText("v8.0.0").assertIsDisplayed()
+        compose.onNodeWithText("vv8.0.0").assertDoesNotExist()
+    }
+
+    /** titleContent replaces the whole title line — the version included. */
+    @Test
+    fun `titleContent wins over title and version`() {
+        compose.setContent {
+            KansoTheme(dynamicColor = false) {
+                KansoScaffold(
+                    title = "Peers",
+                    version = "2.1.0",
+                    titleContent = { Text("custom") },
+                ) { Text("body") }
+            }
+        }
+        compose.onNodeWithText("custom").assertIsDisplayed()
+        compose.onNodeWithText("Peers").assertDoesNotExist()
+        compose.onNodeWithText("2.1.0").assertDoesNotExist()
     }
 
     /** A card given onClick must actually be clickable, not merely look like it. */

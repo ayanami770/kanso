@@ -23,7 +23,11 @@ and a small component library, so a screen you write reads the same as every oth
   asserted here.
 - **A component library** — buttons (one emphasis system, five weights), cards + section headers,
   text fields with error states, a scaffold + top app bar, list/status rows, and empty/loading
-  states. Components read spacing, colour, type and shape from the tokens.
+  states. Components read spacing, colour, type and shape from the tokens. The top app bar shows
+  the app's version right after the title by default — "CertWatch v5.33.11" — read from the
+  installed package and `v`-prefixed (`kansoAppVersionLabel()`) so it always states the build
+  actually running. Pass `version` to override the string (shown verbatim), or an empty string
+  to omit it.
 - **Aligned versions, and nothing more** — a single Compose BOM is exposed via `api`, so consuming
   apps inherit the same aligned Compose and Material 3 versions. `api` carries only the artifacts
   that appear in kanso's own public signatures; your activity plumbing, icon set and navigation

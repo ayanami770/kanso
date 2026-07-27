@@ -16,6 +16,16 @@ kanso is not published to a Maven repository, and that is deliberate — see
 
 ## [Unreleased]
 
+### Added
+
+- `KansoScaffold` shows the app's version after the title, on the same line, as part of the
+  standard top app bar — "CertWatch v5.33.11". The value is a variable, not a literal: the new
+  `kansoAppVersionLabel()` reads the installed package's `versionName` and prefixes it with `v`
+  (never doubling an existing one), so the header always states the build actually running and
+  there is nothing for a release checklist to forget. Pass `version` to show a different string
+  verbatim (a build variant, a git hash) or an empty string to omit it; `titleContent` still
+  replaces the whole title line, version included.
+
 ## [0.2.0] — 2026-07-25
 
 The release that took kanso from "a private design system for four apps" to something a stranger
