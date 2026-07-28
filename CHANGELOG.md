@@ -2,19 +2,44 @@
 
 Notable changes to kanso, newest first. Format follows [Keep a Changelog][keepachangelog].
 
-kanso is consumed as a git submodule, so "upgrading" means moving the submodule pointer to a
-newer tag. This file is what tells you what you are moving onto.
+kanso is consumed as a git submodule, so "upgrading" means moving the submodule pointer. This
+file is what tells you what you are moving onto.
 
-**Versioning.** [SemVer][semver], with one clause most design systems omit and most need:
-**visual output is not covered.** Retuning a colour curve or a component's internal padding is a
-PATCH even though pixels change — pin an exact tag if you screenshot-test against kanso. A
-changed public signature, a removed parameter, or a change to which artifacts arrive via `api`
-is a MAJOR; the `api` surface is a promise, not an implementation detail.
+**Releases are not tagged.** A submodule records a commit SHA, so that is what this file gives
+you: each section below is headed with the SHA to move to. Tags `v0.1.0`–`v0.1.3` exist on the
+remote and are left in place as history; nothing after them is tagged, and the version numbers
+on older sections are labels for those sections rather than refs you can fetch.
+
+```bash
+git -C third_party/kanso fetch origin main
+git -C third_party/kanso checkout <sha-from-this-file>
+git add third_party/kanso && git commit -m "chore: move kanso to <sha>"
+```
+
+**What counts as a breaking change**, since there is no version number left to carry the signal:
+a changed public signature, a removed parameter, or a change to which artifacts arrive via `api`.
+Each is called out under a **Changed** heading with the migration spelled out, because the `api`
+surface is a promise, not an implementation detail. **Visual output is deliberately not covered**
+— retuning a colour curve or a component's internal padding changes pixels without appearing
+here as breaking, so pin an exact SHA if you screenshot-test against kanso.
 
 kanso is not published to a Maven repository, and that is deliberate — see
 [docs/foundation-roadmap.md](docs/foundation-roadmap.md) § 1.5.
 
-## [Unreleased]
+## Unreleased
+
+### Changed
+
+- **Releases are no longer tagged.** The four `v0.1.x` tags stay on the remote as history; from
+  here on a consumer moves their submodule to a commit SHA, and every section in this file is
+  headed with the SHA to move to. Nothing about how breaking changes are communicated has
+  changed — see the policy at the top of this file — only where the identifier comes from.
+- The Compose test rule moved to `androidx.compose.ui.test.junit4.v2.createComposeRule`, whose
+  `StandardTestDispatcher` queues coroutines rather than running them eagerly. Test-only; no
+  effect on anything a consumer compiles against. All 54 tests and all 12 goldens pass unchanged
+  under it, so the eager dispatcher was not propping any of them up.
+
+## 2026-07-28 — `caec27d`
 
 ### Changed
 
@@ -76,7 +101,7 @@ version of itself that apps keep building.
   verbatim (a build variant, a git hash) or an empty string to omit it; `titleContent` still
   replaces the whole title line, version included.
 
-## [0.2.0] — 2026-07-25
+## 0.2.0 — 2026-07-25 — `02b34d9`
 
 The release that took kanso from "a private design system for four apps" to something a stranger
 could adopt. Several changes are breaking; all of them are cheap to migrate and were landed
@@ -158,37 +183,34 @@ together on purpose, while there is no published artifact to protect.
   It is now documented rather than surprising; pass `dynamicColor = false` if your brand must
   hold.
 
-## [0.1.3] — 2026-07-01
+## 0.1.3 — 2026-07-01 — `1656fd6` (tagged `v0.1.3`)
 
 ### Changed
 
 - `minSdk` 26 → 24 on `:kanso`, so the design system never constrains a consumer. Compose
   Material 3 supports 21+, and `dynamicColor` was already guarded at runtime.
 
-## [0.1.2] — 2026-07-01
+## 0.1.2 — 2026-07-01 — `6ccba05` (tagged `v0.1.2`)
 
 ### Fixed
 
 - `KansoStatusRow` starved its label when the value was long. Both sides are weighted, so a long
   value wraps within its own half instead of squeezing the label to one character per line.
 
-## [0.1.1] — 2026-07-01
+## 0.1.1 — 2026-07-01 — `edf7602` (tagged `v0.1.1`)
 
 ### Changed
 
 - Release-blocking lint disabled — AGP 8.7's bundled lint crashed analysing Compose sources under
   Kotlin 2.0.x. A workaround, not a policy; reversed in 0.2.0.
 
-## [0.1.0] — 2026-07-01
+## 0.1.0 — 2026-07-01 — `76d93ea` (tagged `v0.1.0`)
 
 Initial release: `KansoTheme`, the spacing and elevation tokens, and nine components, consumed as
 a git submodule by four apps.
 
+Compare any two sections with the SHAs in their headings:
+`https://github.com/ayanami770/kanso/compare/<older>...<newer>`. The `v0.2.0` link that used to
+sit here pointed at a tag that was never pushed.
+
 [keepachangelog]: https://keepachangelog.com/en/1.1.0/
-[semver]: https://semver.org/spec/v2.0.0.html
-[Unreleased]: https://github.com/ayanami770/kanso/compare/v0.2.0...HEAD
-[0.2.0]: https://github.com/ayanami770/kanso/compare/v0.1.3...v0.2.0
-[0.1.3]: https://github.com/ayanami770/kanso/compare/v0.1.2...v0.1.3
-[0.1.2]: https://github.com/ayanami770/kanso/compare/v0.1.1...v0.1.2
-[0.1.1]: https://github.com/ayanami770/kanso/compare/v0.1.0...v0.1.1
-[0.1.0]: https://github.com/ayanami770/kanso/releases/tag/v0.1.0

@@ -97,7 +97,8 @@ relationship to the brand at all.
 
 kanso is consumed as a git submodule. It is **not** published to a Maven repository, and that is
 a decision rather than a gap — [roadmap 1.5](docs/foundation-roadmap.md) records why, and what
-would change it. Releases are git tags; see [CHANGELOG.md](CHANGELOG.md).
+would change it. Releases are **not** tagged either: a submodule pins a commit SHA, so that is
+what [CHANGELOG.md](CHANGELOG.md) gives you — each section is headed with the SHA to move to.
 
 ```bash
 git submodule add https://github.com/ayanami770/kanso.git third_party/kanso

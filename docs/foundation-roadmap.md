@@ -181,7 +181,7 @@ same PR.
 > in a sandbox without a Gradle cache. The first job of this workflow may be discovering that it
 > does not.
 
-### 1.5 Publish to Maven Central — `M` — ❌ not adopted (tags + CHANGELOG kept)
+### 1.5 Publish to Maven Central — `M` — ❌ not adopted (CHANGELOG kept, tags dropped)
 
 Add the vanniktech `maven-publish` plugin (current 0.37.x) with `publishToMavenCentral()` and
 `signAllPublications()`. Do **not** also add an `android { publishing { singleVariant } }` block —
@@ -211,9 +211,23 @@ artifact to protect. Item 1.3 says so in its own text. Under a published 1.0 eac
 a major version, a migration note and a deprecation cycle, on a library whose shape was still
 moving. Publishing buys reach and sells the freedom to be wrong; kanso needed the second more.
 
-**Kept:** `CHANGELOG.md` and git tags. Those carry their weight without a Maven coordinate — four
-apps move a submodule pointer and until now "what changed" was answerable only by reading SHAs.
-The SemVer policy above stands as written, including the visual-output clause.
+**Kept:** `CHANGELOG.md`. It carries its weight without a Maven coordinate — four apps move a
+submodule pointer, and without it "what changed" is answerable only by reading SHAs.
+
+**Dropped (2026-07-28), by owner decision:** git tags. `v0.1.0`–`v0.1.3` stay on the remote as
+history and nothing after them is tagged.
+
+What this costs and does not cost is worth stating, because the item above was written assuming
+tags. It costs nothing structural: a git submodule pins a commit SHA, not a ref, so a tag was
+always an alias for what the consumer's `.gitmodules` entry already recorded. `CHANGELOG.md` now
+heads each section with that SHA. What it does cost is the ability to say "we are on 0.2.0" in a
+sentence — a SHA is not memorable and does not order itself — so the changelog has to stay
+readable enough to answer "what am I moving onto" on its own, which is now its only job. The
+breaking-change policy is unchanged and still stated at the top of that file; only the identifier
+moved from a version number to a commit.
+
+**Revisit alongside publishing.** If the trigger conditions below are ever met, tags come back
+with them — a Maven release needs a version, and that is where the two decisions rejoin.
 
 **Revisit when** any of these is true, and not before: someone outside the fleet asks to use it; a
 repository with a different owner or CI becomes a consumer; or submodule updates start being

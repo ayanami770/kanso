@@ -68,12 +68,19 @@ genuinely inexpressible, not to be thorough.
 
 ## Versioning
 
-SemVer, with one clause most design systems omit and most need: **visual output is not covered.**
-Retuning a colour curve or a component's internal padding is a PATCH even though pixels change.
-If you screenshot-test against kanso, pin an exact version.
+There isn't any. kanso is not published and is not tagged; consumers pin a commit SHA, which is
+what a git submodule records anyway. `CHANGELOG.md` heads each section with the SHA to move to,
+so **that file is the whole release process** — if your change is not in it, a consuming app has
+no way to learn about it.
 
-Anything that changes a public signature, removes a parameter, or alters which artifacts arrive
-via `api` is a MAJOR — the `api` surface is a promise, not an implementation detail.
+Which means the one rule that used to be carried by a version number is now carried by you: put
+anything that **changes a public signature, removes a parameter, or alters which artifacts arrive
+via `api`** under a **Changed** heading, with the migration spelled out. The `api` surface is a
+promise, not an implementation detail.
+
+**Visual output is deliberately outside that promise.** Retuning a colour curve or a component's
+internal padding changes pixels and does not count as breaking. If you screenshot-test against
+kanso, pin an exact SHA.
 
 ## Not rules
 
