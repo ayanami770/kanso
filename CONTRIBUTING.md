@@ -29,6 +29,21 @@ tells a reader which of five things to pick. The emphasis rule is the model:
 > Use `KansoButtonStyle.Filled` for the single primary action on a screen, Tonal/Outlined for
 > secondary, Text for tertiary.
 
+**Accessibility is part of the component, not a later pass.** Four conventions, all of which
+existing components already follow — match them:
+
+- *Decorative icons take `contentDescription = null`.* Every leading icon in kanso sits beside a
+  visible label that already carries the meaning; naming it makes a screen reader say the same
+  thing twice. An icon that is the *only* carrier of meaning — a status glyph, an icon-only
+  button — must take a description as a parameter, not invent one.
+- *Never signal by colour alone.* A status needs text or a shape as well. `Kanso.extendedColors`
+  exists so that "success" has a name, not so that green can mean it by itself.
+- *Anything tappable clears 48dp.* Padding does not guarantee it — a one-line `KansoListItem` is
+  44.4dp at the "Small" font setting. Use `heightIn(min = 48.dp)`.
+- *A row is one stop, not several.* A label and its value, or a headline and its supporting line,
+  merge with `Modifier.semantics(mergeDescendants = true) {}`. `Modifier.clickable` already does
+  this, so only the non-clickable path needs it.
+
 **Prefer one decision over one more knob.** `KansoButtonStyle.Destructive` resolves the error
 role inside the component; exposing a raw `colors` parameter would push that decision back onto
 every screen and re-create the divergence kanso exists to prevent. Add a seam when something is
