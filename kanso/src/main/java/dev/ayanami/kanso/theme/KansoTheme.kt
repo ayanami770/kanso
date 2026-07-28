@@ -70,6 +70,7 @@ public fun KansoTheme(
     shapes: Shapes = KansoShapes,
     spacing: KansoSpacing = KansoSpacing(),
     elevation: KansoElevation = KansoElevation(),
+    motion: KansoMotion = KansoMotion(),
     content: @Composable () -> Unit,
 ) {
     val context = LocalContext.current
@@ -101,6 +102,7 @@ public fun KansoTheme(
         LocalKansoExtendedColors provides resolvedExtendedColors,
         LocalKansoSpacing provides spacing,
         LocalKansoElevation provides elevation,
+        LocalKansoMotion provides motion,
     ) {
         MaterialTheme(
             colorScheme = resolvedColorScheme,
@@ -131,6 +133,8 @@ public object Kanso {
         @Composable @ReadOnlyComposable get() = LocalKansoSpacing.current
     public val elevation: KansoElevation
         @Composable @ReadOnlyComposable get() = LocalKansoElevation.current
+    public val motion: KansoMotion
+        @Composable @ReadOnlyComposable get() = LocalKansoMotion.current
     public val colors: ColorScheme
         @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme
 

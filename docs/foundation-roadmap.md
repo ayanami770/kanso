@@ -620,6 +620,53 @@ codebase has a style tell no prose document would have caught (fully-qualified
 
 ---
 
+## Stage 4 — The component proposals from PR #1
+
+The extension review in PR #1 proposed eighteen items (E1–E18). Stages 1–3 above already
+absorbed most of them under different numbering; this stage is the remainder, landed as one
+batch, and it closes that document out.
+
+### 4.1 The component backlog — `L` — ✅ done
+
+`KansoStatus` + `KansoStatusBadge` + `KansoInfoBanner` + `KansoDivider` (E2, E12);
+`KansoAlertDialog` + `KansoBottomSheet` (E3, E10); `KansoSwitchRow` / `KansoCheckboxRow` /
+`KansoRadioRow` (E4); `KansoErrorState` (E6); `KansoSelectField` (E7); `KansoRefreshBox` (E8);
+`KansoSkeleton` (E9); `KansoScaffold(largeTopBar)` + `KansoBackButton` (E13); `KansoMotion` (E14).
+
+Three of the proposed APIs did not survive contact with the compiler, and the changes are worth
+recording because each was a real defect rather than a preference:
+
+- **No `sheetState` on `KansoBottomSheet`.** The proposal's signature took one with
+  `rememberModalBottomSheetState()` as its default. A default argument is evaluated at the *call
+  site*, and `SheetState` is itself `@ExperimentalMaterial3Api` — so the parameter pushed the
+  opt-in onto every consumer, which is precisely what the wrapper existed to absorb. Caught by
+  the demo failing to compile. Replaced with `skipPartiallyExpanded: Boolean`, which is the knob
+  people actually reach for and costs no opt-in.
+- **No `placeholder` on `KansoSelectField`.** Material 3 draws a placeholder only while the field
+  has focus, and a read-only picker anchor never takes it — so the parameter would have been a
+  hint that never showed. Caught by a behaviour test asserting it was displayed. The label
+  resting inside the empty field is the standard picker appearance anyway.
+- **`KansoRefreshBox` absorbs no opt-in**, because `PullToRefreshBox` is no longer experimental in
+  the current BOM. The wrapper still earns its place: Material's indicator draws
+  `surfaceContainerHigh` with an `onSurfaceVariant` arc regardless of theme, i.e. a grey spinner
+  in a branded app.
+
+### 4.2 `KansoNavScaffold` (E11) — ❌ not adopted
+
+The proposal's own case for it was "we publish `material3-window-size-class` as an `api`
+dependency and nothing uses it". Stage 1.3 removed that dependency, so the argument is void —
+adopting E11 now would mean *adding* a dependency to justify a component, rather than the other
+way round.
+
+The substance is also thinner than it looks: swapping `NavigationBar` for `NavigationRail` above
+a width breakpoint is roughly fifteen lines in an app, and the shape of an app's navigation is
+the part of a screen most likely to need something kanso did not anticipate — a nested graph, a
+rail with a FAB, a permanent drawer at desk width. Stage 3.5 already took the cheap 80% of the
+adaptive story (`KansoContentContainer`). If two apps end up writing the same rail, that is the
+signal to promote it; one app is not.
+
+---
+
 ## Leave these alone
 
 A short "do not touch" list prevents more wasted work than another feature item.
@@ -667,11 +714,16 @@ A short "do not touch" list prevents more wasted work than another feature item.
   `minimumInteractiveComponentSize()`**. Back belongs to the navigation layer and to the M3
   components that already implement it — a `BackHandler` in the scaffold would fight the host app —
   and M3's `Button` already applies the 48dp interactive minimum internally.
-- **Token classes nobody needs yet:** `KansoMotion`, `KansoOpacity`, and most of a proposed
+- **Token classes nobody needs yet:** ~~`KansoMotion`~~, `KansoOpacity`, and most of a proposed
   `KansoSizing`. There is zero animation and zero `alpha` usage in the library, and
   `minTouchTarget` / `listItemMinHeight` would be misdescriptions besides. Ship tokens with the
   component that needs them; if the four live icon-size literals bother you, a four-field
   `KansoSizing` is the whole fix.
+
+  *Discharged for `KansoMotion` only (Stage 4).* The condition this bullet set was "ship tokens
+  with the component that needs them", and `KansoSkeleton` is that component — it animates, so
+  its duration is either a token or a magic number. `KansoOpacity` and `KansoSizing` still have
+  no call site and are still not wanted.
 - **Icon sizes at 18/24/56 dp.** Material's own guidance is that icons are dp-sized and should not
   scale with font. Changing rendering in four apps at non-default font scales to fix an
   optical-balance complaint nobody has reported is churn — and the Stage 2 multipreviews will show
@@ -692,6 +744,8 @@ artifact, a multi-module split, and a second governance document.
 The contrast figures were reproduced independently against `Color.kt` — full 360-hue sweep, WCAG
 2.x relative luminance — and match to the digit.
 
-**Not verified:** that the project currently compiles. No Gradle cache was available in the review
-environment, so no build, test or lint run was executed. Line numbers are from the tree at commit
-`5008ce9`.
+**Not verified at the time of the review:** that the project compiled. No build, test or lint run
+was executed while this document was written, and line numbers are from the tree at commit
+`5008ce9`. That caveat has since been discharged — the cause turned out to be `gradlew` committed
+without its executable bit, which would also have failed CI's first step, and every stage above
+was built, tested and linted locally before it landed.

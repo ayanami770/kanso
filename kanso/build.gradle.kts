@@ -74,6 +74,8 @@ dependencies {
     api(libs.compose.ui.graphics)
     api(libs.compose.ui.text)
     api(libs.compose.ui.unit)
+    // Easing is on KansoMotion, so it is part of the public surface.
+    api(libs.compose.animation.core)
 
     // Internal only — WindowCompat, for the edge-to-edge system-bar contrast in KansoTheme.
     // Nothing from core-ktx reaches kanso's public API.

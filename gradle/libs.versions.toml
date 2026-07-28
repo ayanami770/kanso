@@ -22,6 +22,7 @@ compose-ui = { group = "androidx.compose.ui", name = "ui" }
 compose-ui-graphics = { group = "androidx.compose.ui", name = "ui-graphics" }
 compose-ui-text = { group = "androidx.compose.ui", name = "ui-text" }
 compose-ui-unit = { group = "androidx.compose.ui", name = "ui-unit" }
+compose-animation-core = { group = "androidx.compose.animation", name = "animation-core" }
 compose-ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling" }
 compose-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview" }
 compose-material-icons-extended = { group = "androidx.compose.material", name = "material-icons-extended" }

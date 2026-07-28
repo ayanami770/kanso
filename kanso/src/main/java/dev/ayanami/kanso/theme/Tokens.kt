@@ -4,6 +4,9 @@
  */
 package dev.ayanami.kanso.theme
 
+import androidx.compose.animation.core.Easing
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.ProvidableCompositionLocal
 import androidx.compose.runtime.staticCompositionLocalOf
@@ -54,3 +57,31 @@ public data class KansoElevation(
 
 public val LocalKansoElevation: ProvidableCompositionLocal<KansoElevation> =
     staticCompositionLocalOf { KansoElevation() }
+
+/**
+ * Motion tokens — durations in milliseconds, plus the two easing curves kanso uses.
+ *
+ * Named by intent rather than by number, so a component says what kind of motion it wants and
+ * the system decides how long that is. [quick] is for a state change the eye should register
+ * without reading as animation; [standard] is the default for something entering or leaving;
+ * [deliberate] is for motion the user is meant to watch. [shimmer] is one pass of a loading
+ * placeholder — deliberately slow, because a fast shimmer reads as an error rather than as
+ * waiting.
+ *
+ * These arrived with [dev.ayanami.kanso.component.KansoSkeleton], the first component that
+ * animates. A token with no call site is a guess; this one has one.
+ */
+@Immutable
+public data class KansoMotion(
+    val quick: Int = 100,
+    val standard: Int = 250,
+    val deliberate: Int = 400,
+    val shimmer: Int = 1200,
+    /** For motion that enters or settles — most things. */
+    val easing: Easing = FastOutSlowInEasing,
+    /** For motion that only leaves, where slowing down at the end says nothing. */
+    val exitEasing: Easing = LinearOutSlowInEasing,
+)
+
+public val LocalKansoMotion: ProvidableCompositionLocal<KansoMotion> =
+    staticCompositionLocalOf { KansoMotion() }

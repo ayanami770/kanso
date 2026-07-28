@@ -6,8 +6,15 @@ package dev.ayanami.kanso.component
 
 import android.content.Context
 import androidx.compose.material3.Text
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.SemanticsProperties
+import androidx.compose.ui.test.SemanticsMatcher
+import androidx.compose.ui.test.assert
+import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotEnabled
+import androidx.compose.ui.test.isSelectable
+import androidx.compose.ui.test.isToggleable
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
@@ -238,4 +245,249 @@ class ComponentBehaviourTest {
         compose.onNodeWithText("3 online").performClick()
         assertEquals(1, clicks)
     }
+
+    /** The large bar is a different composable — the title has to survive the swap. */
+    @Test
+    fun `the large scaffold renders its title and content`() {
+        compose.setContent {
+            KansoTheme(dynamicColor = false) {
+                KansoScaffold(title = "Settings", largeTopBar = true, version = "") {
+                    Text("body")
+                }
+            }
+        }
+        compose.onNodeWithText("Settings").assertIsDisplayed()
+        compose.onNodeWithText("body").assertIsDisplayed()
+    }
+
+    /** An unlabelled back arrow is the defect this component exists to prevent. */
+    @Test
+    fun `the back button is labelled and fires onBack`() {
+        var backs = 0
+        compose.setContent {
+            KansoTheme(dynamicColor = false) {
+                KansoBackButton(onBack = { backs++ })
+            }
+        }
+        compose.onNodeWithContentDescription("Back").performClick()
+        assertEquals(1, backs)
+    }
+
+    // ---- setting rows ---------------------------------------------------------------
+
+    /**
+     * The whole row toggles, not just the switch. This is the reason these components exist:
+     * `KansoListItem(trailing = { Switch(…) })` gives a row whose tap does nothing.
+     */
+    @Test
+    fun `tapping a switch row's text toggles it`() {
+        var checked = false
+        compose.setContent {
+            KansoTheme(dynamicColor = false) {
+                KansoSwitchRow(
+                    headline = "Background sync",
+                    checked = checked,
+                    onCheckedChange = { checked = it },
+                    supporting = "Keeps peers up to date",
+                )
+            }
+        }
+        compose.onNodeWithText("Background sync").performClick()
+        assertEquals(true, checked)
+    }
+
+    /**
+     * Exactly one toggleable node — the row. A `Switch` left interactive would give a screen
+     * reader two stops that disagree about what was tapped.
+     */
+    @Test
+    fun `a switch row is a single toggleable node`() {
+        compose.setContent {
+            KansoTheme(dynamicColor = false) {
+                KansoSwitchRow(headline = "Background sync", checked = true, onCheckedChange = {})
+            }
+        }
+        compose.onAllNodes(isToggleable()).assertCountEquals(1)
+        compose.onNode(isToggleable())
+            .assert(SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.Switch))
+    }
+
+    /** Same contract for the single-choice row, via `selectable` rather than `toggleable`. */
+    @Test
+    fun `a radio row is a single selectable node that fires onSelect`() {
+        var selects = 0
+        compose.setContent {
+            KansoTheme(dynamicColor = false) {
+                KansoRadioRow(headline = "Metric", selected = false, onSelect = { selects++ })
+            }
+        }
+        compose.onAllNodes(isSelectable()).assertCountEquals(1)
+        compose.onNodeWithText("Metric").performClick()
+        assertEquals(1, selects)
+    }
+
+    /** A disabled row must not fire, however the tap arrives. */
+    @Test
+    fun `a disabled checkbox row swallows clicks`() {
+        var changes = 0
+        compose.setContent {
+            KansoTheme(dynamicColor = false) {
+                KansoCheckboxRow(
+                    headline = "Analytics",
+                    checked = false,
+                    onCheckedChange = { changes++ },
+                    enabled = false,
+                )
+            }
+        }
+        compose.onNodeWithText("Analytics").performClick()
+        assertEquals(0, changes)
+    }
+
+    // ---- dialog ---------------------------------------------------------------------
+
+    /** Confirm and dismiss must reach different callbacks — the classic wiring slip. */
+    @Test
+    fun `the alert dialog routes confirm and dismiss separately`() {
+        var confirms = 0
+        var dismisses = 0
+        compose.setContent {
+            KansoTheme(dynamicColor = false) {
+                KansoAlertDialog(
+                    title = "Delete peer?",
+                    text = "This cannot be undone.",
+                    confirmText = "Delete",
+                    dismissText = "Cancel",
+                    destructive = true,
+                    onConfirm = { confirms++ },
+                    onDismiss = { dismisses++ },
+                )
+            }
+        }
+        compose.onNodeWithText("Delete peer?").assertIsDisplayed()
+        compose.onNodeWithText("Cancel").performClick()
+        assertEquals(0, confirms)
+        assertEquals(1, dismisses)
+        compose.onNodeWithText("Delete").performClick()
+        assertEquals(1, confirms)
+    }
+
+    /** No `dismissText` means an acknowledge-only dialog, with nothing to cancel. */
+    @Test
+    fun `the alert dialog omits its dismiss button when unlabelled`() {
+        compose.setContent {
+            KansoTheme(dynamicColor = false) {
+                KansoAlertDialog(
+                    title = "Session expired",
+                    text = "Sign in again to continue.",
+                    confirmText = "OK",
+                    onConfirm = {},
+                    onDismiss = {},
+                )
+            }
+        }
+        compose.onNodeWithText("OK").assertIsDisplayed()
+        compose.onNodeWithText("Cancel").assertDoesNotExist()
+    }
+
+    // ---- error state ----------------------------------------------------------------
+
+    /** Retry is the whole point of separating this from an empty state. */
+    @Test
+    fun `the error state shows a retry action only when it can retry`() {
+        var retries = 0
+        compose.setContent {
+            KansoTheme(dynamicColor = false) {
+                KansoErrorState(
+                    title = "Could not reach the server",
+                    description = "Check your connection.",
+                    onRetry = { retries++ },
+                )
+            }
+        }
+        compose.onNodeWithText("Could not reach the server").assertIsDisplayed()
+        compose.onNodeWithText("Retry").performClick()
+        assertEquals(1, retries)
+    }
+
+    @Test
+    fun `the error state has no retry action without onRetry`() {
+        compose.setContent {
+            KansoTheme(dynamicColor = false) {
+                KansoErrorState(title = "This account was closed")
+            }
+        }
+        compose.onNodeWithText("This account was closed").assertIsDisplayed()
+        compose.onNodeWithText("Retry").assertDoesNotExist()
+    }
+
+    // ---- select field ---------------------------------------------------------------
+
+    /**
+     * The generic signature earns its keep here: what comes back is the option itself, not an
+     * index into a list of strings that the call site has to map back.
+     */
+    @Test
+    fun `the select field hands back the option, not its label`() {
+        val options = listOf(Unit1("mg/dL", 1), Unit1("mmol/L", 2))
+        var picked: Unit1? = null
+        compose.setContent {
+            KansoTheme(dynamicColor = false) {
+                KansoSelectField(
+                    value = options[0],
+                    options = options,
+                    onSelect = { picked = it },
+                    label = "Unit",
+                    optionLabel = { it.symbol },
+                )
+            }
+        }
+        compose.onNodeWithText("mg/dL").performClick()
+        compose.onNodeWithText("mmol/L").performClick()
+        assertEquals(options[1], picked)
+    }
+
+    /**
+     * A null value leaves the field blank. The obvious implementation — `value.toString()` —
+     * renders the literal text "null" into the box, which is the kind of thing that ships.
+     */
+    @Test
+    fun `the select field renders nothing for a null value`() {
+        compose.setContent {
+            KansoTheme(dynamicColor = false) {
+                KansoSelectField(
+                    value = null,
+                    options = listOf("mg/dL", "mmol/L"),
+                    onSelect = {},
+                    label = "Unit",
+                )
+            }
+        }
+        compose.onNodeWithText("Unit").assertIsDisplayed()
+        compose.onNodeWithText("null").assertDoesNotExist()
+    }
+
+    // ---- skeleton -------------------------------------------------------------------
+
+    /**
+     * The placeholder bars mean nothing read aloud, so they are replaced by one node saying
+     * the content is loading.
+     *
+     * `autoAdvance = false` because the shimmer never ends: with the clock advancing itself,
+     * the composition never reports idle and every assertion below would hang. This is the
+     * caveat [KansoSkeleton]'s KDoc states, exercised.
+     */
+    @Test
+    fun `the skeleton announces itself as one loading node`() {
+        compose.mainClock.autoAdvance = false
+        compose.setContent {
+            KansoTheme(dynamicColor = false) {
+                KansoSkeleton(rows = 3, icon = true)
+            }
+        }
+        compose.onNodeWithContentDescription("Loading content").assertExists()
+    }
 }
+
+/** A domain type for the select-field test — the point being that it is not a String. */
+private data class Unit1(val symbol: String, val id: Int)
