@@ -188,8 +188,11 @@ public fun kansoAppVersionLabel(): String {
                 packageManager.getPackageInfo(context.packageName, 0)
             }
             val name = info.versionName.orEmpty()
-            if (name.isEmpty() || name.startsWith("v") || name.startsWith("V")) name
-            else "v$name"
+            if (name.isEmpty() || name.startsWith("v") || name.startsWith("V")) {
+                name
+            } else {
+                "v$name"
+            }
         }.getOrDefault("")
     }
 }

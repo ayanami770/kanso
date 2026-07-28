@@ -1,0 +1,40 @@
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+indent_style = space
+indent_size = 4
+
+[*.{yml,yaml,json}]
+indent_size = 2
+
+[*.md]
+# Markdown gives a trailing double-space meaning, so stripping it would silently change
+# rendering.
+trim_trailing_whitespace = false
+
+[*.{kt,kts}]
+# 100, not 120. It is what the codebase already wraps at — 14 lines exceeded it when this was
+# introduced and every one was fixed rather than the limit raised, because a ceiling set above
+# the code it governs only ratifies drift.
+max_line_length = 100
+ktlint_code_style = intellij_idea
+
+# The three rules below are where ktlint's defaults and a Compose codebase genuinely disagree.
+# Each is off with its reason; nothing else is disabled.
+
+# Composable functions are PascalCase by Compose convention — every Google sample and the
+# tooling rely on it. This rule would rename every component in the library.
+ktlint_standard_function-naming = disabled
+
+# `val EyeIcon: ImageVector` follows the same convention as Material's own icon properties. The
+# rule wants SCREAMING_SNAKE_CASE for anything immutable, which would make the icons read as
+# constants rather than as the drawables they are.
+ktlint_standard_property-naming = disabled
+
+# kanso groups related declarations per file on purpose — Buttons.kt holds KansoButton and
+# KansoButtonStyle. The rule wants one top-level declaration named after its file.
+ktlint_standard_filename = disabled

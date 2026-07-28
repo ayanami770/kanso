@@ -77,7 +77,9 @@ public fun KansoTheme(
     val resolvedColorScheme = colorScheme ?: when {
         dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S ->
             if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
+
         darkTheme -> kansoDarkColorScheme(brand.seed)
+
         else -> kansoLightColorScheme(brand.seed)
     }
 
@@ -128,23 +130,31 @@ public val LocalKansoBrand: ProvidableCompositionLocal<KansoBrand> =
  */
 public object Kanso {
     public val brand: KansoBrand
-        @Composable @ReadOnlyComposable get() = LocalKansoBrand.current
+        @Composable @ReadOnlyComposable
+        get() = LocalKansoBrand.current
     public val spacing: KansoSpacing
-        @Composable @ReadOnlyComposable get() = LocalKansoSpacing.current
+        @Composable @ReadOnlyComposable
+        get() = LocalKansoSpacing.current
     public val elevation: KansoElevation
-        @Composable @ReadOnlyComposable get() = LocalKansoElevation.current
+        @Composable @ReadOnlyComposable
+        get() = LocalKansoElevation.current
     public val motion: KansoMotion
-        @Composable @ReadOnlyComposable get() = LocalKansoMotion.current
+        @Composable @ReadOnlyComposable
+        get() = LocalKansoMotion.current
     public val colors: ColorScheme
-        @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme
+        @Composable @ReadOnlyComposable
+        get() = MaterialTheme.colorScheme
 
     /** success / warning / info — the roles Material 3 leaves to you. */
     public val extendedColors: KansoExtendedColors
-        @Composable @ReadOnlyComposable get() = LocalKansoExtendedColors.current
+        @Composable @ReadOnlyComposable
+        get() = LocalKansoExtendedColors.current
     public val typography: Typography
-        @Composable @ReadOnlyComposable get() = MaterialTheme.typography
+        @Composable @ReadOnlyComposable
+        get() = MaterialTheme.typography
     public val shapes: Shapes
-        @Composable @ReadOnlyComposable get() = MaterialTheme.shapes
+        @Composable @ReadOnlyComposable
+        get() = MaterialTheme.shapes
 }
 
 // `KansoBrands` used to live here, holding the seeds of one author's four private apps. A

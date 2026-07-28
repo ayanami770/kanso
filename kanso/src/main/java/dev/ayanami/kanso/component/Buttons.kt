@@ -97,6 +97,7 @@ public fun KansoButton(
     when (style) {
         KansoButtonStyle.Filled ->
             Button(onClick, buttonModifier, enabled = on) { content() }
+
         KansoButtonStyle.Destructive ->
             Button(
                 onClick,
@@ -107,12 +108,16 @@ public fun KansoButton(
                     contentColor = Kanso.colors.onError,
                 ),
             ) { content() }
+
         KansoButtonStyle.Tonal ->
             FilledTonalButton(onClick, buttonModifier, enabled = on) { content() }
+
         KansoButtonStyle.Outlined ->
             OutlinedButton(onClick, buttonModifier, enabled = on) { content() }
+
         KansoButtonStyle.Text ->
             TextButton(onClick, buttonModifier, enabled = on) { content() }
+
         KansoButtonStyle.Elevated ->
             ElevatedButton(onClick, buttonModifier, enabled = on) { content() }
     }

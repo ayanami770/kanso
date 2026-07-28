@@ -39,6 +39,12 @@ jobs:
 
       - uses: gradle/actions/setup-gradle@v6
 
+      # First, because it is the cheapest gate and the only one whose fix is a single command.
+      # A formatting failure buried under a four-minute build is a worse experience than one
+      # that arrives in twenty seconds.
+      - name: Format
+        run: ./gradlew spotlessCheck
+
       # Run the tests before the build: the colour contract is the thing most worth failing
       # fast on, and a red suite here is more informative than a downstream build error.
       - name: Unit tests

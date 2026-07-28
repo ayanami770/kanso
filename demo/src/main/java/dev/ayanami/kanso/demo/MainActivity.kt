@@ -96,10 +96,10 @@ class MainActivity : ComponentActivity() {
  */
 private val Brands = listOf(
     KansoDefaultBrand,
-    KansoBrand("LMSA", Color(0xFF006A60)),          // secure teal
-    KansoBrand("CertWatch", Color(0xFF3F5AA6)),     // trust blue
-    KansoBrand("Semicon News", Color(0xFF8A4F00)),  // amber/silicon
-    KansoBrand("medcal", Color(0xFF386A20)),        // clinical green
+    KansoBrand("LMSA", Color(0xFF006A60)), // secure teal
+    KansoBrand("CertWatch", Color(0xFF3F5AA6)), // trust blue
+    KansoBrand("Semicon News", Color(0xFF8A4F00)), // amber/silicon
+    KansoBrand("medcal", Color(0xFF386A20)), // clinical green
 )
 
 private enum class Tab(val label: String, val icon: ImageVector) {
@@ -159,7 +159,10 @@ private fun DemoShell(
                 Brands.forEachIndexed { i, b ->
                     DropdownMenuItem(
                         text = { Text(b.name) },
-                        onClick = { onPickBrand(i); menuOpen = false },
+                        onClick = {
+                            onPickBrand(i)
+                            menuOpen = false
+                        },
                     )
                 }
             }
@@ -199,12 +202,10 @@ private fun DemoShell(
 }
 
 @Composable
-private fun screenColumn(inner: PaddingValues): Modifier =
-    Modifier
-        .fillMaxSize()
-        .padding(inner)
-        .verticalScroll(rememberScrollState())
-
+private fun screenColumn(inner: PaddingValues): Modifier = Modifier
+    .fillMaxSize()
+    .padding(inner)
+    .verticalScroll(rememberScrollState())
 
 @Composable
 private fun GalleryScreen(
@@ -228,17 +229,21 @@ private fun GalleryScreen(
             horizontalArrangement = Arrangement.spacedBy(Kanso.spacing.sm),
         ) {
             KansoButton("Filled", onClick = {}, modifier = Modifier.weight(1f))
-            KansoButton("Tonal", onClick = {}, style = KansoButtonStyle.Tonal, modifier = Modifier.weight(1f))
+            KansoButton("Tonal", onClick = {
+            }, style = KansoButtonStyle.Tonal, modifier = Modifier.weight(1f))
         }
         Row(
             Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(Kanso.spacing.sm),
         ) {
-            KansoButton("Outlined", onClick = {}, style = KansoButtonStyle.Outlined, modifier = Modifier.weight(1f))
-            KansoButton("Text", onClick = {}, style = KansoButtonStyle.Text, modifier = Modifier.weight(1f))
+            KansoButton("Outlined", onClick = {
+            }, style = KansoButtonStyle.Outlined, modifier = Modifier.weight(1f))
+            KansoButton("Text", onClick = {
+            }, style = KansoButtonStyle.Text, modifier = Modifier.weight(1f))
         }
         KansoButton("Working…", onClick = {}, loading = true, modifier = Modifier.fillMaxWidth())
-        KansoButton("Unlock", onClick = {}, icon = Icons.Filled.Lock, style = KansoButtonStyle.Tonal)
+        KansoButton("Unlock", onClick = {
+        }, icon = Icons.Filled.Lock, style = KansoButtonStyle.Tonal)
 
         KansoCard(title = "Cards", subtitle = "Grouped content on a filled surface.") {
             KansoStatusRow("Brand accent", brandName)
@@ -253,11 +258,17 @@ private fun GalleryScreen(
         }
 
         KansoCard(title = "List items") {
-            KansoListItem("Envelope-sealed transport", supporting = "cnsa2-e2ee-v3 · P-384 + ML-KEM-1024",
-                icon = Icons.Filled.CheckCircle)
+            KansoListItem(
+                "Envelope-sealed transport",
+                supporting = "cnsa2-e2ee-v3 · P-384 + ML-KEM-1024",
+                icon = Icons.Filled.CheckCircle,
+            )
             KansoDivider(inset = true)
-            KansoListItem("Encrypted ClientHello", supporting = "kid hidden from the relay",
-                icon = Icons.Filled.Lock)
+            KansoListItem(
+                "Encrypted ClientHello",
+                supporting = "kid hidden from the relay",
+                icon = Icons.Filled.Lock,
+            )
             KansoDivider(inset = true)
             KansoListItem("Fast path", supporting = "session pool + SSE", icon = Icons.Filled.Bolt)
         }
@@ -321,7 +332,12 @@ private fun FormsScreen(inner: PaddingValues) {
             confirmText = "Forget",
             dismissText = "Cancel",
             destructive = true,
-            onConfirm = { confirming = false; name = ""; pin = ""; transport = null },
+            onConfirm = {
+                confirming = false
+                name = ""
+                pin = ""
+                transport = null
+            },
             onDismiss = { confirming = false },
         )
     }
@@ -413,11 +429,14 @@ private fun StatesScreen(inner: PaddingValues) {
                         KansoButton("Next state", onClick = { state = DemoState.Loading })
                     },
                 )
+
                 DemoState.Loading -> KansoLoadingState(label = "Establishing session…")
+
                 // A skeleton promises the shape of what is coming; a spinner promises nothing.
                 DemoState.Skeleton -> Column(Modifier.padding(Kanso.spacing.screen)) {
                     KansoSkeleton(rows = 5, icon = true)
                 }
+
                 DemoState.Error -> KansoErrorState(
                     title = "Could not reach the relay",
                     description = "The demo does not actually connect to anything — this is " +

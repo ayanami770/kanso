@@ -290,8 +290,13 @@ class ColorContrastTest {
     @Test
     fun `lch round-trip preserves hue`() {
         listOf(
-            Color(0xFF006A60), Color(0xFF3F5AA6), Color(0xFF8A4F00), Color(0xFF386A20),
-            Color(0xFFFF0000), Color(0xFF00FF00), Color(0xFF0000FF),
+            Color(0xFF006A60),
+            Color(0xFF3F5AA6),
+            Color(0xFF8A4F00),
+            Color(0xFF386A20),
+            Color(0xFFFF0000),
+            Color(0xFF00FF00),
+            Color(0xFF0000FF),
         ).forEach { original ->
             val lch = original.toLch()
             val roundTripped = toneColor(lch.hue, lch.chroma, lch.lightness.toInt()).toLch()

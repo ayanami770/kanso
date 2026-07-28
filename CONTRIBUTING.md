@@ -60,11 +60,15 @@ genuinely inexpressible, not to be thorough.
 - **Pin any contract you can assert on the JVM.** The colour engine and the typography builder
   both have tests because their guarantees are checkable without a device. Reach for that first;
   it is worth more than a screenshot.
-- **Run the same four things CI runs:**
+- **Run the same things CI runs:**
 
   ```bash
-  ./gradlew :kanso:testDebugUnitTest :kanso:assembleRelease :demo:assembleDebug :kanso:lintRelease
+  ./gradlew spotlessCheck :kanso:verifyRoborazziDebug \
+            :kanso:assembleRelease :demo:assembleDebug :demo:assembleRelease :kanso:lintRelease
   ```
+
+  `verifyRoborazziDebug` invokes `testDebugUnitTest`, so that is the whole suite plus the
+  screenshot goldens. `./gradlew spotlessApply` fixes the first one for you.
 
 ## Versioning
 
@@ -84,5 +88,25 @@ kanso, pin an exact SHA.
 
 ## Not rules
 
-Formatting, import order and the modifier-parameter position are for a tool to enforce, not a
-document. Until ktlint/spotless and compose-lints are wired up, match the file you are editing.
+Formatting and import order are not your problem, and not this document's:
+
+```bash
+./gradlew spotlessApply
+```
+
+Spotless runs ktlint over every `.kt` and `.gradle.kts` file and fixes what it can. CI runs
+`spotlessCheck` first, before the tests, because a formatting failure that arrives twenty seconds
+in is worth more than the same failure after a four-minute build.
+
+Three ktlint rules are off, each because it disagrees with a Compose codebase rather than with
+taste — composable functions are PascalCase, `val EyeIcon: ImageVector` is not a screaming-snake
+constant, and a file may hold more than one top-level declaration. The reasons are written next
+to the rules in `build.gradle.kts`. Lines wrap at 100.
+
+Note that `.editorconfig` is what your editor reads and `build.gradle.kts` is what the build
+enforces; Spotless does not discover the former on its own, so the shared values are written in
+both. If you change one, change the other.
+
+**The modifier-parameter position is still on you** — `modifier` first among the optional
+parameters, and the component never overrides the caller's sizing. `compose-lints` would enforce
+it and is not wired up.

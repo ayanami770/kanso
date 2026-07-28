@@ -33,11 +33,15 @@ public enum class KansoStatus { Success, Warning, Error, Info, Neutral }
 private fun KansoStatus.colors(): Pair<Color, Color> = when (this) {
     KansoStatus.Success ->
         Kanso.extendedColors.successContainer to Kanso.extendedColors.onSuccessContainer
+
     KansoStatus.Warning ->
         Kanso.extendedColors.warningContainer to Kanso.extendedColors.onWarningContainer
+
     KansoStatus.Info ->
         Kanso.extendedColors.infoContainer to Kanso.extendedColors.onInfoContainer
+
     KansoStatus.Error -> Kanso.colors.errorContainer to Kanso.colors.onErrorContainer
+
     KansoStatus.Neutral -> Kanso.colors.surfaceVariant to Kanso.colors.onSurfaceVariant
 }
 
@@ -133,10 +137,7 @@ public fun KansoInfoBanner(
  * not cut across the icon column.
  */
 @Composable
-public fun KansoDivider(
-    modifier: Modifier = Modifier,
-    inset: Boolean = false,
-) {
+public fun KansoDivider(modifier: Modifier = Modifier, inset: Boolean = false) {
     HorizontalDivider(
         modifier = modifier.padding(start = if (inset) DividerInset else 0.dp),
         color = Kanso.colors.outlineVariant,

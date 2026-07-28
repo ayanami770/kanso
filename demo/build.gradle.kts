@@ -23,7 +23,10 @@ android {
             // asserts a pure-Compose library needs no keep rules; this is what executes that
             // assertion instead of a consuming app discovering it at release time.
             isMinifyEnabled = true
-            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro",
+            )
         }
     }
 

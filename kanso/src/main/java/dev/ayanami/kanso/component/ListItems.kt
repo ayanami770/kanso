@@ -84,7 +84,11 @@ public fun KansoListItem(
         Column(Modifier.weight(1f)) {
             Text(headline, style = Kanso.typography.bodyLarge, color = Kanso.colors.onSurface)
             if (supporting != null) {
-                Text(supporting, style = Kanso.typography.bodyMedium, color = Kanso.colors.onSurfaceVariant)
+                Text(
+                    supporting,
+                    style = Kanso.typography.bodyMedium,
+                    color = Kanso.colors.onSurfaceVariant,
+                )
             }
         }
         if (trailing != null) {
@@ -111,9 +115,18 @@ public fun KansoStatusRow(label: String, value: String, modifier: Modifier = Mod
             .padding(vertical = Kanso.spacing.xs),
         verticalAlignment = Alignment.Top,
     ) {
-        Text(label, style = Kanso.typography.bodyMedium, color = Kanso.colors.onSurfaceVariant,
-            modifier = Modifier.weight(1f).padding(end = Kanso.spacing.sm))
-        Text(value, style = Kanso.typography.bodyMedium, color = Kanso.colors.onSurface,
-            textAlign = TextAlign.End, modifier = Modifier.weight(1f))
+        Text(
+            label,
+            style = Kanso.typography.bodyMedium,
+            color = Kanso.colors.onSurfaceVariant,
+            modifier = Modifier.weight(1f).padding(end = Kanso.spacing.sm),
+        )
+        Text(
+            value,
+            style = Kanso.typography.bodyMedium,
+            color = Kanso.colors.onSurface,
+            textAlign = TextAlign.End,
+            modifier = Modifier.weight(1f),
+        )
     }
 }

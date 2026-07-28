@@ -121,7 +121,11 @@ public fun KansoSectionHeader(
             trailing?.invoke()
         }
         if (supporting != null) {
-            Text(supporting, style = Kanso.typography.bodySmall, color = Kanso.colors.onSurfaceVariant)
+            Text(
+                supporting,
+                style = Kanso.typography.bodySmall,
+                color = Kanso.colors.onSurfaceVariant,
+            )
         }
     }
 }
