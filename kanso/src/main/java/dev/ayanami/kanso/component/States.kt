@@ -25,8 +25,6 @@ import androidx.compose.ui.unit.dp
 import dev.ayanami.kanso.R
 import dev.ayanami.kanso.theme.Kanso
 
-private val EmptyStateIconSize = 56.dp
-
 /**
  * A centred full-area placeholder: a large [icon], a [title] and optional [description] with an
  * optional call-to-action. Use for empty lists, first-run states and non-fatal errors.
@@ -58,7 +56,7 @@ public fun KansoEmptyState(
             icon,
             contentDescription = null,
             tint = Kanso.colors.onSurfaceVariant,
-            modifier = Modifier.size(EmptyStateIconSize),
+            modifier = Modifier.size(Kanso.sizing.iconLarge),
         )
         Spacer(Modifier.size(Kanso.spacing.lg))
         Text(

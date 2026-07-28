@@ -734,10 +734,19 @@ A short "do not touch" list prevents more wasted work than another feature item.
   component that needs them; if the four live icon-size literals bother you, a four-field
   `KansoSizing` is the whole fix.
 
-  *Discharged for `KansoMotion` only (Stage 4).* The condition this bullet set was "ship tokens
-  with the component that needs them", and `KansoSkeleton` is that component — it animates, so
-  its duration is either a token or a magic number. `KansoOpacity` and `KansoSizing` still have
-  no call site and are still not wanted.
+  *Discharged for `KansoMotion` (Stage 4) and `KansoSizing` (Stage 5).* The condition this
+  bullet set was "ship tokens with the component that needs them". `KansoSkeleton` is that
+  component for motion — it animates, so its duration is either a token or a magic number. For
+  sizing the trigger was duplication rather than a new component: 24dp had been written into
+  three files that must agree, 48dp into three more, and `KansoDivider`'s 40dp inset was the
+  hand-computed sum of two of them.
+
+  This bullet's other prediction was **right and was honoured**: `minTouchTarget` would have
+  been a misdescription. It is not a field on `KansoSizing`. 48dp is an accessibility floor from
+  the platform, not a taste decision an app should be invited to make differently, so it lives
+  as an internal constant that the three call sites share and no theme can lower.
+
+  `KansoOpacity` still has no call site and is still not wanted.
 - **Icon sizes at 18/24/56 dp.** Material's own guidance is that icons are dp-sized and should not
   scale with font. Changing rendering in four apps at non-default font scales to fix an
   optical-balance complaint nobody has reported is churn — and the Stage 2 multipreviews will show

@@ -69,6 +69,7 @@ public fun KansoTheme(
     typography: Typography = KansoTypography,
     shapes: Shapes = KansoShapes,
     spacing: KansoSpacing = KansoSpacing(),
+    sizing: KansoSizing = KansoSizing(),
     elevation: KansoElevation = KansoElevation(),
     motion: KansoMotion = KansoMotion(),
     content: @Composable () -> Unit,
@@ -103,6 +104,7 @@ public fun KansoTheme(
         LocalKansoBrand provides brand,
         LocalKansoExtendedColors provides resolvedExtendedColors,
         LocalKansoSpacing provides spacing,
+        LocalKansoSizing provides sizing,
         LocalKansoElevation provides elevation,
         LocalKansoMotion provides motion,
     ) {
@@ -135,6 +137,12 @@ public object Kanso {
     public val spacing: KansoSpacing
         @Composable @ReadOnlyComposable
         get() = LocalKansoSpacing.current
+
+    /** Icon sizes by role. The 48dp touch-target floor is deliberately not among them. */
+    public val sizing: KansoSizing
+        @Composable @ReadOnlyComposable
+        get() = LocalKansoSizing.current
+
     public val elevation: KansoElevation
         @Composable @ReadOnlyComposable
         get() = LocalKansoElevation.current

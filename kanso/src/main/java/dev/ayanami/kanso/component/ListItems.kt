@@ -22,11 +22,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import dev.ayanami.kanso.theme.Kanso
-
-/** The Material minimum touch target — a tappable row must clear this at any font scale. */
-private val MinTouchTarget = 48.dp
-
-private val LeadingIconSize = 24.dp
+import dev.ayanami.kanso.theme.KansoMinTouchTarget
 
 /**
  * A one/two-line list row with an optional leading [icon] or [leading] slot, and trailing
@@ -56,7 +52,7 @@ public fun KansoListItem(
                     // `clickable` merges descendants itself, so this path already reads as a
                     // single node.
                     Modifier
-                        .heightIn(min = MinTouchTarget)
+                        .heightIn(min = KansoMinTouchTarget)
                         .clickable(onClick = onClick)
                 } else {
                     Modifier.semantics(mergeDescendants = true) {}
@@ -73,7 +69,7 @@ public fun KansoListItem(
                     it,
                     contentDescription = null,
                     tint = Kanso.colors.primary,
-                    modifier = Modifier.size(LeadingIconSize),
+                    modifier = Modifier.size(Kanso.sizing.icon),
                 )
             }
         }

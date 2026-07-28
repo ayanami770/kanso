@@ -203,6 +203,7 @@ Read through the `Kanso` object, which is valid anywhere inside `KansoTheme`.
 | | |
 |---|---|
 | `Kanso.spacing` | A 4dp grid — `none`, `xxs … xxxl`, plus `screen`, `section` and `contentMaxWidth`. |
+| `Kanso.sizing` | Icon sizes by role — `icon` (a list row's leading icon), `iconSmall` (inside a button), `iconBadge`, `iconLarge` (a full-area state). The 48dp touch-target floor is deliberately *not* here: it is an accessibility minimum from the platform, not a brand choice, so it is internal and not themeable. |
 | `Kanso.elevation` | Material 3 tonal + shadow levels, `level0 … level5`. |
 | `Kanso.motion` | Durations named by intent — `quick`, `standard`, `deliberate`, `shimmer` — plus `easing` and `exitEasing`. A component says what kind of motion it wants; the system decides how long that is. |
 | `Kanso.colors` | The current `ColorScheme`. Delegates straight to `MaterialTheme.colorScheme`, which is why every stock Material 3 component and every third-party Compose library themes correctly under `KansoTheme` with no adapter. |

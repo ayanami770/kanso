@@ -28,6 +28,32 @@ kanso is not published to a Maven repository, and that is deliberate — see
 
 ## Unreleased
 
+### Added
+
+- **`Kanso.sizing`** — icon sizes named by role (`icon`, `iconSmall`, `iconBadge`, `iconLarge`),
+  settable via `KansoTheme(sizing = …)`. The defaults are exactly the literals they replaced, so
+  nothing renders differently; every screenshot golden is byte-identical.
+
+  The trigger was duplication, not a new component: 24dp was written into three files that have
+  to agree (a list row's leading icon, a setting row's, and the skeleton that stands in for
+  them), 48dp into three more, and `KansoDivider`'s 40dp inset was the hand-computed sum of two
+  of them. That last one now derives itself — `Kanso.sizing.icon + Kanso.spacing.lg` — because
+  written as a number it was correct today and silently wrong the moment the icon size moved, in
+  a way no test would catch: the divider would still render, just aligned to nothing.
+
+  **The 48dp minimum touch target is deliberately not a token.** It is an accessibility floor
+  that comes from the platform, not a brand decision, and a theme that could set it to 32dp
+  would be introducing a defect no test in this repo would notice. It is an internal constant
+  the three call sites share.
+
+- Formatting is enforced. `./gradlew spotlessApply` fixes it; `spotlessCheck` runs first in CI,
+  ahead of the tests. Three ktlint rules are off — composable functions are PascalCase, icon
+  properties are not screaming-snake constants, and a file may hold more than one top-level
+  declaration — each with its reason next to it in `build.gradle.kts`. The licence header is
+  enforced rather than merely conventional, so a new file cannot ship without one. Lines wrap at
+  100, which is where the code already wrapped: the 14 lines that exceeded it were rewrapped
+  rather than the ceiling raised.
+
 ### Changed
 
 - **Releases are no longer tagged.** The four `v0.1.x` tags stay on the remote as history; from

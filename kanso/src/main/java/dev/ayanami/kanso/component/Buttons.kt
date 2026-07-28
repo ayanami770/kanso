@@ -39,8 +39,6 @@ import dev.ayanami.kanso.theme.Kanso
  */
 public enum class KansoButtonStyle { Filled, Tonal, Outlined, Text, Elevated, Destructive }
 
-private val IconSize = 18.dp
-
 /**
  * One button with a consistent emphasis system, optional leading [icon] and a [loading]
  * spinner that disables the button while work is in flight. Use [KansoButtonStyle.Filled]
@@ -69,14 +67,18 @@ public fun KansoButton(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 if (icon != null) {
-                    Icon(icon, contentDescription = null, modifier = Modifier.size(IconSize))
+                    Icon(
+                        icon,
+                        contentDescription = null,
+                        modifier = Modifier.size(Kanso.sizing.iconSmall),
+                    )
                     Spacer(Modifier.size(Kanso.spacing.sm))
                 }
                 Text(text)
             }
             if (loading) {
                 CircularProgressIndicator(
-                    modifier = Modifier.size(IconSize),
+                    modifier = Modifier.size(Kanso.sizing.iconSmall),
                     // Without this the indicator falls back to colorScheme.primary and ignores
                     // the content colour the button provides — brand-saturated over the
                     // container, next to a disabled-emphasis label.

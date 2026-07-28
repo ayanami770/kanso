@@ -31,11 +31,10 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.unit.dp
 import dev.ayanami.kanso.R
 import dev.ayanami.kanso.theme.Kanso
+import dev.ayanami.kanso.theme.KansoMinTouchTarget
 
-private val IconPlaceholderSize = 24.dp
 private val HeadlineBarHeight = 16.dp
 private val SupportingBarHeight = 12.dp
-private val RowMinHeight = 48.dp
 
 /** The proportion of the row's width each placeholder bar takes. */
 private const val HeadlineWidthFraction = 0.55f
@@ -105,12 +104,18 @@ private fun SkeletonRow(barColor: Color, icon: Boolean, supporting: Boolean) {
     Row(
         Modifier
             .fillMaxWidth()
-            .height(if (supporting) RowMinHeight + Kanso.spacing.xl else RowMinHeight)
+            .height(
+                if (supporting) {
+                    KansoMinTouchTarget + Kanso.spacing.xl
+                } else {
+                    KansoMinTouchTarget
+                },
+            )
             .padding(vertical = Kanso.spacing.md),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         if (icon) {
-            Bar(barColor, Modifier.size(IconPlaceholderSize), CircleShape)
+            Bar(barColor, Modifier.size(Kanso.sizing.icon), CircleShape)
             Spacer(Modifier.size(Kanso.spacing.lg))
         }
         Column(Modifier.weight(1f)) {
