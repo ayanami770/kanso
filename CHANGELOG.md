@@ -16,6 +16,21 @@ kanso is not published to a Maven repository, and that is deliberate — see
 
 ## [Unreleased]
 
+### Changed
+
+- **`compileSdk` 35 → 36 on both modules — consuming apps must follow.** `androidx.core:core-ktx`
+  1.18.0 and `activity-compose` 1.13.0 declare a minimum `compileSdk` in their AAR metadata, and
+  that requirement reaches any app with them on its classpath — including transitively, since
+  kanso takes core-ktx as `implementation`. An app on `compileSdk 35` will fail its build with
+  "requires libraries and applications that depend on it to compile against version 36 or later".
+
+  *Migration:* `compileSdk = 36` in the app. `targetSdk` and `minSdk` are separate decisions and
+  need not move — compileSdk only allows newer APIs to be referenced.
+- `core-ktx` 1.13.1 → 1.18.0, `activity-compose` 1.9.3 → 1.13.0. **Not** core-ktx 1.19.0, which
+  Dependabot proposed: it requires `compileSdk 37`, and no Android SDK platform 37 exists yet.
+- CI actions: `actions/checkout` v4 → v7, `actions/setup-java` v4 → v5,
+  `actions/upload-artifact` v4 → v7, `gradle/actions` v4 → v6.
+
 ### Added
 
 - `KansoScaffold` shows the app's version after the title, on the same line, as part of the

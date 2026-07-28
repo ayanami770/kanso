@@ -6,7 +6,7 @@ plugins {
 
 android {
     namespace = "dev.ayanami.kanso"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         // Low minSdk so the design system never constrains a consumer (Compose Material 3
