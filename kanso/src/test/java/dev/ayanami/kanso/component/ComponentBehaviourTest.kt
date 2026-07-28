@@ -15,7 +15,7 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.isSelectable
 import androidx.compose.ui.test.isToggleable
-import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -35,6 +35,12 @@ import org.robolectric.Shadows.shadowOf
  * Robolectric keeps these on the JVM — no emulator, same invocation as the colour tests. They
  * deliberately assert *behaviour*, not pixels: what a screenshot would add here is covered by
  * the previews, and a golden image is the wrong tool for "does this click do nothing".
+ *
+ * The rule comes from `junit4.v2`, whose `StandardTestDispatcher` queues coroutines instead of
+ * running them the moment they are launched. That is the standard coroutine behaviour and the
+ * non-v2 rule is deprecated in favour of it. It also makes "nothing has composed yet" a
+ * reachable state, which is why an `assertDoesNotExist` here is always preceded by an assertion
+ * that something *is* displayed — otherwise absence proves nothing.
  */
 @RunWith(AndroidJUnit4::class)
 class ComponentBehaviourTest {
@@ -139,7 +145,14 @@ class ComponentBehaviourTest {
         compose.onNodeWithContentDescription("Show password").assertDoesNotExist()
     }
 
-    /** `revealable = false` is for a field that must never be shown; no toggle at all. */
+    /**
+     * `revealable = false` is for a field that must never be shown; no toggle at all.
+     *
+     * The label assertion is not decoration. On its own, "the toggle does not exist" also holds
+     * when *nothing* was composed, so the test would keep passing through a rendering failure
+     * it is supposed to catch. Asserting the field is there first makes the absence mean
+     * something.
+     */
     @Test
     fun `a non-revealable password field has no toggle`() {
         compose.setContent {
@@ -152,6 +165,7 @@ class ComponentBehaviourTest {
                 )
             }
         }
+        compose.onNodeWithText("Password").assertIsDisplayed()
         compose.onNodeWithContentDescription("Show password").assertDoesNotExist()
     }
 
