@@ -131,7 +131,7 @@ implementation("androidx.compose.material:material-icons-extended")  // version 
 | | |
 |---|---|
 | `minSdk` | 24 (`:demo` is 26) |
-| `compileSdk` | 35 |
+| `compileSdk` | 36 — required by `core-ktx` 1.18.0 via AAR metadata, so your app needs it too |
 | Compose | BOM 2026.06.01, exposed via `api` — this sets your **floor**; declare a newer BOM to move past it |
 | Kotlin | 2.4.10 (AGP 9's built-in Kotlin), with the Compose compiler plugin |
 | JDK | 17 |

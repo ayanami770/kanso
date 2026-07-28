@@ -5,7 +5,7 @@ plugins {
 
 android {
     namespace = "dev.ayanami.kanso.demo"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "dev.ayanami.kanso.demo"
