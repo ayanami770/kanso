@@ -35,7 +35,8 @@ public data class KansoSpacing(
     val section: Dp = 12.dp,
     /**
      * The widest a column of body text should get. Beyond roughly this, line length passes the
-     * point where the eye reliably finds the next line — see [KansoContentContainer], which is
+     * point where the eye reliably finds the next line — see
+     * [dev.ayanami.kanso.component.KansoContentContainer], which is
      * what applies it.
      */
     val contentMaxWidth: Dp = 640.dp,
@@ -52,8 +53,9 @@ public val LocalKansoSpacing: ProvidableCompositionLocal<KansoSpacing> =
  * 48dp as a minimum height in the same three files. Three copies of a number that must agree is
  * a number that eventually will not.
  *
- * Deliberately only icons. The 48dp minimum touch target is *not* here — see
- * [KansoMinTouchTarget] — and neither is a general `KansoSizing.rowHeight`, because a row's
+ * Deliberately only icons. The 48dp minimum touch target is *not* here: it is an
+ * accessibility floor that comes from the platform rather than a taste decision, so it is an
+ * internal constant no theme can lower. Neither is there a general `rowHeight`, because a row's
  * height is a consequence of its content and its font scale, not a value to dial in.
  */
 @Immutable
@@ -100,9 +102,9 @@ public val LocalKansoElevation: ProvidableCompositionLocal<KansoElevation> =
  * Motion tokens — durations in milliseconds, plus the two easing curves kanso uses.
  *
  * Named by intent rather than by number, so a component says what kind of motion it wants and
- * the system decides how long that is. [quick] is for a state change the eye should register
- * without reading as animation; [standard] is the default for something entering or leaving;
- * [deliberate] is for motion the user is meant to watch. [shimmer] is one pass of a loading
+ * the system decides how long that is. `quick` is for a state change the eye should register
+ * without reading as animation; `standard` is the default for something entering or leaving;
+ * `deliberate` is for motion the user is meant to watch. `shimmer` is one pass of a loading
  * placeholder — deliberately slow, because a fast shimmer reads as an error rather than as
  * waiting.
  *

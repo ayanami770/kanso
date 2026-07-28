@@ -8,6 +8,7 @@ plugins {
     alias(libs.plugins.kotlin.compose) apply false
     alias(libs.plugins.roborazzi) apply false
     alias(libs.plugins.spotless)
+    alias(libs.plugins.dokka)
 }
 
 // Formatting is configured at the root and covers both modules, so there is one place that

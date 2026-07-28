@@ -67,6 +67,12 @@ jobs:
       - name: Lint
         run: ./gradlew :kanso:lintRelease
 
+      # Builds the docs without publishing them, so a KDoc link that no longer resolves fails
+      # here rather than on main. checkDokkaLinks also reads the generated HTML back for links
+      # that resolve but have no page — Dokka does not warn about those.
+      - name: API docs
+        run: ./gradlew :kanso:checkDokkaLinks
+
       - name: Upload test report
         if: failure()
         uses: actions/upload-artifact@v7

@@ -46,6 +46,16 @@ kanso is not published to a Maven repository, and that is deliberate — see
   would be introducing a defect no test in this repo would notice. It is an internal constant
   the three call sites share.
 
+- **API documentation**, generated from the KDoc by Dokka and published to GitHub Pages on every
+  push to `main`: <https://ayanami770.github.io/kanso/>. Every symbol links to the line it is
+  declared on, so the rationale in the comments is one click from the code it describes.
+
+  `./gradlew :kanso:checkDokkaLinks` builds it and fails on any link that would render as plain
+  text. That check exists because `failOnWarning` has a blind spot: it catches a reference Dokka
+  cannot resolve, but not one that resolves to a symbol with no published page — anything
+  `internal`, and a data class's constructor parameters. Those are emitted silently. Five were
+  already in the tree.
+
 - Formatting is enforced. `./gradlew spotlessApply` fixes it; `spotlessCheck` runs first in CI,
   ahead of the tests. Three ktlint rules are off — composable functions are PascalCase, icon
   properties are not screaming-snake constants, and a file may hold more than one top-level

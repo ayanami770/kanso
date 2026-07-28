@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.roborazzi)
+    alias(libs.plugins.dokka)
 }
 
 android {
@@ -47,6 +48,82 @@ kotlin {
     // contract by accident and nobody notices until a consumer depends on it. Explicit API mode
     // makes every symbol a deliberate choice and requires a declared return type on each one.
     explicitApi()
+}
+
+// API documentation. The KDoc in this library carries design rationale an adopter needs — why
+// the badge requires text, why the touch-target floor is not a token, what `dynamicColor = true`
+// costs a brand — and none of it is visible to someone consuming the compiled module. This is
+// what makes it readable without cloning the repo.
+dokka {
+    moduleName.set("kanso")
+
+    dokkaSourceSets.configureEach {
+        // Only the release variant. Documenting debug as well would publish two copies of every
+        // symbol, differing in nothing an adopter can act on.
+        suppressGeneratedFiles.set(true)
+        includes.from("docs/module.md")
+
+        // Every documented symbol links to the line it is declared on. The rationale in these
+        // comments is often longer than the code it describes, and being one click from the
+        // source is what stops the docs becoming a second, drifting account of the library.
+        sourceLink {
+            localDirectory.set(file("src/main/java"))
+            remoteUrl("https://github.com/ayanami770/kanso/blob/main/kanso/src/main/java")
+            remoteLineSuffix.set("#L")
+        }
+
+        externalDocumentationLinks.register("androidx") {
+            url("https://developer.android.com/reference/kotlin/")
+            packageListUrl("https://developer.android.com/reference/kotlin/androidx/package-list")
+        }
+    }
+
+    dokkaPublications.configureEach {
+        // A KDoc link that no longer resolves is a defect, not a warning: it renders as plain
+        // text, so the only person who finds out is the reader who needed it. One such link
+        // (`[KansoContentContainer]`, referenced from another package without qualification)
+        // was already in the tree when this was switched on.
+        failOnWarning.set(true)
+    }
+}
+
+// `failOnWarning` above catches a KDoc reference Dokka cannot resolve at all. It does NOT catch
+// the other way a link dies: a reference that resolves to a symbol with no published page —
+// anything `internal`, and a data class's constructor parameters. Dokka emits those silently as
+// `data-unresolved-link`, so they render as plain text and the only person who finds out is the
+// reader who needed them. There were five in the tree when this was switched on.
+//
+// Reading the generated HTML back is unglamorous and is the only thing that actually sees them.
+val checkDokkaLinks = tasks.register("checkDokkaLinks") {
+    description = "Fails if the generated API docs contain a link that renders as plain text."
+    group = "verification"
+
+    val generate = tasks.named("dokkaGeneratePublicationHtml")
+    dependsOn(generate)
+    val htmlDir = layout.buildDirectory.dir("dokka/html")
+    inputs.dir(htmlDir)
+
+    doLast {
+        val dead = htmlDir.get().asFile.walkTopDown()
+            .filter { it.isFile && it.extension == "html" }
+            .flatMap { file ->
+                Regex("""data-unresolved-link="([^"]*)"""")
+                    .findAll(file.readText())
+                    .map { "${file.name}: ${it.groupValues[1]}" }
+            }
+            .toList()
+        if (dead.isNotEmpty()) {
+            error(
+                dead.joinToString(
+                    prefix = "${dead.size} KDoc link(s) render as plain text:\n  ",
+                    separator = "\n  ",
+                    postfix = "\n\nA link resolves but has no page when it points at an " +
+                        "`internal` symbol or at a data class's constructor parameter. " +
+                        "Use backticks, or link the property instead.",
+                ),
+            )
+        }
+    }
 }
 
 dependencies {
