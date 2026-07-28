@@ -14,6 +14,9 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.LargeTopAppBar
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.ScaffoldDefaults
 import androidx.compose.material3.SnackbarHost
@@ -28,6 +31,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.takeOrElse
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
+import dev.ayanami.kanso.R
 import dev.ayanami.kanso.theme.Kanso
 
 /**
@@ -46,6 +51,14 @@ import dev.ayanami.kanso.theme.Kanso
  * — a logo, or a title with a subtitle. [titleContent] wins over [title] when both are given,
  * and replaces the whole title line, version included.
  *
+ * [largeTopBar] gives the tall header that collapses as the content scrolls, for a screen that
+ * starts a hierarchy rather than sitting inside one — a settings root, a library home. It
+ * overrides [centeredTitle], because a large app bar is start-aligned by definition. Do not use
+ * it on a screen reached by a back button: a header that big under a back arrow spends a
+ * quarter of the screen restating where the user just came from.
+ *
+ * For that back arrow, pass [KansoBackButton] as the [navigationIcon].
+ *
  * The keyboard is deliberately *not* handled here. Applying `imePadding()` to the scaffold root
  * compresses the top bar every time the keyboard opens; a screen with a text field should apply
  * it to its own content, or pass [contentWindowInsets] as
@@ -62,13 +75,20 @@ public fun KansoScaffold(
     floatingActionButton: @Composable () -> Unit = {},
     bottomBar: @Composable () -> Unit = {},
     centeredTitle: Boolean = true,
+    largeTopBar: Boolean = false,
     version: String = kansoAppVersionLabel(),
     titleContent: (@Composable () -> Unit)? = null,
     containerColor: Color = Color.Unspecified,
     contentWindowInsets: WindowInsets = ScaffoldDefaults.contentWindowInsets,
     content: @Composable (PaddingValues) -> Unit,
 ) {
-    val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
+    // A large bar has to collapse to its small form as the content scrolls, which
+    // enterAlwaysScrollBehavior does not do — it hides the bar outright and the title with it.
+    val scrollBehavior = if (largeTopBar) {
+        TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
+    } else {
+        TopAppBarDefaults.enterAlwaysScrollBehavior()
+    }
     val titleSlot: @Composable () -> Unit = titleContent ?: {
         if (version.isBlank()) {
             Text(title)
@@ -84,7 +104,14 @@ public fun KansoScaffold(
     Scaffold(
         modifier = modifier.fillMaxSize().nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
-            if (centeredTitle) {
+            if (largeTopBar) {
+                LargeTopAppBar(
+                    title = titleSlot,
+                    navigationIcon = navigationIcon,
+                    actions = actions,
+                    scrollBehavior = scrollBehavior,
+                )
+            } else if (centeredTitle) {
                 CenterAlignedTopAppBar(
                     title = titleSlot,
                     navigationIcon = navigationIcon,
@@ -110,6 +137,30 @@ public fun KansoScaffold(
         contentWindowInsets = contentWindowInsets,
         content = content,
     )
+}
+
+/**
+ * The back affordance for [KansoScaffold]'s `navigationIcon` slot.
+ *
+ * Four lines a caller could write themselves, and the two things they get wrong when they do:
+ * an arrow with no content description, which a screen reader reads as an unlabelled button;
+ * and an arrow that keeps pointing left in an RTL layout, where back is the other way. Both are
+ * settled here — the icon is drawn with `autoMirror`, and the description is a translatable
+ * resource.
+ *
+ * ```
+ * KansoScaffold(title = "Details", navigationIcon = { KansoBackButton(onBack = ::finish) })
+ * ```
+ */
+@Composable
+public fun KansoBackButton(
+    onBack: () -> Unit,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+) {
+    IconButton(onClick = onBack, modifier = modifier, enabled = enabled) {
+        Icon(ArrowBackIcon, contentDescription = stringResource(R.string.kanso_back))
+    }
 }
 
 /**

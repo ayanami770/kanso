@@ -33,6 +33,41 @@ kanso is not published to a Maven repository, and that is deliberate — see
 
 ### Added
 
+The remaining component proposals from the extension review, landed as one batch. Every one of
+them is additive — no existing signature changed — and each exists because it is the *wrong*
+version of itself that apps keep building.
+
+- **Status vocabulary.** `KansoStatus` (`Success` / `Warning` / `Error` / `Info` / `Neutral`),
+  `KansoStatusBadge` and `KansoInfoBanner`, all resolved against `Kanso.extendedColors`. The
+  badge's `text` is required rather than optional: a badge that says only "green" is unreadable
+  to anyone who cannot separate it from the amber one, and to a screen reader regardless.
+  `KansoDivider` joins them with an `inset` that lines up with a row's text.
+- **Settings rows** — `KansoSwitchRow`, `KansoCheckboxRow`, `KansoRadioRow`. The row carries
+  `toggleable`/`selectable` with a `Role`, and the control is passed `onCheckedChange = null` so
+  it is not a second focus target. This is the fix for `KansoListItem(trailing = { Switch(…) })`,
+  which yields two accessibility stops that read as unrelated and a row whose tap does nothing.
+- **Overlays** — `KansoAlertDialog` (with `destructive = true` putting the confirm button in the
+  error role) and `KansoBottomSheet`.
+- **`KansoSelectField`** — a value picked from a list rather than typed, generic in the option
+  type so `onSelect` returns your enum instead of an index into a list of strings.
+- **`KansoErrorState`** — the failure counterpart to `KansoEmptyState`, with retry present by
+  construction rather than by each screen remembering to pass an `action`.
+- **`KansoSkeleton`** — the shape of a list drawn as shimmering bars while it loads. Deliberately
+  one component and not a `Modifier.kansoSkeleton()`; the whole block is announced as a single
+  "loading content" node.
+- **`KansoRefreshBox`** — pull-to-refresh with the indicator in the brand colour rather than
+  Material's theme-blind grey.
+- **`KansoScaffold(largeTopBar = true)`** and **`KansoBackButton`** — the tall collapsing header
+  for a screen that starts a hierarchy, and a back arrow that mirrors in RTL and carries a
+  translatable content description.
+- **`Kanso.motion`** — duration and easing tokens named by intent (`quick`, `standard`,
+  `deliberate`, `shimmer`), settable via `KansoTheme(motion = …)`. Added with `KansoSkeleton`,
+  its first call site; a token with no call site is a guess.
+
+  This brings `androidx.compose.animation:animation-core` onto the `api` configuration, because
+  `Easing` appears in `KansoMotion`'s public signature. It was already on the runtime classpath
+  transitively via material3, so no consumer gains a new artifact.
+
 - `KansoScaffold` shows the app's version after the title, on the same line, as part of the
   standard top app bar — "CertWatch v5.33.11". The value is a variable, not a literal: the new
   `kansoAppVersionLabel()` reads the installed package's `versionName` and prefixes it with `v`

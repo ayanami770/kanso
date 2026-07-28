@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.NavigationBar
@@ -167,6 +168,143 @@ private fun KansoTextFieldPreview() = PreviewHost {
     }
 }
 
+/** A picker, closed. The open menu is a popup and does not render in a preview. */
+@KansoPreviews
+@Composable
+private fun KansoSelectFieldPreview() = PreviewHost {
+    Column {
+        KansoSelectField(
+            value = "mmol/L",
+            options = listOf("mg/dL", "mmol/L"),
+            onSelect = {},
+            label = "Unit",
+            supporting = "Applies to every reading on this screen.",
+        )
+        KansoSelectField(
+            value = null,
+            options = listOf("mg/dL", "mmol/L"),
+            onSelect = {},
+            label = "Unit",
+            isError = true,
+            errorText = "Choose a unit before continuing.",
+            modifier = Modifier.padding(top = Kanso.spacing.md),
+        )
+    }
+}
+
+// ---- status ---------------------------------------------------------------------------
+
+/** The five meanings side by side — the point being that each reads without its colour. */
+@KansoPreviews
+@Composable
+private fun KansoStatusBadgePreview() = PreviewHost {
+    Column {
+        listOf(
+            "Valid" to KansoStatus.Success,
+            "Expiring" to KansoStatus.Warning,
+            "Failed" to KansoStatus.Error,
+            "Queued" to KansoStatus.Info,
+            "Unknown" to KansoStatus.Neutral,
+        ).forEach { (text, status) ->
+            KansoStatusBadge(
+                text = text,
+                status = status,
+                icon = PreviewIcon,
+                modifier = Modifier.padding(bottom = Kanso.spacing.sm),
+            )
+        }
+    }
+}
+
+/** A badge in the trailing slot is the shape this was sized for. */
+@KansoPreviews
+@Composable
+private fun KansoStatusBadgeInListPreview() = PreviewHost {
+    Column {
+        KansoListItem(
+            headline = "api.example.com",
+            supporting = "Expires in 4 days",
+            trailing = { KansoStatusBadge("Expiring", KansoStatus.Warning) },
+        )
+        KansoDivider(inset = true)
+        KansoListItem(
+            headline = "cdn.example.com",
+            supporting = "Expires in 63 days",
+            trailing = { KansoStatusBadge("Valid", KansoStatus.Success) },
+        )
+    }
+}
+
+/** The long message is the case that used to push the action off the row. */
+@KansoPreviews
+@Composable
+private fun KansoInfoBannerPreview() = PreviewHost {
+    Column {
+        KansoInfoBanner(
+            text = "Showing cached results.",
+            icon = PreviewIcon,
+            action = { KansoButton("Refresh", onClick = {}, style = KansoButtonStyle.Text) },
+        )
+        KansoInfoBanner(
+            text = "This device has not synced since 12 March, so peer status may be out of " +
+                "date until the next connection.",
+            status = KansoStatus.Warning,
+            modifier = Modifier.padding(top = Kanso.spacing.sm),
+        )
+    }
+}
+
+// ---- setting rows ---------------------------------------------------------------------
+
+/** All three at once: the row is the touch target and the control is an indicator. */
+@KansoPreviews
+@Composable
+private fun KansoSettingRowsPreview() = PreviewHost {
+    Column {
+        KansoSwitchRow(
+            headline = "Background sync",
+            supporting = "Keeps peer status up to date while the app is closed",
+            checked = true,
+            onCheckedChange = {},
+            icon = PreviewIcon,
+        )
+        KansoCheckboxRow(
+            headline = "Send diagnostics",
+            checked = false,
+            onCheckedChange = {},
+        )
+        KansoCheckboxRow(
+            headline = "Send diagnostics",
+            supporting = "Unavailable on a metered connection",
+            checked = false,
+            onCheckedChange = {},
+            enabled = false,
+        )
+        Column(Modifier.selectableGroup()) {
+            KansoRadioRow(headline = "Metric", selected = true, onSelect = {})
+            KansoRadioRow(headline = "Imperial", selected = false, onSelect = {})
+        }
+    }
+}
+
+// ---- dialog ---------------------------------------------------------------------------
+
+/** Destructive turns the confirm to the error role — the system deciding "red" once. */
+@KansoPreviews
+@Composable
+private fun KansoAlertDialogPreview() = PreviewHost {
+    KansoAlertDialog(
+        title = "Delete this peer?",
+        text = "dao-node will be removed from every channel. This cannot be undone.",
+        confirmText = "Delete",
+        dismissText = "Cancel",
+        destructive = true,
+        icon = PreviewIcon,
+        onConfirm = {},
+        onDismiss = {},
+    )
+}
+
 // ---- surfaces -------------------------------------------------------------------------
 
 /** The seams added for real screens: a clickable card, a title row action, no padding. */
@@ -298,6 +436,27 @@ private fun KansoLoadingStatePreview() = PreviewHost {
     KansoLoadingState(label = "Establishing session…")
 }
 
+/** With and without a way out — the second is the state that must not offer a dead button. */
+@KansoPreviews
+@Composable
+private fun KansoErrorStatePreview() = PreviewHost {
+    KansoErrorState(
+        title = "Could not reach the server",
+        description = "Check your connection and try again.",
+        onRetry = {},
+    )
+}
+
+/**
+ * The shimmer is frozen at whatever frame the preview renders — what is under review is the
+ * shape it promises, which has to match the list that replaces it.
+ */
+@KansoPreviews
+@Composable
+private fun KansoSkeletonPreview() = PreviewHost {
+    KansoSkeleton(rows = 4, icon = true)
+}
+
 // ---- content container ----------------------------------------------------------------
 
 /**
@@ -337,6 +496,22 @@ private fun KansoScaffoldPreview() = KansoTheme(dynamicColor = false) {
             KansoSectionHeader("Nearby")
             KansoListItem(headline = "dao-node", supporting = "192.168.1.24", onClick = {})
             KansoListItem(headline = "edge-01", supporting = "192.168.1.31", onClick = {})
+        }
+    }
+}
+
+/** The tall header with a back button beside it — including the RTL mirror of the arrow. */
+@KansoPreviews
+@Composable
+private fun KansoScaffoldLargeBarPreview() = KansoTheme(dynamicColor = false) {
+    KansoScaffold(
+        title = "Settings",
+        version = "v1.4.2",
+        largeTopBar = true,
+        navigationIcon = { KansoBackButton(onBack = {}) },
+    ) { inner ->
+        Column(Modifier.padding(inner).padding(horizontal = Kanso.spacing.screen)) {
+            KansoSwitchRow(headline = "Background sync", checked = true, onCheckedChange = {})
         }
     }
 }

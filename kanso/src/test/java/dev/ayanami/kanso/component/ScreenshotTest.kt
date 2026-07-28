@@ -121,4 +121,50 @@ class ScreenshotTest {
             KansoStatusRow("Protocol", "TLS 1.3")
         }
     }
+
+    /**
+     * A setting row is the same class of hazard: two lines of text, a leading icon and a
+     * control competing for one row, against a 48dp floor that only bites at a small scale
+     * and a control that only collides with the text at a large one.
+     */
+    @Test
+    fun settingRows() = bothScales("setting-rows") {
+        KansoSwitchRow(
+            headline = "Background sync",
+            supporting = "Keeps peer status up to date while the app is closed",
+            checked = true,
+            onCheckedChange = {},
+        )
+        KansoCheckboxRow(headline = "Send diagnostics", checked = false, onCheckedChange = {})
+    }
+
+    @Test
+    fun settingRowsLargeFont() = golden("setting-rows", 2.0f) {
+        KansoSwitchRow(
+            headline = "Background sync",
+            supporting = "Keeps peer status up to date while the app is closed",
+            checked = true,
+            onCheckedChange = {},
+        )
+        KansoCheckboxRow(headline = "Send diagnostics", checked = false, onCheckedChange = {})
+    }
+
+    /** The banner's action is what a long message pushes off the row — the empty-state bug. */
+    @Test
+    fun infoBanner() = bothScales("info-banner") {
+        KansoInfoBanner(
+            text = "This device has not synced since 12 March.",
+            status = KansoStatus.Warning,
+            action = { KansoButton("Sync", onClick = {}, style = KansoButtonStyle.Text) },
+        )
+    }
+
+    @Test
+    fun infoBannerLargeFont() = golden("info-banner", 2.0f) {
+        KansoInfoBanner(
+            text = "This device has not synced since 12 March.",
+            status = KansoStatus.Warning,
+            action = { KansoButton("Sync", onClick = {}, style = KansoButtonStyle.Text) },
+        )
+    }
 }

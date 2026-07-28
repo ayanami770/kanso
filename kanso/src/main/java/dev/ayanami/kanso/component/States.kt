@@ -19,8 +19,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import dev.ayanami.kanso.R
 import dev.ayanami.kanso.theme.Kanso
 
 private val EmptyStateIconSize = 56.dp
@@ -67,6 +69,43 @@ public fun KansoEmptyState(
             action()
         }
     }
+}
+
+/**
+ * The failure counterpart to [KansoEmptyState]: something went wrong, and here is the way out.
+ *
+ * "Empty" and "failed" look alike and mean opposite things — one is a state the user can act on
+ * by adding something, the other is a state they can only retry. Separating them costs almost
+ * no code (this delegates) and buys a call site that says which one it is, plus a retry
+ * affordance that is present by construction rather than by each screen remembering to pass an
+ * `action`. Omit [onRetry] for a failure the user genuinely cannot retry.
+ *
+ * The glyph is drawn in the same muted tint as an empty state's rather than in the error
+ * colour. Red at 56dp reads as an alert the user must resolve before continuing, which a failed
+ * list load is not — and the title already says what happened, to every reader.
+ *
+ * See [KansoEmptyState] for when to pass [scrollState].
+ */
+@Composable
+public fun KansoErrorState(
+    title: String,
+    modifier: Modifier = Modifier,
+    description: String? = null,
+    icon: ImageVector = ErrorIcon,
+    retryText: String = stringResource(R.string.kanso_retry),
+    scrollState: ScrollState? = null,
+    onRetry: (() -> Unit)? = null,
+) {
+    KansoEmptyState(
+        icon = icon,
+        title = title,
+        modifier = modifier,
+        description = description,
+        scrollState = scrollState,
+        action = onRetry?.let {
+            { KansoButton(retryText, onClick = it, style = KansoButtonStyle.Tonal) }
+        },
+    )
 }
 
 /**

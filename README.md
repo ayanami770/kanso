@@ -145,11 +145,13 @@ Everything is `Kanso`-prefixed and lives in `dev.ayanami.kanso.component`.
 
 | | |
 |---|---|
-| `KansoScaffold` | Screen shell — top app bar that reacts to scroll, `navigationIcon`, `actions`, `bottomBar`, FAB, snackbar host. The title is followed by the app's version — "CertWatch v5.33.11" — so every screen states the build actually running with no wiring; pass `version` for a different string, or `""` to omit it. `centeredTitle = false` for a start-aligned bar; `titleContent` replaces the whole title line, version included. Absorbs `ExperimentalMaterial3Api` so you never opt in. |
+| `KansoScaffold` | Screen shell — top app bar that reacts to scroll, `navigationIcon`, `actions`, `bottomBar`, FAB, snackbar host. The title is followed by the app's version — "CertWatch v5.33.11" — so every screen states the build actually running with no wiring; pass `version` for a different string, or `""` to omit it. `centeredTitle = false` for a start-aligned bar; `largeTopBar = true` for the tall header that collapses on scroll, on a screen that *starts* a hierarchy; `titleContent` replaces the whole title line, version included. Absorbs `ExperimentalMaterial3Api` so you never opt in. |
+| `KansoBackButton` | The back affordance for `KansoScaffold`'s `navigationIcon`. Four lines you would otherwise write yourself, minus the two things that go wrong: the arrow mirrors in RTL, and it carries a translatable content description. |
 | `kansoAppVersionLabel()` | The `v`-prefixed version of the installed package, read at composition. `KansoScaffold`'s default — call it directly if you want the same string elsewhere, such as an About screen. |
 | `KansoContentContainer` | Caps content width (`Kanso.spacing.contentMaxWidth`, 640dp) and centres it. A no-op on a phone; on a tablet it stops body text running to ~160 characters a line. Needs no changes to the components inside it. |
 | `KansoCard` | Grouped section as a filled card, with optional `title` (marked as a heading), `subtitle` and `titleTrailing` for a "See all" action. `onClick` routes to Material 3's clickable overload, so the ripple is clipped to the corners; `contentPadding = PaddingValues(0.dp)` for edge-to-edge content. |
 | `KansoSectionHeader` | Standalone section title for use outside a card, with optional supporting line and `trailing`. Wraps rather than truncating. |
+| `KansoDivider` | Hairline in `outlineVariant`. `inset = true` indents it to line up with a row's text rather than cutting across the icon column. |
 
 ### Forms
 
@@ -158,6 +160,7 @@ Everything is `Kanso`-prefixed and lives in `dev.ayanami.kanso.component`.
 | `KansoButton` | One emphasis system, six weights — `Filled`, `Tonal`, `Outlined`, `Text`, `Elevated`, `Destructive`. Optional leading `icon`, and a `loading` state that disables the button, announces itself to a screen reader and does not change the button's width. |
 | `KansoTextField` | Outlined field with label, supporting text and an error state whose message reaches the semantics tree. `enabled`, `readOnly`, `placeholder`, leading/trailing icons, `minLines`, `imeAction`, `keyboardActions`, `visualTransformation`. |
 | `KansoPasswordField` | Masked field with a reveal toggle whose content description follows its state. `numeric = true` for a PIN, `revealable = false` for a value that must never be shown. |
+| `KansoSelectField` | A value chosen from a list rather than typed. Generic in the option type, so `onSelect` hands back your enum and `optionLabel` is the only thing that knows about text — no index to map back. Read-only anchor: it opens the menu, never the keyboard. Absorbs `ExperimentalMaterial3Api`. |
 
 ### Lists
 
@@ -165,13 +168,32 @@ Everything is `Kanso`-prefixed and lives in `dev.ayanami.kanso.component`.
 |---|---|
 | `KansoListItem` | One/two-line row with an optional leading `icon` — or a `leading` slot for an avatar or checkbox — and trailing content. Merged into one accessibility node; a clickable row is held to the 48dp touch target. |
 | `KansoStatusRow` | Key/value row. Both halves are weighted, so a long value wraps in its own half instead of starving the label. Label and value are one screen-reader stop. |
+| `KansoSwitchRow` / `KansoCheckboxRow` / `KansoRadioRow` | Settings rows where the **row** is the control. `KansoListItem(trailing = { Switch(…) })` gives you two focus stops that a screen reader reads as unrelated and a row whose tap does nothing; these carry `toggleable`/`selectable` with a `Role` on the row and render the control as a read-only indicator. 48dp minimum at any font scale. Wrap a radio group in `Modifier.selectableGroup()` so "1 of 3" is announced. |
+| `KansoRefreshBox` | Pull-to-refresh around a scrollable, with the indicator in the brand colour instead of Material's theme-blind grey. |
+
+### Status
+
+| | |
+|---|---|
+| `KansoStatus` | The closed set of meanings — `Success`, `Warning`, `Error`, `Info`, `Neutral`. Exists so no screen invents its own green. |
+| `KansoStatusBadge` | Small pill sized for a `KansoListItem`'s `trailing` slot. `text` is required, not optional: colour reinforces the meaning and never carries it. |
+| `KansoInfoBanner` | Full-width inline notice with an optional action — an outage, a stale cache, a degraded mode. Louder than a badge, quieter than a dialog. |
+
+### Overlays
+
+| | |
+|---|---|
+| `KansoAlertDialog` | The confirmation every app rebuilds slightly differently. `destructive = true` puts the confirm button in the error role, so "this is dangerous" is decided once. Not a slot API — a dialog with arbitrary content is Material 3's `AlertDialog`. |
+| `KansoBottomSheet` | Modal sheet in the kanso container colour. Show it by composing it conditionally; no `sheetState` parameter, because that type would push Material 3's experimental opt-in onto every call site. |
 
 ### States
 
 | | |
 |---|---|
 | `KansoEmptyState` | Centred icon, title, optional description and call-to-action. Pass `scrollState` when the parent does not already scroll, so the action stays reachable at a large font scale. |
+| `KansoErrorState` | The failure counterpart, with a retry action present by construction. "Empty" and "failed" look alike and mean opposite things. |
 | `KansoLoadingState` | Centred progress indicator with an optional label. |
+| `KansoSkeleton` | The shape of a list, drawn as shimmering bars, while the list loads — so the layout does not jump when data lands. One component rather than a `Modifier.kansoSkeleton()`, which gets applied to whatever is convenient and leaves a screen pulsing in six rhythms. Announced as a single "loading content" node. |
 
 ## Tokens
 
@@ -181,6 +203,7 @@ Read through the `Kanso` object, which is valid anywhere inside `KansoTheme`.
 |---|---|
 | `Kanso.spacing` | A 4dp grid — `none`, `xxs … xxxl`, plus `screen`, `section` and `contentMaxWidth`. |
 | `Kanso.elevation` | Material 3 tonal + shadow levels, `level0 … level5`. |
+| `Kanso.motion` | Durations named by intent — `quick`, `standard`, `deliberate`, `shimmer` — plus `easing` and `exitEasing`. A component says what kind of motion it wants; the system decides how long that is. |
 | `Kanso.colors` | The current `ColorScheme`. Delegates straight to `MaterialTheme.colorScheme`, which is why every stock Material 3 component and every third-party Compose library themes correctly under `KansoTheme` with no adapter. |
 | `Kanso.extendedColors` | `success` / `warning` / `info`, each with `on-`, `-Container` and `on-Container`. Fixed rather than seed-derived, for the same reason Material 3 fixes `error`: a hue rotation must not turn a warning green. Contrast is pinned by tests. |
 | `Kanso.typography` / `Kanso.shapes` | The current `Typography` and `Shapes`. |
