@@ -107,6 +107,12 @@ Note that `.editorconfig` is what your editor reads and `build.gradle.kts` is wh
 enforces; Spotless does not discover the former on its own, so the shared values are written in
 both. If you change one, change the other.
 
-**The modifier-parameter position is still on you** — `modifier` first among the optional
-parameters, and the component never overrides the caller's sizing. `compose-lints` would enforce
-it and is not wired up.
+The modifier-parameter position is not on you either any more. Slack's `compose-lints` runs
+inside `lintRelease` on both modules, and on `:kanso` every warning is an error — so a modifier
+parameter without a default, a factory that should have been an extension on `Modifier`, or
+Material 2 leaking in fails the build rather than a review.
+
+The one rule `:kanso` suppresses is `ComposeCompositionLocalUsage`, and only in `theme/`, where
+ambient tokens are the mechanism rather than a smell — `MaterialTheme` provides its own scales
+exactly the same way. A `CompositionLocal` anywhere in `component/` is still flagged, which is
+where the rule earns its keep. `:demo` suppresses nothing.

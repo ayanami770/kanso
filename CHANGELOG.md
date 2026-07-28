@@ -46,6 +46,19 @@ kanso is not published to a Maven repository, and that is deliberate — see
   would be introducing a defect no test in this repo would notice. It is an internal constant
   the three call sites share.
 
+- **Slack's `compose-lints`** on both modules, and on `:kanso` **every lint warning is now an
+  error** — with `GradleDependency` as the single exclusion, since it only reports that a newer
+  version of something exists and would turn each upstream release into a red build.
+
+  The severity change is what makes the checks a gate rather than a report: most compose-lints
+  rules land at warning level. It caught a modifier parameter without a default in `KansoSkeleton`
+  (error, would have failed anyway) and the demo building a `Modifier` from a bare factory instead
+  of an extension (warning, would have passed silently).
+
+  `ComposeCompositionLocalUsage` is suppressed in `theme/` only. Ambient tokens are the mechanism
+  a design system is built on — `MaterialTheme` provides its own scales the same way — but a
+  `CompositionLocal` appearing in `component/` is still flagged.
+
 - **API documentation**, generated from the KDoc by Dokka and published to GitHub Pages on every
   push to `main`: <https://ayanami770.github.io/kanso/>. Every symbol links to the line it is
   declared on, so the rationale in the comments is one click from the code it describes.

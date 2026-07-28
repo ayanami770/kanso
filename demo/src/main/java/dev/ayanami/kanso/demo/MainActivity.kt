@@ -201,8 +201,10 @@ private fun DemoShell(
     }
 }
 
+// An extension on Modifier rather than a bare factory, so it chains like every other modifier
+// and a caller cannot accidentally drop the receiver it was meant to build on.
 @Composable
-private fun screenColumn(inner: PaddingValues): Modifier = Modifier
+private fun Modifier.screenColumn(inner: PaddingValues): Modifier = this
     .fillMaxSize()
     .padding(inner)
     .verticalScroll(rememberScrollState())
@@ -216,7 +218,7 @@ private fun GalleryScreen(
     onToggleDynamic: () -> Unit,
 ) {
     Column(
-        screenColumn(inner).padding(horizontal = Kanso.spacing.screen),
+        Modifier.screenColumn(inner).padding(horizontal = Kanso.spacing.screen),
         verticalArrangement = Arrangement.spacedBy(Kanso.spacing.section),
     ) {
         KansoSectionHeader(
@@ -343,7 +345,7 @@ private fun FormsScreen(inner: PaddingValues) {
     }
 
     Column(
-        screenColumn(inner).padding(horizontal = Kanso.spacing.screen),
+        Modifier.screenColumn(inner).padding(horizontal = Kanso.spacing.screen),
         verticalArrangement = Arrangement.spacedBy(Kanso.spacing.section),
     ) {
         KansoSectionHeader(
@@ -489,7 +491,7 @@ private fun SettingsScreen(inner: PaddingValues) {
     }
 
     Column(
-        screenColumn(inner).padding(horizontal = Kanso.spacing.screen),
+        Modifier.screenColumn(inner).padding(horizontal = Kanso.spacing.screen),
         verticalArrangement = Arrangement.spacedBy(Kanso.spacing.section),
     ) {
         KansoSectionHeader(

@@ -26,6 +26,19 @@ android {
         // catches an unguarded API-level call against the advertised minSdk 24, and a consumer
         // cannot lint kanso's compiled code themselves.
         abortOnError = true
+
+        // Roadmap 3.1 deferred this "until CI exists and the real noise level is known". Both
+        // conditions are now met, and the measured noise on :kanso is exactly one category:
+        // GradleDependency, which only ever says a newer version of something exists. That is
+        // Dependabot's job and it would turn every upstream release into a red build here, so
+        // it is the one thing excluded.
+        //
+        // What this buys: most compose-lints rules report at warning severity, so without it
+        // they would be a report rather than a gate — `ComposeModifierWithoutDefault` happened
+        // to be an error and caught a real defect, but `ModifierFactoryExtensionFunction` and
+        // the rest would have gone through silently.
+        warningsAsErrors = true
+        disable += "GradleDependency"
     }
 
     testOptions {
@@ -153,6 +166,13 @@ dependencies {
     api(libs.compose.ui.unit)
     // Easing is on KansoMotion, so it is part of the public surface.
     api(libs.compose.animation.core)
+
+    // Slack's compose-lints. Android's own lint knows nothing about Compose conventions, so
+    // the rules that keep this library usable — `modifier` first among the optional parameters,
+    // a component never overriding the caller's sizing, no Material 2 leaking in — were until
+    // now enforced only by a sentence in CONTRIBUTING.md and by whoever reviewed the pull
+    // request. `lintChecks` runs them inside the lint task that already gates every build.
+    lintChecks(libs.compose.lint.checks)
 
     // Internal only — WindowCompat, for the edge-to-edge system-bar contrast in KansoTheme.
     // Nothing from core-ktx reaches kanso's public API.

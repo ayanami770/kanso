@@ -122,6 +122,8 @@ public fun KansoTheme(
  * name and raw seed — `Kanso.colors.primary` is a derived tone, not the seed, and under dynamic
  * colour it has no relationship to the brand at all.
  */
+// A theme token, not an implicit dependency — see the note at the top of Tokens.kt.
+@Suppress("ComposeCompositionLocalUsage")
 public val LocalKansoBrand: ProvidableCompositionLocal<KansoBrand> =
     staticCompositionLocalOf { KansoDefaultBrand }
 
