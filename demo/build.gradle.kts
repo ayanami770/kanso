@@ -23,7 +23,10 @@ android {
             // asserts a pure-Compose library needs no keep rules; this is what executes that
             // assertion instead of a consuming app discovering it at release time.
             isMinifyEnabled = true
-            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro",
+            )
         }
     }
 
@@ -50,4 +53,11 @@ dependencies {
     implementation(libs.compose.material.icons.extended)
 
     debugImplementation(libs.compose.ui.tooling)
+
+    // The same Compose rules the library holds itself to. The demo is the only consumer-shaped
+    // code in this repo, so it is where "can an app actually use kanso correctly" gets checked
+    // rather than assumed — and unlike :kanso it has no reason to suppress
+    // ComposeCompositionLocalUsage, because an app defining its own ambient state is exactly
+    // what that rule is for.
+    lintChecks(libs.compose.lint.checks)
 }

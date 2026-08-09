@@ -130,11 +130,14 @@ public fun KansoPasswordField(
         trailingIcon = if (revealable) {
             {
                 IconButton(onClick = { revealed = !revealed }, enabled = enabled) {
+                    val description = if (showing) {
+                        R.string.kanso_hide_password
+                    } else {
+                        R.string.kanso_show_password
+                    }
                     Icon(
                         imageVector = if (showing) EyeOffIcon else EyeIcon,
-                        contentDescription = stringResource(
-                            if (showing) R.string.kanso_hide_password else R.string.kanso_show_password,
-                        ),
+                        contentDescription = stringResource(description),
                     )
                 }
             }

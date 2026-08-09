@@ -73,5 +73,7 @@ public val KansoDarkExtendedColors: KansoExtendedColors = KansoExtendedColors(
     onInfoContainer = Color(0xFFD3E4FF),
 )
 
+// A theme token, not an implicit dependency — see the note at the top of Tokens.kt.
+@Suppress("ComposeCompositionLocalUsage")
 public val LocalKansoExtendedColors: ProvidableCompositionLocal<KansoExtendedColors> =
     staticCompositionLocalOf { KansoLightExtendedColors }

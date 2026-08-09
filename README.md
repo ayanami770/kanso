@@ -203,6 +203,7 @@ Read through the `Kanso` object, which is valid anywhere inside `KansoTheme`.
 | | |
 |---|---|
 | `Kanso.spacing` | A 4dp grid — `none`, `xxs … xxxl`, plus `screen`, `section` and `contentMaxWidth`. |
+| `Kanso.sizing` | Icon sizes by role — `icon` (a list row's leading icon), `iconSmall` (inside a button), `iconBadge`, `iconLarge` (a full-area state). The 48dp touch-target floor is deliberately *not* here: it is an accessibility minimum from the platform, not a brand choice, so it is internal and not themeable. |
 | `Kanso.elevation` | Material 3 tonal + shadow levels, `level0 … level5`. |
 | `Kanso.motion` | Durations named by intent — `quick`, `standard`, `deliberate`, `shimmer` — plus `easing` and `exitEasing`. A component says what kind of motion it wants; the system decides how long that is. |
 | `Kanso.colors` | The current `ColorScheme`. Delegates straight to `MaterialTheme.colorScheme`, which is why every stock Material 3 component and every third-party Compose library themes correctly under `KansoTheme` with no adapter. |
@@ -220,18 +221,36 @@ Read through the `Kanso` object, which is valid anywhere inside `KansoTheme`.
 ## Build
 
 ```bash
-./gradlew :kanso:testDebugUnitTest   # the colour-contrast and typography contracts
+./gradlew spotlessApply              # formatting, fixed rather than reported
+./gradlew :kanso:verifyRoborazziDebug # every test, plus the screenshot goldens
 ./gradlew :kanso:assembleRelease     # the library
 ./gradlew :demo:assembleDebug        # the gallery app
 ./gradlew :kanso:lintRelease         # the consumer-facing lint gate
+./gradlew :kanso:checkDokkaLinks     # the API docs, and every KDoc link in them
 ```
 
-CI runs all four on every push and pull request.
+CI runs all of these on every push and pull request, with `spotlessCheck` first — a formatting
+failure is worth twenty seconds, not four minutes.
+
+## API documentation
+
+Generated from the KDoc by Dokka and published to GitHub Pages on every push to `main`:
+
+**https://ayanami770.github.io/kanso/**
+
+Worth reading rather than just referring to. The KDoc carries the design rationale — why a status
+badge requires its text, why the 48dp touch-target floor is not a token you can lower, what
+`dynamicColor = true` costs your brand — and every symbol links to the line it is declared on.
+
+```bash
+./gradlew :kanso:dokkaGenerate   # then open kanso/build/dokka/html/index.html
+```
 
 ## Contributing
 
 [CONTRIBUTING.md](CONTRIBUTING.md) — what a correct kanso component looks like, in about thirty
-lines. The public API is in explicit API mode, so every exported symbol is a deliberate choice.
+lines. The public API is in explicit API mode, so every exported symbol is a deliberate choice,
+and `./gradlew spotlessApply` settles formatting so review never has to.
 
 ## Status
 

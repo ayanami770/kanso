@@ -22,6 +22,12 @@ import androidx.compose.ui.unit.dp
 // Filled with SolidColor(Black) as a placeholder: Icon() applies its own tint over the whole
 // vector, so the colour here never reaches the screen.
 
+// A literal rather than `Kanso.sizing.icon`, and not an oversight: this is the vector's own
+// intrinsic size, baked in when the ImageVector is constructed at class-init time, where there
+// is no composition to read a token from. It is also the wrong thing to theme — what a caller
+// sizes is the `Icon()`, via the modifier, and the intrinsic size is only the fallback when
+// they pass none. The 24f viewport it pairs with is the drawing grid these paths are laid out
+// on and has no relationship to any layout token at all.
 private const val ViewportSize = 24f
 private val IconSizeDp = 24.dp
 private const val StrokeWidth = 1.8f

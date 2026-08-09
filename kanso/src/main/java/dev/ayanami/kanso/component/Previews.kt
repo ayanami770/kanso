@@ -346,8 +346,10 @@ private fun KansoDestructiveButtonPreview() = PreviewHost {
 private fun KansoExtendedColorsPreview() = PreviewHost {
     Column {
         listOf(
-            "Success" to (Kanso.extendedColors.successContainer to Kanso.extendedColors.onSuccessContainer),
-            "Warning" to (Kanso.extendedColors.warningContainer to Kanso.extendedColors.onWarningContainer),
+            "Success" to
+                (Kanso.extendedColors.successContainer to Kanso.extendedColors.onSuccessContainer),
+            "Warning" to
+                (Kanso.extendedColors.warningContainer to Kanso.extendedColors.onWarningContainer),
             "Info" to (Kanso.extendedColors.infoContainer to Kanso.extendedColors.onInfoContainer),
         ).forEach { (label, pair) ->
             Surface(

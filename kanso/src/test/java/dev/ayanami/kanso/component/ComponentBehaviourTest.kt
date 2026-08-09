@@ -201,6 +201,7 @@ class ComponentBehaviourTest {
     @Test
     fun `the default version is read from the package and v-prefixed`() {
         val context = ApplicationProvider.getApplicationContext<Context>()
+
         @Suppress("DEPRECATION")
         val info = context.packageManager.getPackageInfo(context.packageName, 0)
         info.versionName = "7.7.7"
@@ -217,6 +218,7 @@ class ComponentBehaviourTest {
     @Test
     fun `an already-prefixed versionName is not prefixed again`() {
         val context = ApplicationProvider.getApplicationContext<Context>()
+
         @Suppress("DEPRECATION")
         val info = context.packageManager.getPackageInfo(context.packageName, 0)
         info.versionName = "v8.0.0"

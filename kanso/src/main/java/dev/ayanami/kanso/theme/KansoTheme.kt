@@ -69,6 +69,7 @@ public fun KansoTheme(
     typography: Typography = KansoTypography,
     shapes: Shapes = KansoShapes,
     spacing: KansoSpacing = KansoSpacing(),
+    sizing: KansoSizing = KansoSizing(),
     elevation: KansoElevation = KansoElevation(),
     motion: KansoMotion = KansoMotion(),
     content: @Composable () -> Unit,
@@ -77,7 +78,9 @@ public fun KansoTheme(
     val resolvedColorScheme = colorScheme ?: when {
         dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S ->
             if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
+
         darkTheme -> kansoDarkColorScheme(brand.seed)
+
         else -> kansoLightColorScheme(brand.seed)
     }
 
@@ -101,6 +104,7 @@ public fun KansoTheme(
         LocalKansoBrand provides brand,
         LocalKansoExtendedColors provides resolvedExtendedColors,
         LocalKansoSpacing provides spacing,
+        LocalKansoSizing provides sizing,
         LocalKansoElevation provides elevation,
         LocalKansoMotion provides motion,
     ) {
@@ -118,6 +122,8 @@ public fun KansoTheme(
  * name and raw seed — `Kanso.colors.primary` is a derived tone, not the seed, and under dynamic
  * colour it has no relationship to the brand at all.
  */
+// A theme token, not an implicit dependency — see the note at the top of Tokens.kt.
+@Suppress("ComposeCompositionLocalUsage")
 public val LocalKansoBrand: ProvidableCompositionLocal<KansoBrand> =
     staticCompositionLocalOf { KansoDefaultBrand }
 
@@ -128,23 +134,37 @@ public val LocalKansoBrand: ProvidableCompositionLocal<KansoBrand> =
  */
 public object Kanso {
     public val brand: KansoBrand
-        @Composable @ReadOnlyComposable get() = LocalKansoBrand.current
+        @Composable @ReadOnlyComposable
+        get() = LocalKansoBrand.current
     public val spacing: KansoSpacing
-        @Composable @ReadOnlyComposable get() = LocalKansoSpacing.current
+        @Composable @ReadOnlyComposable
+        get() = LocalKansoSpacing.current
+
+    /** Icon sizes by role. The 48dp touch-target floor is deliberately not among them. */
+    public val sizing: KansoSizing
+        @Composable @ReadOnlyComposable
+        get() = LocalKansoSizing.current
+
     public val elevation: KansoElevation
-        @Composable @ReadOnlyComposable get() = LocalKansoElevation.current
+        @Composable @ReadOnlyComposable
+        get() = LocalKansoElevation.current
     public val motion: KansoMotion
-        @Composable @ReadOnlyComposable get() = LocalKansoMotion.current
+        @Composable @ReadOnlyComposable
+        get() = LocalKansoMotion.current
     public val colors: ColorScheme
-        @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme
+        @Composable @ReadOnlyComposable
+        get() = MaterialTheme.colorScheme
 
     /** success / warning / info — the roles Material 3 leaves to you. */
     public val extendedColors: KansoExtendedColors
-        @Composable @ReadOnlyComposable get() = LocalKansoExtendedColors.current
+        @Composable @ReadOnlyComposable
+        get() = LocalKansoExtendedColors.current
     public val typography: Typography
-        @Composable @ReadOnlyComposable get() = MaterialTheme.typography
+        @Composable @ReadOnlyComposable
+        get() = MaterialTheme.typography
     public val shapes: Shapes
-        @Composable @ReadOnlyComposable get() = MaterialTheme.shapes
+        @Composable @ReadOnlyComposable
+        get() = MaterialTheme.shapes
 }
 
 // `KansoBrands` used to live here, holding the seeds of one author's four private apps. A

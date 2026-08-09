@@ -25,6 +25,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import dev.ayanami.kanso.theme.Kanso
+import dev.ayanami.kanso.theme.KansoMinTouchTarget
 
 // A settings row is not a KansoListItem with a control bolted on.
 //
@@ -33,9 +34,6 @@ import dev.ayanami.kanso.theme.Kanso
 // tap does nothing, and no state announcement. The fix is `Modifier.toggleable`/`selectable`
 // with a Role on the *row*, and the control rendered as a non-interactive indicator — which is
 // why these are written as their own Row rather than delegating.
-
-private val RowMinHeight = 48.dp
-private val LeadingIconSize = 24.dp
 
 @Composable
 private fun SettingRowBody(
@@ -55,7 +53,7 @@ private fun SettingRowBody(
                 icon,
                 contentDescription = null,
                 tint = Kanso.colors.primary.copy(alpha = contentAlpha),
-                modifier = Modifier.size(LeadingIconSize),
+                modifier = Modifier.size(Kanso.sizing.icon),
             )
             Spacer(Modifier.size(Kanso.spacing.lg))
         }
@@ -98,7 +96,7 @@ public fun KansoSwitchRow(
     Row(
         modifier
             .fillMaxWidth()
-            .heightIn(min = RowMinHeight)
+            .heightIn(min = KansoMinTouchTarget)
             .toggleable(
                 value = checked,
                 enabled = enabled,
@@ -128,7 +126,7 @@ public fun KansoCheckboxRow(
     Row(
         modifier
             .fillMaxWidth()
-            .heightIn(min = RowMinHeight)
+            .heightIn(min = KansoMinTouchTarget)
             .toggleable(
                 value = checked,
                 enabled = enabled,
@@ -162,7 +160,7 @@ public fun KansoRadioRow(
     Row(
         modifier
             .fillMaxWidth()
-            .heightIn(min = RowMinHeight)
+            .heightIn(min = KansoMinTouchTarget)
             .selectable(
                 selected = selected,
                 enabled = enabled,

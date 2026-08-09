@@ -28,6 +28,55 @@ kanso is not published to a Maven repository, and that is deliberate — see
 
 ## Unreleased
 
+### Added
+
+- **`Kanso.sizing`** — icon sizes named by role (`icon`, `iconSmall`, `iconBadge`, `iconLarge`),
+  settable via `KansoTheme(sizing = …)`. The defaults are exactly the literals they replaced, so
+  nothing renders differently; every screenshot golden is byte-identical.
+
+  The trigger was duplication, not a new component: 24dp was written into three files that have
+  to agree (a list row's leading icon, a setting row's, and the skeleton that stands in for
+  them), 48dp into three more, and `KansoDivider`'s 40dp inset was the hand-computed sum of two
+  of them. That last one now derives itself — `Kanso.sizing.icon + Kanso.spacing.lg` — because
+  written as a number it was correct today and silently wrong the moment the icon size moved, in
+  a way no test would catch: the divider would still render, just aligned to nothing.
+
+  **The 48dp minimum touch target is deliberately not a token.** It is an accessibility floor
+  that comes from the platform, not a brand decision, and a theme that could set it to 32dp
+  would be introducing a defect no test in this repo would notice. It is an internal constant
+  the three call sites share.
+
+- **Slack's `compose-lints`** on both modules, and on `:kanso` **every lint warning is now an
+  error** — with `GradleDependency` as the single exclusion, since it only reports that a newer
+  version of something exists and would turn each upstream release into a red build.
+
+  The severity change is what makes the checks a gate rather than a report: most compose-lints
+  rules land at warning level. It caught a modifier parameter without a default in `KansoSkeleton`
+  (error, would have failed anyway) and the demo building a `Modifier` from a bare factory instead
+  of an extension (warning, would have passed silently).
+
+  `ComposeCompositionLocalUsage` is suppressed in `theme/` only. Ambient tokens are the mechanism
+  a design system is built on — `MaterialTheme` provides its own scales the same way — but a
+  `CompositionLocal` appearing in `component/` is still flagged.
+
+- **API documentation**, generated from the KDoc by Dokka and published to GitHub Pages on every
+  push to `main`: <https://ayanami770.github.io/kanso/>. Every symbol links to the line it is
+  declared on, so the rationale in the comments is one click from the code it describes.
+
+  `./gradlew :kanso:checkDokkaLinks` builds it and fails on any link that would render as plain
+  text. That check exists because `failOnWarning` has a blind spot: it catches a reference Dokka
+  cannot resolve, but not one that resolves to a symbol with no published page — anything
+  `internal`, and a data class's constructor parameters. Those are emitted silently. Five were
+  already in the tree.
+
+- Formatting is enforced. `./gradlew spotlessApply` fixes it; `spotlessCheck` runs first in CI,
+  ahead of the tests. Three ktlint rules are off — composable functions are PascalCase, icon
+  properties are not screaming-snake constants, and a file may hold more than one top-level
+  declaration — each with its reason next to it in `build.gradle.kts`. The licence header is
+  enforced rather than merely conventional, so a new file cannot ship without one. Lines wrap at
+  100, which is where the code already wrapped: the 14 lines that exceeded it were rewrapped
+  rather than the ceiling raised.
+
 ### Changed
 
 - **Releases are no longer tagged.** The four `v0.1.x` tags stay on the remote as history; from

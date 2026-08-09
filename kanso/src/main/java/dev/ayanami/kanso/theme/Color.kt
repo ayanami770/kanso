@@ -56,11 +56,21 @@ private fun linearToSrgb(u: Double): Float {
 }
 
 // The CIELAB companding function and its inverse, using the exact 6/29 breakpoint.
-private fun labF(t: Double): Double =
-    if (t > 216.0 / 24389.0) t.pow(1.0 / 3.0) else t * (841.0 / 108.0) + 4.0 / 29.0
+private fun labF(t: Double): Double = if (t >
+    216.0 / 24389.0
+) {
+    t.pow(1.0 / 3.0)
+} else {
+    t * (841.0 / 108.0) + 4.0 / 29.0
+}
 
-private fun labFInv(t: Double): Double =
-    if (t > 6.0 / 29.0) t * t * t else (t - 4.0 / 29.0) * (108.0 / 841.0)
+private fun labFInv(t: Double): Double = if (t >
+    6.0 / 29.0
+) {
+    t * t * t
+} else {
+    (t - 4.0 / 29.0) * (108.0 / 841.0)
+}
 
 /** A colour as CIELCh(ab): [lightness] is L*, [hue] is in degrees. */
 internal class Lch(val lightness: Double, val chroma: Double, val hue: Double)
@@ -106,8 +116,9 @@ private fun lchToLinearRgb(lightness: Double, chroma: Double, hue: Double): Doub
 private const val GAMUT_EPSILON = 0.0005
 private const val GAMUT_SEARCH_STEPS = 24
 
-private fun DoubleArray.inGamut(): Boolean =
-    all { it >= -GAMUT_EPSILON && it <= 1.0 + GAMUT_EPSILON }
+private fun DoubleArray.inGamut(): Boolean = all {
+    it >= -GAMUT_EPSILON && it <= 1.0 + GAMUT_EPSILON
+}
 
 /**
  * The sRGB colour at [tone] (= L*) on the tonal palette at [hue] / [chroma]. If that point

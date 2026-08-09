@@ -33,15 +33,17 @@ public enum class KansoStatus { Success, Warning, Error, Info, Neutral }
 private fun KansoStatus.colors(): Pair<Color, Color> = when (this) {
     KansoStatus.Success ->
         Kanso.extendedColors.successContainer to Kanso.extendedColors.onSuccessContainer
+
     KansoStatus.Warning ->
         Kanso.extendedColors.warningContainer to Kanso.extendedColors.onWarningContainer
+
     KansoStatus.Info ->
         Kanso.extendedColors.infoContainer to Kanso.extendedColors.onInfoContainer
+
     KansoStatus.Error -> Kanso.colors.errorContainer to Kanso.colors.onErrorContainer
+
     KansoStatus.Neutral -> Kanso.colors.surfaceVariant to Kanso.colors.onSurfaceVariant
 }
-
-private val BadgeIconSize = 14.dp
 
 /**
  * A small pill stating a status — "Valid", "Expiring", "Failed". Sized to sit in a
@@ -73,7 +75,7 @@ public fun KansoStatusBadge(
                 icon,
                 contentDescription = null,
                 tint = onContainer,
-                modifier = Modifier.size(BadgeIconSize),
+                modifier = Modifier.size(Kanso.sizing.iconBadge),
             )
             Spacer(Modifier.size(Kanso.spacing.xs))
         }
@@ -128,20 +130,19 @@ public fun KansoInfoBanner(
 /**
  * A hairline between list rows or sections.
  *
- * [inset] indents the line to line up with a row's text rather than its leading icon — the
- * default matches [KansoListItem]'s icon plus its gap, so a divider between two icon rows does
- * not cut across the icon column.
+ * [inset] indents the line to line up with a row's text rather than its leading icon, so a
+ * divider between two icon rows does not cut across the icon column.
+ *
+ * The indent is *derived* — the leading icon plus the gap [KansoListItem] puts after it — rather
+ * than the 40dp that arithmetic currently comes to. Written as a number it would be correct
+ * today and silently wrong the moment `Kanso.sizing.icon` moved, in a way no test would catch:
+ * the divider would still render, just no longer aligned to anything.
  */
 @Composable
-public fun KansoDivider(
-    modifier: Modifier = Modifier,
-    inset: Boolean = false,
-) {
+public fun KansoDivider(modifier: Modifier = Modifier, inset: Boolean = false) {
+    val indent = if (inset) Kanso.sizing.icon + Kanso.spacing.lg else 0.dp
     HorizontalDivider(
-        modifier = modifier.padding(start = if (inset) DividerInset else 0.dp),
+        modifier = modifier.padding(start = indent),
         color = Kanso.colors.outlineVariant,
     )
 }
-
-/** 24dp leading icon + the 16dp gap `KansoListItem` puts after it. */
-private val DividerInset = 40.dp

@@ -25,8 +25,6 @@ import androidx.compose.ui.unit.dp
 import dev.ayanami.kanso.R
 import dev.ayanami.kanso.theme.Kanso
 
-private val EmptyStateIconSize = 56.dp
-
 /**
  * A centred full-area placeholder: a large [icon], a [title] and optional [description] with an
  * optional call-to-action. Use for empty lists, first-run states and non-fatal errors.
@@ -54,15 +52,27 @@ public fun KansoEmptyState(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ) {
-        Icon(icon, contentDescription = null, tint = Kanso.colors.onSurfaceVariant,
-            modifier = Modifier.size(EmptyStateIconSize))
+        Icon(
+            icon,
+            contentDescription = null,
+            tint = Kanso.colors.onSurfaceVariant,
+            modifier = Modifier.size(Kanso.sizing.iconLarge),
+        )
         Spacer(Modifier.size(Kanso.spacing.lg))
-        Text(title, style = Kanso.typography.titleMedium, color = Kanso.colors.onSurface,
-            textAlign = TextAlign.Center)
+        Text(
+            title,
+            style = Kanso.typography.titleMedium,
+            color = Kanso.colors.onSurface,
+            textAlign = TextAlign.Center,
+        )
         if (description != null) {
             Spacer(Modifier.size(Kanso.spacing.sm))
-            Text(description, style = Kanso.typography.bodyMedium, color = Kanso.colors.onSurfaceVariant,
-                textAlign = TextAlign.Center)
+            Text(
+                description,
+                style = Kanso.typography.bodyMedium,
+                color = Kanso.colors.onSurfaceVariant,
+                textAlign = TextAlign.Center,
+            )
         }
         if (action != null) {
             Spacer(Modifier.size(Kanso.spacing.xl))
@@ -130,8 +140,12 @@ public fun KansoLoadingState(
         CircularProgressIndicator()
         if (label != null) {
             Spacer(Modifier.size(Kanso.spacing.lg))
-            Text(label, style = Kanso.typography.bodyMedium, color = Kanso.colors.onSurfaceVariant,
-                textAlign = TextAlign.Center)
+            Text(
+                label,
+                style = Kanso.typography.bodyMedium,
+                color = Kanso.colors.onSurfaceVariant,
+                textAlign = TextAlign.Center,
+            )
         }
     }
 }

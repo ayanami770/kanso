@@ -9,13 +9,13 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.github.takahirom.roborazzi.captureRoboImage
 import dev.ayanami.kanso.theme.Kanso
@@ -98,13 +98,21 @@ class ScreenshotTest {
 
     @Test
     fun listItem() = bothScales("list-item") {
-        KansoListItem("Search peers", supporting = "Discover devices on the local network", onClick = {})
+        KansoListItem(
+            "Search peers",
+            supporting = "Discover devices on the local network",
+            onClick = {},
+        )
         KansoListItem("No supporting line")
     }
 
     @Test
     fun listItemLargeFont() = golden("list-item", 2.0f) {
-        KansoListItem("Search peers", supporting = "Discover devices on the local network", onClick = {})
+        KansoListItem(
+            "Search peers",
+            supporting = "Discover devices on the local network",
+            onClick = {},
+        )
         KansoListItem("No supporting line")
     }
 

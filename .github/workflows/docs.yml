@@ -1,0 +1,62 @@
+# Publishes kanso's API documentation to GitHub Pages.
+#
+# Separate from ci.yml on purpose. This job writes somewhere — it deploys — while CI only reads
+# and reports, and the two want different permissions: `pages: write` and `id-token: write`
+# belong to exactly one workflow, not to the job that runs on every pull request.
+#
+# Docs are *generated* in CI on every PR (see the "API docs" step there), so a broken KDoc link
+# fails before merge. This workflow only publishes what main already proved buildable.
+name: Docs
+
+on:
+  push:
+    branches: [main]
+  # For re-publishing without a code change — a Pages settings fix, say.
+  workflow_dispatch:
+
+concurrency:
+  # Not cancel-in-progress: a half-finished deploy would leave the site serving a partial
+  # upload. Queue instead, and let the newest push win once the current one lands.
+  group: pages
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  publish:
+    name: Publish API docs
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Validate Gradle wrapper
+        uses: gradle/actions/wrapper-validation@v6
+
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: gradle/actions/setup-gradle@v6
+
+      # checkDokkaLinks depends on the generate task, so this both builds the site and fails on
+      # any link that would render as plain text.
+      - name: Generate API docs
+        run: ./gradlew :kanso:checkDokkaLinks
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: kanso/build/dokka/html
+
+      - id: deploy
+        uses: actions/deploy-pages@v4

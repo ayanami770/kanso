@@ -508,9 +508,27 @@ root build. `jvmTarget` moved out of the deleted `android.kotlinOptions` block i
 `kotlin.compilerOptions`, which AGP's built-in Kotlin provides. The Compose compiler plugin stays.
 `warningsAsErrors` and compose-lints remain deferred as written.
 
+**Both landed later (Stage 5).** The deferral condition was "hold off until CI exists and the
+real noise level is known", and by then both were true. The measured noise on `:kanso` was
+exactly one category — `GradleDependency`, which only ever reports that a newer version of
+something exists. That is Dependabot's job and would turn every upstream release into a red
+build, so it is the single exclusion; everything else is now an error.
+
+That distinction mattered more than it looks. Most compose-lints rules report at *warning*
+severity, so with `abortOnError` alone they would have been a report rather than a gate:
+`ComposeModifierWithoutDefault` happened to be an error and caught a real defect on the first
+run, but `ModifierFactoryExtensionFunction` — which caught the demo building a `Modifier` from a
+bare factory instead of an extension — would have passed silently.
+
+The prediction in this item was right: adoption was near-clean. One error and one warning across
+both modules, plus `ComposeCompositionLocalUsage`, which is suppressed in `theme/` only. That
+rule is correct in app code and wrong for a design system, where ambient tokens *are* the
+mechanism — `MaterialTheme` provides its colour, typography and shape scales the same way. The
+suppression is scoped so a `CompositionLocal` appearing in `component/` is still flagged.
+
 *Depends on 1.4.*
 
-### 3.2 `explicitApi()` and published Dokka docs — `S` — ⬦ partially done
+### 3.2 `explicitApi()` and published Dokka docs — `S` — ✅ done (Stage 5)
 
 Everything not marked otherwise is public by Kotlin default, so internal helpers can leak into the
 contract by accident, and three accessors on `object Kanso` have inferred return types. Roughly 23
@@ -526,12 +544,34 @@ its `com.android.library` support is not the drop-in it appears to be, and a com
 with nothing to check it against is ceremony. Revisit with the Kotlin Gradle plugin's built-in
 `abiValidation` once there is a published artifact and a second release to compare against.
 
-**As implemented:** `explicitApi()` only. It flagged 49 declarations — every public symbol now
+**As implemented, part 1:** `explicitApi()`. It flagged 49 declarations — every public symbol now
 carries an explicit modifier and return type, including the three `object Kanso` accessors that
-had inferred ones. **Dokka is deliberately deferred with 1.5**: its whole payoff here is the
-javadoc jar Maven Central requires, and there is no publishing yet for it to feed.
+had inferred ones.
 
-*Depends on 1.5.*
+**As implemented, part 2 (Stage 5):** Dokka, published to GitHub Pages.
+
+The deferral above was reasoning from the wrong payoff. It said Dokka's value here is "the javadoc
+jar Maven Central requires, and there is no publishing yet for it to feed" — but that treats
+documentation as a packaging obligation. The actual value is the one the paragraph above it
+already states: the KDoc carries design rationale an adopter needs and is invisible to anyone who
+has not cloned the repo. A published HTML site delivers that with no Maven coordinate involved,
+and it does not depend on 1.5 at all.
+
+Two things beyond running the plugin were needed, and the second is the one worth remembering:
+
+- `failOnWarning` catches a KDoc reference Dokka cannot resolve. There was one — `[KansoContent‑
+  Container]`, referenced from another package without qualification.
+- It does **not** catch a reference that resolves to a symbol with *no published page*: anything
+  `internal`, and a data class's constructor parameters. Dokka emits those silently as
+  `data-unresolved-link`, so they render as plain text and only the reader who needed the link
+  finds out. There were five, all written by this roadmap's own earlier stages. `checkDokkaLinks`
+  reads the generated HTML back to find them, which is unglamorous and is the only thing that
+  sees them.
+
+Binary-compatibility validation stays deferred as written above.
+
+*Depended on 1.4. The stated dependency on 1.5 was wrong — publishing was never a prerequisite
+for documentation.*
 
 ### 3.3 Version catalog and dependency-update automation — `S` — ✅ done
 
@@ -734,10 +774,19 @@ A short "do not touch" list prevents more wasted work than another feature item.
   component that needs them; if the four live icon-size literals bother you, a four-field
   `KansoSizing` is the whole fix.
 
-  *Discharged for `KansoMotion` only (Stage 4).* The condition this bullet set was "ship tokens
-  with the component that needs them", and `KansoSkeleton` is that component — it animates, so
-  its duration is either a token or a magic number. `KansoOpacity` and `KansoSizing` still have
-  no call site and are still not wanted.
+  *Discharged for `KansoMotion` (Stage 4) and `KansoSizing` (Stage 5).* The condition this
+  bullet set was "ship tokens with the component that needs them". `KansoSkeleton` is that
+  component for motion — it animates, so its duration is either a token or a magic number. For
+  sizing the trigger was duplication rather than a new component: 24dp had been written into
+  three files that must agree, 48dp into three more, and `KansoDivider`'s 40dp inset was the
+  hand-computed sum of two of them.
+
+  This bullet's other prediction was **right and was honoured**: `minTouchTarget` would have
+  been a misdescription. It is not a field on `KansoSizing`. 48dp is an accessibility floor from
+  the platform, not a taste decision an app should be invited to make differently, so it lives
+  as an internal constant that the three call sites share and no theme can lower.
+
+  `KansoOpacity` still has no call site and is still not wanted.
 - **Icon sizes at 18/24/56 dp.** Material's own guidance is that icons are dp-sized and should not
   scale with font. Changing rendering in four apps at non-default font scales to fix an
   optical-balance complaint nobody has reported is churn — and the Stage 2 multipreviews will show
