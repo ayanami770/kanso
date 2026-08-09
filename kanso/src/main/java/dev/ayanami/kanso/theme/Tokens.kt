@@ -2,6 +2,8 @@
  * Copyright 2026 ayanami770
  * Licensed under the Apache License, Version 2.0.
  */
+@file:Suppress("ComposeCompositionLocalUsage")
+
 package dev.ayanami.kanso.theme
 
 import androidx.compose.animation.core.Easing

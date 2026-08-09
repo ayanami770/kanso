@@ -137,7 +137,7 @@ private fun SkeletonRow(barColor: Color, icon: Boolean, supporting: Boolean) {
 @Composable
 private fun Bar(
     color: Color,
-    modifier: Modifier,
+    modifier: Modifier = Modifier,
     shape: RoundedCornerShape = RoundedCornerShape(percent = 50),
 ) {
     Spacer(modifier.background(color, shape))

@@ -508,6 +508,24 @@ root build. `jvmTarget` moved out of the deleted `android.kotlinOptions` block i
 `kotlin.compilerOptions`, which AGP's built-in Kotlin provides. The Compose compiler plugin stays.
 `warningsAsErrors` and compose-lints remain deferred as written.
 
+**Both landed later (Stage 5).** The deferral condition was "hold off until CI exists and the
+real noise level is known", and by then both were true. The measured noise on `:kanso` was
+exactly one category — `GradleDependency`, which only ever reports that a newer version of
+something exists. That is Dependabot's job and would turn every upstream release into a red
+build, so it is the single exclusion; everything else is now an error.
+
+That distinction mattered more than it looks. Most compose-lints rules report at *warning*
+severity, so with `abortOnError` alone they would have been a report rather than a gate:
+`ComposeModifierWithoutDefault` happened to be an error and caught a real defect on the first
+run, but `ModifierFactoryExtensionFunction` — which caught the demo building a `Modifier` from a
+bare factory instead of an extension — would have passed silently.
+
+The prediction in this item was right: adoption was near-clean. One error and one warning across
+both modules, plus `ComposeCompositionLocalUsage`, which is suppressed in `theme/` only. That
+rule is correct in app code and wrong for a design system, where ambient tokens *are* the
+mechanism — `MaterialTheme` provides its colour, typography and shape scales the same way. The
+suppression is scoped so a `CompositionLocal` appearing in `component/` is still flagged.
+
 *Depends on 1.4.*
 
 ### 3.2 `explicitApi()` and published Dokka docs — `S` — ✅ done (Stage 5)
