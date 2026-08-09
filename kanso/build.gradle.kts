@@ -6,7 +6,13 @@ plugins {
 
 android {
     namespace = "dev.ayanami.kanso"
-    compileSdk = 36
+    // 37: androidx.core 1.19.0 (Dependabot, 9c7740d) publishes AAR metadata requiring every
+    // dependent to compile against android-37, and checkDebugUnitTestAarMetadata enforces it —
+    // main has been red on exactly that since 08:37 on 2026-08-09. Raising compileSdk is what
+    // that metadata asks for; minSdk stays 24, so the range of devices kanso supports does not
+    // move. Consumers inherit the requirement: kanso's own AAR metadata now asks THEM for 37
+    // too, so every app embedding this submodule needs the same bump.
+    compileSdk = 37
 
     defaultConfig {
         // Low minSdk so the design system never constrains a consumer (Compose Material 3

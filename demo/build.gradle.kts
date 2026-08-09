@@ -5,7 +5,10 @@ plugins {
 
 android {
     namespace = "dev.ayanami.kanso.demo"
-    compileSdk = 36
+    // 37, tracking :kanso — its AAR metadata requires dependents to compile against 37 (see
+    // the note in kanso/build.gradle.kts). targetSdk is deliberately left at 35: this is a
+    // compile-time floor, not an opt-in to new runtime behaviour.
+    compileSdk = 37
 
     defaultConfig {
         applicationId = "dev.ayanami.kanso.demo"
