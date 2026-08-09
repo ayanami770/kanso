@@ -88,7 +88,10 @@ public fun <T> KansoSelectField(
             readOnly = true,
             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
         )
-        ExposedDropdownMenu(expanded = expanded && enabled, onDismissRequest = { expanded = false }) {
+        ExposedDropdownMenu(
+            expanded = expanded && enabled,
+            onDismissRequest = { expanded = false },
+        ) {
             options.forEach { option ->
                 DropdownMenuItem(
                     text = { Text(optionLabel(option), style = Kanso.typography.bodyLarge) },
