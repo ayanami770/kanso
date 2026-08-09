@@ -2,12 +2,17 @@ plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.roborazzi)
-    alias(libs.plugins.dokka)
 }
 
 android {
     namespace = "dev.ayanami.kanso"
-    compileSdk = 36
+    // 37: androidx.core 1.19.0 (Dependabot, 9c7740d) publishes AAR metadata requiring every
+    // dependent to compile against android-37, and checkDebugUnitTestAarMetadata enforces it —
+    // main has been red on exactly that since 08:37 on 2026-08-09. Raising compileSdk is what
+    // that metadata asks for; minSdk stays 24, so the range of devices kanso supports does not
+    // move. Consumers inherit the requirement: kanso's own AAR metadata now asks THEM for 37
+    // too, so every app embedding this submodule needs the same bump.
+    compileSdk = 37
 
     defaultConfig {
         // Low minSdk so the design system never constrains a consumer (Compose Material 3
@@ -28,17 +33,24 @@ android {
         abortOnError = true
 
         // Roadmap 3.1 deferred this "until CI exists and the real noise level is known". Both
-        // conditions are now met, and the measured noise on :kanso is exactly one category:
-        // GradleDependency, which only ever says a newer version of something exists. That is
-        // Dependabot's job and it would turn every upstream release into a red build here, so
-        // it is the one thing excluded.
+        // conditions are now met, and the measured noise on :kanso is exactly one category: a
+        // newer version of something exists. That is Dependabot's job and it would turn every
+        // upstream release into a red build here, so it is the one thing excluded.
+        //
+        // TWO ids, not one. GradleDependency covers the declared dependencies;
+        // AndroidGradlePluginVersion covers the Gradle distribution named in
+        // gradle-wrapper.properties and says the same kind of thing about it — "A newer version
+        // of Gradle than 9.6.1 is available: 9.7.0". It was invisible when the line below was
+        // first written, because 9.6.1 was current then; it turned the build red the day 9.7.0
+        // shipped, which is exactly the failure this exclusion exists to prevent. Same category,
+        // same treatment.
         //
         // What this buys: most compose-lints rules report at warning severity, so without it
         // they would be a report rather than a gate — `ComposeModifierWithoutDefault` happened
         // to be an error and caught a real defect, but `ModifierFactoryExtensionFunction` and
         // the rest would have gone through silently.
         warningsAsErrors = true
-        disable += "GradleDependency"
+        disable += setOf("GradleDependency", "AndroidGradlePluginVersion")
     }
 
     testOptions {
@@ -63,81 +75,14 @@ kotlin {
     explicitApi()
 }
 
-// API documentation. The KDoc in this library carries design rationale an adopter needs — why
-// the badge requires text, why the touch-target floor is not a token, what `dynamicColor = true`
-// costs a brand — and none of it is visible to someone consuming the compiled module. This is
-// what makes it readable without cloning the repo.
-dokka {
-    moduleName.set("kanso")
-
-    dokkaSourceSets.configureEach {
-        // Only the release variant. Documenting debug as well would publish two copies of every
-        // symbol, differing in nothing an adopter can act on.
-        suppressGeneratedFiles.set(true)
-        includes.from("docs/module.md")
-
-        // Every documented symbol links to the line it is declared on. The rationale in these
-        // comments is often longer than the code it describes, and being one click from the
-        // source is what stops the docs becoming a second, drifting account of the library.
-        sourceLink {
-            localDirectory.set(file("src/main/java"))
-            remoteUrl("https://github.com/ayanami770/kanso/blob/main/kanso/src/main/java")
-            remoteLineSuffix.set("#L")
-        }
-
-        externalDocumentationLinks.register("androidx") {
-            url("https://developer.android.com/reference/kotlin/")
-            packageListUrl("https://developer.android.com/reference/kotlin/androidx/package-list")
-        }
-    }
-
-    dokkaPublications.configureEach {
-        // A KDoc link that no longer resolves is a defect, not a warning: it renders as plain
-        // text, so the only person who finds out is the reader who needed it. One such link
-        // (`[KansoContentContainer]`, referenced from another package without qualification)
-        // was already in the tree when this was switched on.
-        failOnWarning.set(true)
-    }
-}
-
-// `failOnWarning` above catches a KDoc reference Dokka cannot resolve at all. It does NOT catch
-// the other way a link dies: a reference that resolves to a symbol with no published page —
-// anything `internal`, and a data class's constructor parameters. Dokka emits those silently as
-// `data-unresolved-link`, so they render as plain text and the only person who finds out is the
-// reader who needed them. There were five in the tree when this was switched on.
-//
-// Reading the generated HTML back is unglamorous and is the only thing that actually sees them.
-val checkDokkaLinks = tasks.register("checkDokkaLinks") {
-    description = "Fails if the generated API docs contain a link that renders as plain text."
-    group = "verification"
-
-    val generate = tasks.named("dokkaGeneratePublicationHtml")
-    dependsOn(generate)
-    val htmlDir = layout.buildDirectory.dir("dokka/html")
-    inputs.dir(htmlDir)
-
-    doLast {
-        val dead = htmlDir.get().asFile.walkTopDown()
-            .filter { it.isFile && it.extension == "html" }
-            .flatMap { file ->
-                Regex("""data-unresolved-link="([^"]*)"""")
-                    .findAll(file.readText())
-                    .map { "${file.name}: ${it.groupValues[1]}" }
-            }
-            .toList()
-        if (dead.isNotEmpty()) {
-            error(
-                dead.joinToString(
-                    prefix = "${dead.size} KDoc link(s) render as plain text:\n  ",
-                    separator = "\n  ",
-                    postfix = "\n\nA link resolves but has no page when it points at an " +
-                        "`internal` symbol or at a data class's constructor parameter. " +
-                        "Use backticks, or link the property instead.",
-                ),
-            )
-        }
-    }
-}
+// Dokka — the API-reference build and its link check — is configured for this module from the
+// ROOT build script, not from here. kanso is consumed as a git submodule, which means THIS file
+// is evaluated by the consuming build: declaring Dokka in the plugins block above made every
+// consumer resolve its whole toolchain (jackson, woodstox, kotlinx, ~20 artifacts) to produce
+// documentation none of them read — and under Gradle dependency verification each artifact then
+// has to be pinned in the consumer's own verification-metadata.xml before their build will
+// configure at all. Four repos hit that at once. The root script is never evaluated by a
+// consumer, so putting it there costs them nothing and needs no opt-out on their side.
 
 dependencies {
     // Compose BOM: a single source of truth for every Compose artifact version. Exposed via
