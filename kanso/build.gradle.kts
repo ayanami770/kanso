@@ -33,17 +33,24 @@ android {
         abortOnError = true
 
         // Roadmap 3.1 deferred this "until CI exists and the real noise level is known". Both
-        // conditions are now met, and the measured noise on :kanso is exactly one category:
-        // GradleDependency, which only ever says a newer version of something exists. That is
-        // Dependabot's job and it would turn every upstream release into a red build here, so
-        // it is the one thing excluded.
+        // conditions are now met, and the measured noise on :kanso is exactly one category: a
+        // newer version of something exists. That is Dependabot's job and it would turn every
+        // upstream release into a red build here, so it is the one thing excluded.
+        //
+        // TWO ids, not one. GradleDependency covers the declared dependencies;
+        // AndroidGradlePluginVersion covers the Gradle distribution named in
+        // gradle-wrapper.properties and says the same kind of thing about it — "A newer version
+        // of Gradle than 9.6.1 is available: 9.7.0". It was invisible when the line below was
+        // first written, because 9.6.1 was current then; it turned the build red the day 9.7.0
+        // shipped, which is exactly the failure this exclusion exists to prevent. Same category,
+        // same treatment.
         //
         // What this buys: most compose-lints rules report at warning severity, so without it
         // they would be a report rather than a gate — `ComposeModifierWithoutDefault` happened
         // to be an error and caught a real defect, but `ModifierFactoryExtensionFunction` and
         // the rest would have gone through silently.
         warningsAsErrors = true
-        disable += "GradleDependency"
+        disable += setOf("GradleDependency", "AndroidGradlePluginVersion")
     }
 
     testOptions {
