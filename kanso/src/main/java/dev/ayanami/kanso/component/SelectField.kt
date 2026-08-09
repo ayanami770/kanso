@@ -11,6 +11,7 @@ import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -60,8 +61,14 @@ public fun <T> KansoSelectField(
     enabled: Boolean = true,
 ) {
     var expanded by remember { mutableStateOf(false) }
+    // Being disabled must actually close the menu. `enabled` only gated opening; if the consumer
+    // disables the field (an authorization/loading/prerequisite state) WHILE the menu is open, the
+    // stored `expanded` stays true, the menu keeps rendering, and its items keep firing onSelect.
+    // Collapse on disable, and render/allow selection only while enabled, so a picker cannot be
+    // driven after the UI meant to block it.
+    LaunchedEffect(enabled) { if (!enabled) expanded = false }
     ExposedDropdownMenuBox(
-        expanded = expanded,
+        expanded = expanded && enabled,
         onExpandedChange = { if (enabled) expanded = it },
         modifier = modifier,
     ) {
@@ -81,11 +88,12 @@ public fun <T> KansoSelectField(
             readOnly = true,
             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
         )
-        ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+        ExposedDropdownMenu(expanded = expanded && enabled, onDismissRequest = { expanded = false }) {
             options.forEach { option ->
                 DropdownMenuItem(
                     text = { Text(optionLabel(option), style = Kanso.typography.bodyLarge) },
                     onClick = {
+                        if (!enabled) return@DropdownMenuItem
                         onSelect(option)
                         expanded = false
                     },

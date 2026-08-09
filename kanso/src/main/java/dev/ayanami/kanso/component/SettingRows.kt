@@ -23,7 +23,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.unit.dp
 import dev.ayanami.kanso.theme.Kanso
 import dev.ayanami.kanso.theme.KansoMinTouchTarget
 
