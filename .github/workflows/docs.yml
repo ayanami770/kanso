@@ -28,6 +28,12 @@ permissions:
 jobs:
   publish:
     name: Publish API docs
+    # main-only publish guard. workflow_dispatch lets a user pick any ref, and this job holds
+    # pages: write + id-token: write, so without this an unreviewed branch could be dispatched and
+    # published to the official Pages site — past the main-only trust boundary. A push already only
+    # fires on main; this makes a manual run obey the same rule. (Belt-and-braces to a github-pages
+    # environment deployment-branch restriction, which lives in repo settings, not this file.)
+    if: ${{ github.ref == 'refs/heads/main' }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
     environment:
@@ -35,28 +41,28 @@ jobs:
       url: ${{ steps.deploy.outputs.page_url }}
 
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7
 
       - name: Validate Gradle wrapper
-        uses: gradle/actions/wrapper-validation@v6
+        uses: gradle/actions/wrapper-validation@9c971963bec38e04b3d30dcc455b5382be2fdbfb  # v6
 
-      - uses: actions/setup-java@v5
+      - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961  # v5
         with:
           distribution: temurin
           java-version: '17'
 
-      - uses: gradle/actions/setup-gradle@v6
+      - uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb  # v6
 
       # checkDokkaLinks depends on the generate task, so this both builds the site and fails on
       # any link that would render as plain text.
       - name: Generate API docs
         run: ./gradlew :kanso:checkDokkaLinks
 
-      - uses: actions/configure-pages@v5
+      - uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b  # v5
 
-      - uses: actions/upload-pages-artifact@v4
+      - uses: actions/upload-pages-artifact@7b1f4a764d45c48632c6b24a0339c27f5614fb0b  # v4
         with:
           path: kanso/build/dokka/html
 
       - id: deploy
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e  # v4
