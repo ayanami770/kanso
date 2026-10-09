@@ -15,7 +15,7 @@ roborazzi = "1.70.0"
 spotless = "8.9.0"
 ktlint = "1.8.0"
 dokka = "2.2.0"
-composeLintChecks = "1.5.3"
+composeLintChecks = "1.6.0"
 
 [libraries]
 compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "composeBom" }
