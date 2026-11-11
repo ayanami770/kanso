@@ -11,11 +11,20 @@ name: CI
 on:
   push:
     branches: [main]
+    # Ignore root/roadmap prose, but do NOT ignore kanso/docs/module.md (compiled by Dokka).
+    paths-ignore:
+      - '*.md'
+      - '.github/*.md'
+      - 'docs/**'
   pull_request:
+    paths-ignore:
+      - '*.md'
+      - '.github/*.md'
+      - 'docs/**'
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 permissions:
   contents: read
@@ -23,6 +32,7 @@ permissions:
 jobs:
   build:
     name: Build and test
+    if: github.event_name != 'push' || !startsWith(github.event.head_commit.message, 'Merge pull request #')
     runs-on: ubuntu-latest
     timeout-minutes: 30
 
