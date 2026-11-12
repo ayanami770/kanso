@@ -4,18 +4,18 @@
 # In Kotlin 2.x the Kotlin plugin and the Compose compiler plugin falling out of lockstep is a
 # hard build failure, and with the versions written inline in two files nothing prevented it.
 [versions]
-agp = "9.3.1"
-kotlin = "2.4.10"
+agp = "9.5.1"
+kotlin = "2.4.21"
 composeBom = "2026.09.00"
 coreKtx = "1.19.0"
 activityCompose = "1.13.0"
 junit = "4.13.2"
-robolectric = "4.16.1"
-roborazzi = "1.72.0"
-spotless = "8.10.4"
+robolectric = "4.17"
+roborazzi = "1.78.0"
+spotless = "8.11.0"
 ktlint = "1.8.0"
-dokka = "2.2.0"
-composeLintChecks = "1.6.0"
+dokka = "2.3.0"
+composeLintChecks = "1.6.1"
 
 [libraries]
 compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "composeBom" }
