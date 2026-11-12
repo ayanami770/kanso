@@ -5,7 +5,7 @@ updates:
   - package-ecosystem: gradle
     directory: /
     schedule:
-      interval: weekly
+      interval: "monthly"
     open-pull-requests-limit: 5
     groups:
       # Compose ships as one aligned set behind the BOM — bumping it in pieces is noise.
@@ -17,8 +17,17 @@ updates:
           - "androidx.*"
         exclude-patterns:
           - "androidx.compose*"
+      dependencies:
+        patterns:
+          - "*"
+        exclude-patterns:
+          - "androidx.*"
 
   - package-ecosystem: github-actions
     directory: /
     schedule:
-      interval: weekly
+      interval: "monthly"
+    groups:
+      github-actions:
+        patterns:
+          - "*"

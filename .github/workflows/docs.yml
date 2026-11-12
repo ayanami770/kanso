@@ -11,6 +11,11 @@ name: Docs
 on:
   push:
     branches: [main]
+    # Ignore root/roadmap prose, but keep kanso/docs/module.md so Dokka re-publishes when it changes.
+    paths-ignore:
+      - '*.md'
+      - '.github/*.md'
+      - 'docs/**'
   # For re-publishing without a code change — a Pages settings fix, say.
   workflow_dispatch:
 
