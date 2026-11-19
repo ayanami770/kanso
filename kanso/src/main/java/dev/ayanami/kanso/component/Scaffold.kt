@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -22,10 +23,13 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.contentColorFor
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.compositeOver
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.takeOrElse
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.AlignmentLine
@@ -39,6 +43,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import dev.ayanami.kanso.R
 import dev.ayanami.kanso.theme.Kanso
 import kotlin.math.max
+import kotlin.math.min
 
 /**
  * The standard kanso screen scaffold: a Material 3 top app bar that reacts to scroll, an
@@ -69,6 +74,11 @@ import kotlin.math.max
  *
  * For that back arrow, pass [KansoBackButton] as the [navigationIcon].
  *
+ * [containerColor] is the screen's background and [contentColor] what is drawn on it by
+ * default. Left unset, the content colour is the role the scheme pairs with the container — or,
+ * for a background from outside the scheme, whichever of the scheme's text colours reads better
+ * on it.
+ *
  * The keyboard is deliberately *not* handled here. Applying `imePadding()` to the scaffold root
  * compresses the top bar every time the keyboard opens; a screen with a text field should apply
  * it to its own content, or pass [contentWindowInsets] as
@@ -90,6 +100,7 @@ public fun KansoScaffold(
     titleContent: (@Composable () -> Unit)? = null,
     containerColor: Color = Color.Unspecified,
     contentWindowInsets: WindowInsets = ScaffoldDefaults.contentWindowInsets,
+    contentColor: Color = Color.Unspecified,
     content: @Composable (PaddingValues) -> Unit,
 ) {
     // A large bar has to collapse to its small form as the content scrolls, which
@@ -103,6 +114,10 @@ public fun KansoScaffold(
         // A large bar has room for a second line of title; a single-row bar does not.
         TitleLine(title = title, version = version, maxTitleLines = if (largeTopBar) 2 else 1)
     }
+    // Unspecified means "whatever Scaffold would have used" — its own default, the theme
+    // background. Passing a concrete colour through unconditionally would hard-code that choice
+    // and break a consumer that re-themes the background.
+    val container = containerColor.takeOrElse { Kanso.colors.background }
     Scaffold(
         modifier = modifier.fillMaxSize().nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
@@ -132,13 +147,36 @@ public fun KansoScaffold(
         bottomBar = bottomBar,
         snackbarHost = { SnackbarHost(snackbarHostState) },
         floatingActionButton = floatingActionButton,
-        // Unspecified means "whatever Scaffold would have used" — its own default, the
-        // theme background. Passing a concrete colour through unconditionally would hard-code
-        // that choice and break a consumer that re-themes the background.
-        containerColor = containerColor.takeOrElse { Kanso.colors.background },
+        containerColor = container,
+        contentColor = contentColor.takeOrElse { scaffoldContentColor(Kanso.colors, container) },
         contentWindowInsets = contentWindowInsets,
         content = content,
     )
+}
+
+/**
+ * What a scaffold draws on [container] when the caller named no content colour.
+ *
+ * A role of the scheme gets the role Material pairs with it. A colour from outside the scheme
+ * has no pair, and Material's own answer is whatever `LocalContentColor` holds at that point —
+ * black at the top of a composition, which is unreadable on a dark background of the caller's
+ * own. So the fallback is chosen by contrast instead: whichever of the scheme's two text colours
+ * reads better on the colour actually given.
+ */
+internal fun scaffoldContentColor(scheme: ColorScheme, container: Color): Color =
+    scheme.contentColorFor(container).takeOrElse {
+        // A translucent container shows the background through it; judge what will be seen.
+        val seen = container.compositeOver(scheme.background)
+        val onSurface = contrastRatio(scheme.onSurface, seen)
+        val inverse = contrastRatio(scheme.inverseOnSurface, seen)
+        if (onSurface >= inverse) scheme.onSurface else scheme.inverseOnSurface
+    }
+
+/** The WCAG contrast ratio between two opaque colours. */
+private fun contrastRatio(a: Color, b: Color): Float {
+    val lighter = max(a.luminance(), b.luminance())
+    val darker = min(a.luminance(), b.luminance())
+    return (lighter + 0.05f) / (darker + 0.05f)
 }
 
 /**

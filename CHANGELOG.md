@@ -90,6 +90,13 @@ kanso is not published to a Maven repository, and that is deliberate — see
   nothing moves. On `KansoListItem` the parameter sits before `trailing`, which stays last for
   trailing-lambda call sites.
 
+- **`KansoScaffold(contentColor = …)`**, and a readable default without it. A `containerColor`
+  from outside the scheme has no content colour paired with it, and Material falls back to
+  whatever `LocalContentColor` holds — black, at the top of a composition, which left a screen
+  on a dark background of its own at about 1.1:1. Unset, the content colour is still the
+  scheme's pair for a scheme role; for any other colour it is now whichever of `onSurface` and
+  `inverseOnSurface` reads better on it. The parameter is the last one before `content`.
+
 ### Fixed
 
 - **A debug build of your app no longer carries two exported activities it never declared.**
