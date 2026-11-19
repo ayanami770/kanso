@@ -77,6 +77,11 @@ kanso is not published to a Maven repository, and that is deliberate — see
   100, which is where the code already wrapped: the 14 lines that exceeded it were rewrapped
   rather than the ceiling raised.
 
+- **Japanese translations** of the six strings kanso supplies itself (`values-ja`): the loading
+  and loading-content announcements, the password reveal toggle, the back button and
+  `KansoErrorState`'s default "Retry" label — the one that is drawn on screen, and until now was
+  drawn in English whatever the app's language.
+
 ### Fixed
 
 - **A debug build of your app no longer carries two exported activities it never declared.**

@@ -6,6 +6,7 @@ package dev.ayanami.kanso.component
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -30,6 +31,7 @@ import androidx.compose.ui.test.hasScrollAction
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.text.TextLayoutResult
@@ -298,5 +300,25 @@ class LayoutContractTest {
         // The icon sits above the title, so a centred block puts the title below the middle;
         // top-aligned, it is well above it.
         assertTrue("the state must be centred in its parent", title.center.y > parent.center.y)
+    }
+
+    // ---- strings --------------------------------------------------------------------
+
+    /** The default retry label is drawn on screen; in a Japanese app it used to read "Retry". */
+    @Test
+    @Config(qualifiers = "ja-w360dp-h640dp-xhdpi")
+    fun `the built-in strings follow a Japanese locale`() {
+        compose.setContent {
+            Host {
+                Column {
+                    KansoErrorState(title = "接続できません", modifier = Modifier.height(300.dp), onRetry = {})
+                    KansoBackButton(onBack = {})
+                }
+            }
+        }
+
+        compose.onNodeWithText("再試行").assertIsDisplayed()
+        compose.onNodeWithContentDescription("戻る").assertIsDisplayed()
+        compose.onNodeWithText("Retry").assertDoesNotExist()
     }
 }
