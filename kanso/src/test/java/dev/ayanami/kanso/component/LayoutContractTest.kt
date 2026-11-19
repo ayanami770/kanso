@@ -18,6 +18,8 @@ import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.semantics.getOrNull
 import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.assert
+import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.hasScrollAction
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
@@ -27,10 +29,12 @@ import androidx.compose.ui.unit.Density
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import dev.ayanami.kanso.theme.KansoTheme
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.robolectric.RuntimeEnvironment
 import org.robolectric.annotation.Config
 import org.robolectric.annotation.GraphicsMode
 
@@ -64,11 +68,13 @@ class LayoutContractTest {
         }
     }
 
-    private fun lineCount(node: SemanticsNode): Int {
+    private fun textLayout(node: SemanticsNode): TextLayoutResult {
         val results = mutableListOf<TextLayoutResult>()
         node.config.getOrNull(SemanticsActions.GetTextLayoutResult)?.action?.invoke(results)
-        return results.first().lineCount
+        return results.first()
     }
+
+    private fun lineCount(node: SemanticsNode): Int = textLayout(node).lineCount
 
     /** The text nodes that were actually placed — a node a layout measured but left out is not. */
     private fun placed(text: String): List<SemanticsNode> =
@@ -145,5 +151,42 @@ class LayoutContractTest {
         compose.onNodeWithText("Peers")
             .assert(SemanticsMatcher.keyIsDefined(SemanticsProperties.Heading))
             .assert(hasText("v1.4.2"))
+    }
+
+    // ---- alert dialog ---------------------------------------------------------------
+
+    /**
+     * 320x480dp at 200% font scale: the message is taller than the dialog is allowed to be. It
+     * used to be cut mid-line with nothing to scroll, so the sentence a destructive confirmation
+     * exists to deliver never reached the screen.
+     */
+    @Test
+    @Config(qualifiers = "w320dp-h480dp-xhdpi")
+    fun `a dialog message taller than the window scrolls instead of being cut`() {
+        // A dialog is its own window: it takes the font scale from the system configuration,
+        // which a LocalDensity override in the calling composition does not reach.
+        RuntimeEnvironment.setFontScale(2f)
+        val message = "The pairing and its saved PIN are removed from this device and from " +
+            "every relay that has cached them. Sessions that are still open are closed, and " +
+            "the peer will have to scan a new code before it can reach this device again. " +
+            "This cannot be undone."
+        compose.setContent {
+            KansoTheme(dynamicColor = false) {
+                KansoAlertDialog(
+                    title = "Forget this device?",
+                    text = message,
+                    confirmText = "Forget",
+                    dismissText = "Cancel",
+                    destructive = true,
+                    onConfirm = {},
+                    onDismiss = {},
+                )
+            }
+        }
+
+        compose.onNodeWithText(message).assert(hasScrollAction())
+        val layout = textLayout(compose.onNodeWithText(message).fetchSemanticsNode())
+        assertFalse("no part of the message may be dropped to make it fit", layout.didOverflowHeight)
+        compose.onNodeWithText("Forget").assertIsDisplayed()
     }
 }

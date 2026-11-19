@@ -96,6 +96,11 @@ kanso is not published to a Maven repository, and that is deliberate — see
   accessibility node marked as a heading, where it used to be two unrelated stops and no
   heading. *Visible change:* a title that used to wrap onto a second line in a single-row bar
   is now ellipsised.
+- **`KansoAlertDialog` cut a long message off with no way to read the rest.** Material 3 sizes
+  the dialog to its content and stops at the window; past that the text was clipped mid-line, and
+  because this component is deliberately not a slot API a caller could not add a scroll. At 200%
+  font scale on a 320x480dp or landscape screen, a four-sentence confirmation lost its last
+  sentence — the "this cannot be undone" one. The message now scrolls inside the dialog.
 
 ### Changed
 

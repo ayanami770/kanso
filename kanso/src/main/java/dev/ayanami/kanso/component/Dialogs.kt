@@ -5,6 +5,8 @@
 package dev.ayanami.kanso.component
 
 import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -24,6 +26,9 @@ import dev.ayanami.kanso.theme.Kanso
  * Set [destructive] when confirming loses something the user cannot get back: the confirm button
  * turns to the error role. That is the design system making the "this is dangerous" decision
  * once, rather than each screen choosing its own red.
+ *
+ * A [text] taller than the window can show scrolls inside the dialog, with the buttons staying
+ * where they are — at a large font scale on a small or landscape screen that is most messages.
  *
  * Deliberately not a slot API. This is the nine-tenths case; a dialog that needs arbitrary
  * content is not this component, and Material 3's own `AlertDialog` is right there.
@@ -45,7 +50,11 @@ public fun KansoAlertDialog(
         modifier = modifier,
         icon = icon?.let { { Icon(it, contentDescription = null) } },
         title = { Text(title) },
-        text = { Text(text) },
+        // Material 3 sizes the dialog to its content and stops at the window. Past that the
+        // message was clipped mid-line with nothing to scroll — and this is not a slot API, so
+        // a caller could not add the scroll either. The part that got cut is the last sentence,
+        // which is usually "this cannot be undone".
+        text = { Text(text, Modifier.verticalScroll(rememberScrollState())) },
         confirmButton = {
             TextButton(onClick = onConfirm) {
                 Text(
