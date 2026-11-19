@@ -6,6 +6,8 @@ package dev.ayanami.kanso.theme
 
 import androidx.compose.material3.ColorScheme
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.compositeOver
+import dev.ayanami.kanso.component.skeletonBarColor
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -306,6 +308,46 @@ class ColorContrastTest {
                 roundTripped.hue,
                 2.0,
             )
+        }
+    }
+
+    // ---- colours drawn over a surface rather than as one --------------------------------
+
+    /** The surfaces a list — and so its placeholder — is drawn on: bare, in a card, in a sheet. */
+    private fun listSurfaces(s: ColorScheme): List<Pair<String, Color>> = listOf(
+        "surface" to s.surface,
+        "card" to s.surfaceContainerHighest,
+        "sheet" to s.surfaceContainerLow,
+    )
+
+    private fun bothSchemes(seed: Color): List<Pair<String, ColorScheme>> = listOf(
+        "light" to kansoLightColorScheme(seed),
+        "dark" to kansoDarkColorScheme(seed),
+    )
+
+    /**
+     * A skeleton that cannot be seen is a blank screen. The bars used to pulse between the two
+     * highest surface containers, which is what a filled card is painted in: inside a card they
+     * measured 1.00:1 at one end of the pulse and 1.05:1 at the other.
+     *
+     * 1.15:1 is not a WCAG figure — a placeholder is not text — it is "visibly a shape", a
+     * little under what a filled card measures against the surface it sits on.
+     */
+    @Test
+    fun `skeleton bars stand out from every surface a list is drawn on`() {
+        everyHue(step = 15) { hue, seed ->
+            bothSchemes(seed).forEach { (mode, scheme) ->
+                listSurfaces(scheme).forEach { (name, under) ->
+                    listOf(0f, 1f).forEach { progress ->
+                        val bar = skeletonBarColor(scheme.onSurface, progress).compositeOver(under)
+                        val ratio = contrast(under, bar)
+                        assertTrue(
+                            "$mode hue $hue bar at $progress on $name = ${"%.2f".format(ratio)}",
+                            ratio >= 1.15,
+                        )
+                    }
+                }
+            }
         }
     }
 }

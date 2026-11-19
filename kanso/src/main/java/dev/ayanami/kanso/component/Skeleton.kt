@@ -10,11 +10,13 @@ import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
@@ -24,21 +26,31 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.lerp
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.Dp
 import dev.ayanami.kanso.R
 import dev.ayanami.kanso.theme.Kanso
 import dev.ayanami.kanso.theme.KansoMinTouchTarget
 
-private val HeadlineBarHeight = 16.dp
-private val SupportingBarHeight = 12.dp
+/** A bar's thickness as a share of the text line it stands in for — 16dp and 12dp by default. */
+private const val HeadlineBarFraction = 2f / 3f
+private const val SupportingBarFraction = 0.6f
 
 /** The proportion of the row's width each placeholder bar takes. */
 private const val HeadlineWidthFraction = 0.55f
 private const val SupportingWidthFraction = 0.8f
+
+/** How strongly the content colour is laid over the surface at the two ends of a pulse. */
+private const val BarAlphaStrong = 0.14f
+private const val BarAlphaFaint = 0.09f
+
+/** What a text style's line occupies when the style does not say. */
+private const val FallbackLineHeightMultiplier = 1.2f
 
 /**
  * The shape of a list, drawn as bars, while the list itself is still loading.
@@ -51,7 +63,9 @@ private const val SupportingWidthFraction = 0.8f
  * Deliberately one component and not a `Modifier.kansoSkeleton()`. A general-purpose shimmer
  * modifier gets applied to whatever is convenient, and the result is a screen that pulses in
  * six unrelated rhythms; a single row skeleton keeps the placeholder honest about what it is
- * standing in for. Match [rows] and [icon] to the list being loaded.
+ * standing in for. Match [rows] and [icon] to the list being loaded. A row is exactly as tall as
+ * the [KansoListItem] it replaces, at any font scale, so nothing below it moves when the data
+ * arrives.
  *
  * The whole block is announced as one "loading content" node. The bars carry no meaning to read
  * out, and left alone a screen reader would find nothing here at all.
@@ -80,14 +94,12 @@ public fun KansoSkeleton(
         ),
         label = "kanso_skeleton_progress",
     )
-    // Between two adjacent surface tones, not between a colour and transparency: the pulse has
-    // to stay legible against a card and against the bare background, and an alpha ramp only
-    // works over one of them.
-    val barColor = lerp(
-        Kanso.colors.surfaceContainerHighest,
-        Kanso.colors.surfaceContainerHigh,
-        progress,
-    )
+    // The content colour laid over whatever is underneath, not a pair of surface tones. A tone
+    // only shows against a different tone, and the natural pair for this — the two highest
+    // surface containers — is what a filled card is painted in: a skeleton inside a KansoCard
+    // pulsed between the card's own colour and almost that. An overlay darkens a light surface
+    // and lightens a dark one, whichever surface it lands on.
+    val barColor = skeletonBarColor(Kanso.colors.onSurface, progress)
     Column(
         modifier
             .fillMaxWidth()
@@ -99,18 +111,23 @@ public fun KansoSkeleton(
     }
 }
 
+/** The bar colour at [progress] of one pulse: [onSurface] at an alpha between the two ends. */
+internal fun skeletonBarColor(onSurface: Color, progress: Float): Color =
+    onSurface.copy(alpha = BarAlphaStrong + (BarAlphaFaint - BarAlphaStrong) * progress)
+
 @Composable
 private fun SkeletonRow(barColor: Color, icon: Boolean, supporting: Boolean) {
+    // The row is built the way the list row is — the same padding around the same line heights
+    // — rather than given a height in dp. A fixed height matched a two-line row only
+    // approximately at the default font scale and not at all at any other, which is the layout
+    // jump a skeleton exists to prevent.
+    val density = LocalDensity.current
+    val headlineLine = Kanso.typography.bodyLarge.lineHeightIn(density)
+    val supportingLine = Kanso.typography.bodyMedium.lineHeightIn(density)
     Row(
         Modifier
             .fillMaxWidth()
-            .height(
-                if (supporting) {
-                    KansoMinTouchTarget + Kanso.spacing.xl
-                } else {
-                    KansoMinTouchTarget
-                },
-            )
+            .heightIn(min = KansoMinTouchTarget)
             .padding(vertical = Kanso.spacing.md),
         verticalAlignment = Alignment.CenterVertically,
     ) {
@@ -119,18 +136,29 @@ private fun SkeletonRow(barColor: Color, icon: Boolean, supporting: Boolean) {
             Spacer(Modifier.size(Kanso.spacing.lg))
         }
         Column(Modifier.weight(1f)) {
-            Bar(
-                barColor,
-                Modifier.fillMaxWidth(HeadlineWidthFraction).height(HeadlineBarHeight),
-            )
+            BarLine(barColor, headlineLine, HeadlineBarFraction, HeadlineWidthFraction)
             if (supporting) {
-                Spacer(Modifier.size(Kanso.spacing.sm))
-                Bar(
-                    barColor,
-                    Modifier.fillMaxWidth(SupportingWidthFraction).height(SupportingBarHeight),
-                )
+                BarLine(barColor, supportingLine, SupportingBarFraction, SupportingWidthFraction)
             }
         }
+    }
+}
+
+/** One line of text's worth of height, with a bar centred in it. */
+@Composable
+private fun BarLine(color: Color, lineHeight: Dp, barFraction: Float, widthFraction: Float) {
+    Box(Modifier.fillMaxWidth().height(lineHeight), contentAlignment = Alignment.CenterStart) {
+        Bar(color, Modifier.fillMaxWidth(widthFraction).height(lineHeight * barFraction))
+    }
+}
+
+/** What one line of this style occupies, in dp at the current font scale. */
+private fun TextStyle.lineHeightIn(density: Density): Dp = with(density) {
+    when {
+        lineHeight.isSp -> lineHeight.toDp()
+        fontSize.isSp && lineHeight.isEm -> fontSize.toDp() * lineHeight.value
+        fontSize.isSp -> fontSize.toDp() * FallbackLineHeightMultiplier
+        else -> KansoMinTouchTarget / 2
     }
 }
 

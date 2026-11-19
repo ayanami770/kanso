@@ -101,6 +101,17 @@ kanso is not published to a Maven repository, and that is deliberate — see
   because this component is deliberately not a slot API a caller could not add a scroll. At 200%
   font scale on a 320x480dp or landscape screen, a four-sentence confirmation lost its last
   sentence — the "this cannot be undone" one. The message now scrolls inside the dialog.
+- **`KansoSkeleton` was invisible inside a `KansoCard`.** Its bars pulsed between
+  `surfaceContainerHighest` and `surfaceContainerHigh` — and the first of those is what a filled
+  card is painted in, so against a card the bars measured 1.00:1 at one end of the pulse and
+  1.05:1 at the other, for every seed. They are now the content colour laid over whatever is
+  underneath, which shows on the bare surface, in a card and in a sheet alike. *Visible change:*
+  on the bare surface the bars are within a tone of where they were.
+- **A skeleton row was not the height of the row it stands in for**, so the layout did jump when
+  the data landed. The row was a fixed 72dp (48dp without a supporting line) against a list row
+  of 68dp at the default font scale, 61.5dp at 0.85 and 103.5dp at 200%. It is now built from the
+  same padding and the same line heights as `KansoListItem`, and matches it at every font scale.
+  *Visible change:* a two-line skeleton row is 4dp shorter at the default font scale.
 
 ### Changed
 

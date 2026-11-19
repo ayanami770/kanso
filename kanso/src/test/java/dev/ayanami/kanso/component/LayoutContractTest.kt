@@ -4,7 +4,11 @@
  */
 package dev.ayanami.kanso.component
 
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
@@ -12,6 +16,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.semantics.SemanticsNode
 import androidx.compose.ui.semantics.SemanticsProperties
@@ -23,6 +28,7 @@ import androidx.compose.ui.test.hasScrollAction
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
+import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.unit.Density
@@ -188,5 +194,45 @@ class LayoutContractTest {
         val layout = textLayout(compose.onNodeWithText(message).fetchSemanticsNode())
         assertFalse("no part of the message may be dropped to make it fit", layout.didOverflowHeight)
         compose.onNodeWithText("Forget").assertIsDisplayed()
+    }
+
+    // ---- skeleton -------------------------------------------------------------------
+
+    /**
+     * The skeleton promises that nothing moves when the data lands, which is only true if its
+     * rows are the height of the rows that replace them. A fixed 72dp was 4dp off a two-line
+     * row at the default font scale and 31dp off at 200%.
+     */
+    @Test
+    fun `a skeleton row is as tall as the list row it stands in for`() {
+        val scales = listOf(0.85f, 1f, 2f)
+        compose.mainClock.autoAdvance = false
+        compose.setContent {
+            Column(Modifier.verticalScroll(rememberScrollState())) {
+                scales.forEach { scale ->
+                    Host(scale) {
+                        Column {
+                            KansoListItem(
+                                "Search peers",
+                                Modifier.testTag("two-$scale"),
+                                supporting = "Discover devices",
+                                onClick = {},
+                            )
+                            Box(Modifier.testTag("skeleton-two-$scale")) { KansoSkeleton(rows = 1) }
+                            KansoListItem("Search peers", Modifier.testTag("one-$scale"), onClick = {})
+                            Box(Modifier.testTag("skeleton-one-$scale")) {
+                                KansoSkeleton(rows = 1, supporting = false)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        fun height(tag: String) = compose.onNodeWithTag(tag).fetchSemanticsNode().size.height
+        scales.forEach { scale ->
+            assertEquals("two-line row at font scale $scale", height("two-$scale"), height("skeleton-two-$scale"))
+            assertEquals("one-line row at font scale $scale", height("one-$scale"), height("skeleton-one-$scale"))
+        }
     }
 }
