@@ -132,6 +132,40 @@ project(":kanso") {
             "testImplementation"(libs.roborazzi.compose)
             "testImplementation"(libs.roborazzi.junit.rule)
         }
+
+        // Robolectric runs the tests against a real Android runtime: a jar of about 150 MB of
+        // framework code that executes inside the test JVM. Left to itself it downloads that jar
+        // at test time with its own Maven client, into ~/.m2 — outside Gradle, and so outside
+        // gradle/verification-metadata.xml. It was the one piece of executed code in this build
+        // whose bytes nothing pinned. Resolving it here puts it under the same SHA-256 pins as
+        // every other artifact, and running Robolectric offline against Gradle's copy means that
+        // is the only way it can arrive.
+        //
+        // The coordinate follows from two things and moves with them: `sdk=34` in
+        // kanso/src/test/resources/robolectric.properties, and the Robolectric release. A bump
+        // that changes it fails loudly — offline, Robolectric names the jar it could not find —
+        // and is fixed by updating `robolectric-android-all` in the catalog and adding its
+        // checksums to gradle/verification-metadata.xml.
+        val robolectricRuntime = configurations.create("robolectricRuntime") {
+            isCanBeConsumed = false
+            isTransitive = false
+        }
+        dependencies { "robolectricRuntime"(libs.robolectric.android.all) }
+        val robolectricRuntimeFiles: FileCollection = robolectricRuntime.incoming.files
+        tasks.withType<Test>().configureEach {
+            inputs.files(robolectricRuntimeFiles)
+                .withPropertyName("robolectricRuntime")
+                .withPathSensitivity(PathSensitivity.NONE)
+            jvmArgumentProviders.add(
+                CommandLineArgumentProvider {
+                    val jar = robolectricRuntimeFiles.singleFile
+                    listOf(
+                        "-Drobolectric.offline=true",
+                        "-Drobolectric.dependency.dir=${jar.parentFile.absolutePath}",
+                    )
+                },
+            )
+        }
     }
 
     apply(plugin = "org.jetbrains.dokka")

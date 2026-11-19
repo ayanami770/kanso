@@ -237,6 +237,12 @@ kanso is not published to a Maven repository, and that is deliberate — see
 - The gallery keeps its state across a rotation or a theme change (`rememberSaveable`), starts
   in the system's light or dark mode instead of always light, has a dark window background and
   a launcher icon, and no longer opts into backup. Demo only.
+- kanso's own tests no longer let Robolectric download its Android runtime. That jar — about
+  150 MB of framework code that runs inside the test JVM — was fetched at test time by
+  Robolectric's own Maven client, outside Gradle and so outside
+  `gradle/verification-metadata.xml`. Gradle resolves it now, under the same SHA-256 pins as
+  everything else, and the tests run Robolectric offline against that copy. Contributors only;
+  nothing reaches a consuming build.
 - **Releases are no longer tagged.** The four `v0.1.x` tags stay on the remote as history; from
   here on a consumer moves their submodule to a commit SHA, and every section in this file is
   headed with the SHA to move to. Nothing about how breaking changes are communicated has
