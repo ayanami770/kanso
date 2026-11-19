@@ -8,6 +8,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -45,6 +46,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -113,9 +115,11 @@ private enum class Tab(val label: String, val icon: ImageVector) {
 
 @Composable
 private fun DemoApp() {
-    var brandIndex by remember { mutableIntStateOf(0) }
-    var dark by remember { mutableStateOf(false) }
-    var dynamic by remember { mutableStateOf(false) }
+    var brandIndex by rememberSaveable { mutableIntStateOf(0) }
+    // Starts wherever the system is, and from then on stays where the user put it.
+    val systemDark = isSystemInDarkTheme()
+    var dark by rememberSaveable { mutableStateOf(systemDark) }
+    var dynamic by rememberSaveable { mutableStateOf(false) }
     val brand: KansoBrand = Brands[brandIndex]
 
     KansoTheme(brand = brand, darkTheme = dark, dynamicColor = dynamic) {
@@ -139,7 +143,7 @@ private fun DemoShell(
     onToggleDark: () -> Unit,
     onToggleDynamic: () -> Unit,
 ) {
-    var tab by remember { mutableStateOf(Tab.Gallery) }
+    var tab by rememberSaveable { mutableStateOf(Tab.Gallery) }
     var menuOpen by remember { mutableStateOf(false) }
 
     // The gallery runs on KansoScaffold rather than a hand-rolled Scaffold on purpose: if the
@@ -346,10 +350,12 @@ private enum class Transport(val label: String) {
 
 @Composable
 private fun FormsScreen(inner: PaddingValues) {
-    var name by remember { mutableStateOf("") }
+    var name by rememberSaveable { mutableStateOf("") }
+    // Not saveable, on purpose: a secret does not belong in saved instance state, so a rotation
+    // clears it and the user types it again.
     var pin by remember { mutableStateOf("") }
-    var transport by remember { mutableStateOf<Transport?>(null) }
-    var confirming by remember { mutableStateOf(false) }
+    var transport by rememberSaveable { mutableStateOf<Transport?>(null) }
+    var confirming by rememberSaveable { mutableStateOf(false) }
     val pinError = pin.isNotEmpty() && pin.length < 6
 
     if (confirming) {
@@ -429,7 +435,7 @@ private enum class DemoState { Empty, Loading, Skeleton, Error }
 
 @Composable
 private fun StatesScreen(inner: PaddingValues) {
-    var state by remember { mutableStateOf(DemoState.Empty) }
+    var state by rememberSaveable { mutableStateOf(DemoState.Empty) }
     var refreshing by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
 
@@ -507,10 +513,10 @@ private fun NextStateButton(modifier: Modifier = Modifier, onClick: () -> Unit) 
 
 @Composable
 private fun SettingsScreen(inner: PaddingValues) {
-    var sync by remember { mutableStateOf(true) }
-    var diagnostics by remember { mutableStateOf(false) }
-    var units by remember { mutableStateOf("Metric") }
-    var sheetOpen by remember { mutableStateOf(false) }
+    var sync by rememberSaveable { mutableStateOf(true) }
+    var diagnostics by rememberSaveable { mutableStateOf(false) }
+    var units by rememberSaveable { mutableStateOf("Metric") }
+    var sheetOpen by rememberSaveable { mutableStateOf(false) }
 
     // The inset lives on the rows, not on the cards around them: the pressed area runs to the
     // card's edges and only the content moves in.

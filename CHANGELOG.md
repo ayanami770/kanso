@@ -234,6 +234,9 @@ kanso is not published to a Maven repository, and that is deliberate — see
   `Elevated` and `Destructive` buttons and the `Info` badge it was missing, the content
   container's preview gained the four standard configurations, and the large-top-bar preview no
   longer pairs the tall header with a back button — the one combination its own KDoc rules out.
+- The gallery keeps its state across a rotation or a theme change (`rememberSaveable`), starts
+  in the system's light or dark mode instead of always light, has a dark window background and
+  a launcher icon, and no longer opts into backup. Demo only.
 - **Releases are no longer tagged.** The four `v0.1.x` tags stay on the remote as history; from
   here on a consumer moves their submodule to a commit SHA, and every section in this file is
   headed with the SHA to move to. Nothing about how breaking changes are communicated has
