@@ -1,8 +1,13 @@
 # Publishes kanso's API documentation to GitHub Pages.
 #
-# Separate from ci.yml on purpose. This job writes somewhere — it deploys — while CI only reads
-# and reports, and the two want different permissions: `pages: write` and `id-token: write`
+# Separate from ci.yml on purpose. This workflow writes somewhere — it deploys — while CI only
+# reads and reports, and the two want different permissions: `pages: write` and `id-token: write`
 # belong to exactly one workflow, not to the job that runs on every pull request.
+#
+# And within this workflow they belong to exactly one job. Generating the site runs Gradle —
+# Dokka, its plugins and everything they resolve — and needs nothing but a checkout; deploying
+# runs no code from this repository at all. Kept in one job, the build held the token that can
+# rewrite the published site and could mint this repository's OIDC identity.
 #
 # Docs are *generated* in CI on every PR (see the "API docs" step there), so a broken KDoc link
 # fails before merge. This workflow only publishes what main already proved buildable.
@@ -27,23 +32,14 @@ concurrency:
 
 permissions:
   contents: read
-  pages: write
-  id-token: write
 
 jobs:
-  publish:
-    name: Publish API docs
-    # main-only publish guard. workflow_dispatch lets a user pick any ref, and this job holds
-    # pages: write + id-token: write, so without this an unreviewed branch could be dispatched and
-    # published to the official Pages site — past the main-only trust boundary. A push already only
-    # fires on main; this makes a manual run obey the same rule. (Belt-and-braces to a github-pages
-    # environment deployment-branch restriction, which lives in repo settings, not this file.)
+  build:
+    name: Build API docs
+    # Same main-only rule as the publish job below; skipping here also skips the publish.
     if: ${{ github.ref == 'refs/heads/main' }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
-    environment:
-      name: github-pages
-      url: ${{ steps.deploy.outputs.page_url }}
 
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7
@@ -63,11 +59,32 @@ jobs:
       - name: Generate API docs
         run: ./gradlew :kanso:checkDokkaLinks
 
-      - uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d  # v6.0.0
-
       - uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9  # v5.0.0
         with:
           path: kanso/build/dokka/html
+
+  publish:
+    name: Publish API docs
+    needs: build
+    # main-only publish guard. workflow_dispatch lets a user pick any ref, and this job holds
+    # pages: write + id-token: write, so without this an unreviewed branch could be dispatched and
+    # published to the official Pages site — past the main-only trust boundary. A push already only
+    # fires on main; this makes a manual run obey the same rule. (Belt-and-braces to a github-pages
+    # environment deployment-branch restriction, which lives in repo settings, not this file.)
+    if: ${{ github.ref == 'refs/heads/main' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    # The only job that may write to Pages. It checks nothing out and runs no build: it takes
+    # the artifact the build job uploaded and hands it to the Pages deployment.
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+
+    steps:
+      - uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d  # v6.0.0
 
       - id: deploy
         uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346  # v5.0.1
