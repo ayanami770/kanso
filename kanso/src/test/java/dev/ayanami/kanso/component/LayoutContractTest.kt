@@ -7,6 +7,7 @@ package dev.ayanami.kanso.component
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -268,5 +269,34 @@ class LayoutContractTest {
         )
         assertTrue("the headline must keep real width", headline.size.width >= halfRow / 2)
         assertTrue("and wrap like a sentence, not a column", lineCount(headline) <= 6)
+    }
+
+    // ---- full-area states -----------------------------------------------------------
+
+    /**
+     * The supported way to pair a full-area state with pull-to-refresh: the state is the
+     * scrollable. Wrapped in a scrolling column instead, it loses its centring and sits at the
+     * top — which is what the gallery itself used to show.
+     */
+    @Test
+    fun `a full-area state given a scrollState is scrollable and still centred`() {
+        compose.setContent {
+            Host {
+                Box(Modifier.size(360.dp, 300.dp).testTag("parent")) {
+                    KansoEmptyState(
+                        icon = ErrorIcon,
+                        title = "Nothing here yet",
+                        scrollState = rememberScrollState(),
+                    )
+                }
+            }
+        }
+
+        compose.onNode(hasScrollAction()).assertExists()
+        val parent = compose.onNodeWithTag("parent").fetchSemanticsNode().boundsInRoot
+        val title = placed("Nothing here yet").single().boundsInRoot
+        // The icon sits above the title, so a centred block puts the title below the middle;
+        // top-aligned, it is well above it.
+        assertTrue("the state must be centred in its parent", title.center.y > parent.center.y)
     }
 }

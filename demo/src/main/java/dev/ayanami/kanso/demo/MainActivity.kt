@@ -9,6 +9,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -45,6 +46,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -420,50 +422,64 @@ private fun StatesScreen(inner: PaddingValues) {
         },
         modifier = Modifier.fillMaxSize().padding(inner),
     ) {
-        Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
-            when (state) {
-                DemoState.Empty -> KansoEmptyState(
-                    icon = Icons.Filled.Inbox,
-                    title = "Nothing here yet",
-                    description = "Empty, loading, skeleton and error states share one visual " +
-                        "language so every screen feels the same.",
-                    action = {
-                        KansoButton("Next state", onClick = { state = DemoState.Loading })
-                    },
+        // Each state is itself the scrollable the refresh gesture needs — `scrollState` on the
+        // full-area states, a scrolling column around the skeleton. One scrolling column around
+        // all of them would be shorter and would un-centre them: inside a scroll, a full-area
+        // state has no height to be centred in.
+        when (state) {
+            DemoState.Empty -> KansoEmptyState(
+                icon = Icons.Filled.Inbox,
+                title = "Nothing here yet",
+                description = "Empty, loading, skeleton and error states share one visual " +
+                    "language so every screen feels the same.",
+                scrollState = rememberScrollState(),
+                action = {
+                    KansoButton("Next state", onClick = { state = DemoState.Loading })
+                },
+            )
+
+            DemoState.Loading -> Box {
+                KansoLoadingState(
+                    label = "Establishing session…",
+                    scrollState = rememberScrollState(),
                 )
-
-                DemoState.Loading -> KansoLoadingState(label = "Establishing session…")
-
-                // A skeleton promises the shape of what is coming; a spinner promises nothing.
-                DemoState.Skeleton -> Column(Modifier.padding(Kanso.spacing.screen)) {
-                    KansoSkeleton(rows = 5, icon = true)
+                NextStateButton(Modifier.align(Alignment.BottomCenter)) {
+                    state = DemoState.Skeleton
                 }
+            }
 
-                DemoState.Error -> KansoErrorState(
-                    title = "Could not reach the relay",
-                    description = "The demo does not actually connect to anything — this is " +
-                        "the state a failed load lands in.",
-                    onRetry = { state = DemoState.Empty },
-                )
+            // A skeleton promises the shape of what is coming; a spinner promises nothing.
+            DemoState.Skeleton -> Column(
+                Modifier
+                    .fillMaxSize()
+                    .verticalScroll(rememberScrollState())
+                    .padding(Kanso.spacing.screen),
+            ) {
+                KansoSkeleton(rows = 5, icon = true)
+                NextStateButton { state = DemoState.Error }
             }
-            if (state == DemoState.Loading || state == DemoState.Skeleton) {
-                KansoButton(
-                    "Next state",
-                    onClick = {
-                        state = if (state == DemoState.Loading) {
-                            DemoState.Skeleton
-                        } else {
-                            DemoState.Error
-                        }
-                    },
-                    style = KansoButtonStyle.Text,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(Kanso.spacing.screen),
-                )
-            }
+
+            DemoState.Error -> KansoErrorState(
+                title = "Could not reach the relay",
+                description = "The demo does not actually connect to anything — this is " +
+                    "the state a failed load lands in.",
+                scrollState = rememberScrollState(),
+                onRetry = { state = DemoState.Empty },
+            )
         }
     }
+}
+
+@Composable
+private fun NextStateButton(modifier: Modifier = Modifier, onClick: () -> Unit) {
+    KansoButton(
+        "Next state",
+        onClick = onClick,
+        style = KansoButtonStyle.Text,
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(vertical = Kanso.spacing.screen),
+    )
 }
 
 @Composable

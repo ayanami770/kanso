@@ -33,6 +33,12 @@ import dev.ayanami.kanso.theme.Kanso
  * when the parent does not already scroll, so the whole state stays reachable. Leave it null
  * if the caller scrolls: nesting two vertical scrolls measures this one with an unbounded
  * height and throws.
+ *
+ * Inside a parent that scrolls, the state is not centred: it has no height to be centred in, so
+ * it sits at the top at its own size. That matters for the usual pairing with pull-to-refresh,
+ * which needs a scrollable child — do not wrap the state in a scrolling column for it. Make the
+ * state itself the scrollable by passing [scrollState]: it stays centred, and the gesture still
+ * reaches it.
  */
 @Composable
 public fun KansoEmptyState(

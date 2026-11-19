@@ -158,6 +158,11 @@ kanso is not published to a Maven repository, and that is deliberate — see
 
   *Migration:* none, unless your app relied on kanso to supply `ui-tooling` for its own
   `@Preview`s — declare `debugImplementation("androidx.compose.ui:ui-tooling")` yourself.
+- The gallery's States tab hosts each full-area state as the scrollable itself (`scrollState`)
+  instead of wrapping them all in one scrolling column, which had left "a centred full-area
+  placeholder" sitting at the top of the screen. `KansoEmptyState`'s KDoc now says what a
+  scrolling parent does to it and how to pair it with `KansoRefreshBox`. Demo and documentation
+  only; the component is unchanged.
 - **Releases are no longer tagged.** The four `v0.1.x` tags stay on the remote as history; from
   here on a consumer moves their submodule to a commit SHA, and every section in this file is
   headed with the SHA to move to. Nothing about how breaking changes are communicated has
