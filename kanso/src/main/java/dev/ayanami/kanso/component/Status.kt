@@ -42,8 +42,25 @@ private fun KansoStatus.colors(): Pair<Color, Color> = when (this) {
 
     KansoStatus.Error -> Kanso.colors.errorContainer to Kanso.colors.onErrorContainer
 
-    KansoStatus.Neutral -> Kanso.colors.surfaceVariant to Kanso.colors.onSurfaceVariant
+    // Not `surfaceVariant`: that is the same tone as the filled card these usually sit in, so a
+    // neutral badge on a card had no visible container. See neutralStatusContainer.
+    KansoStatus.Neutral ->
+        neutralStatusContainer(Kanso.colors.onSurface) to Kanso.colors.onSurfaceVariant
 }
+
+/** How strongly the content colour is laid over the surface to make the neutral container. */
+private const val NeutralContainerAlpha = 0.12f
+
+/**
+ * The neutral status container: [onSurface] laid thinly over whatever is underneath.
+ *
+ * The other statuses own a hue, so their containers are visible anywhere. Neutral has only
+ * lightness to work with, and a fixed surface role is invisible on whichever surface shares its
+ * tone. An overlay is a step away from every surface it can land on — and on the bare background
+ * it comes out within a tone of the `surfaceVariant` it replaces.
+ */
+internal fun neutralStatusContainer(onSurface: Color): Color =
+    onSurface.copy(alpha = NeutralContainerAlpha)
 
 /**
  * A small pill stating a status — "Valid", "Expiring", "Failed". Sized to sit in a

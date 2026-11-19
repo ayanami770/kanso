@@ -7,6 +7,7 @@ package dev.ayanami.kanso.theme
 import androidx.compose.material3.ColorScheme
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.compositeOver
+import dev.ayanami.kanso.component.neutralStatusContainer
 import dev.ayanami.kanso.component.skeletonBarColor
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -346,6 +347,32 @@ class ColorContrastTest {
                             ratio >= 1.15,
                         )
                     }
+                }
+            }
+        }
+    }
+
+    /**
+     * A neutral badge used to share its container tone with the filled card it sits in, so on a
+     * card it was a label with no pill (1.00:1). Its container must be distinguishable from the
+     * surface under it, and its text must still meet AA on the result.
+     */
+    @Test
+    fun `the neutral status container shows on every surface and keeps its text readable`() {
+        everyHue(step = 15) { hue, seed ->
+            bothSchemes(seed).forEach { (mode, scheme) ->
+                listSurfaces(scheme).forEach { (name, under) ->
+                    val container = neutralStatusContainer(scheme.onSurface).compositeOver(under)
+                    val edge = contrast(under, container)
+                    val text = contrast(container, scheme.onSurfaceVariant)
+                    assertTrue(
+                        "$mode hue $hue neutral container on $name = ${"%.2f".format(edge)}",
+                        edge >= 1.15,
+                    )
+                    assertTrue(
+                        "$mode hue $hue neutral text on $name = ${"%.2f".format(text)}",
+                        text >= aa,
+                    )
                 }
             }
         }

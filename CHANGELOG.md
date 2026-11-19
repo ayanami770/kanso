@@ -112,6 +112,11 @@ kanso is not published to a Maven repository, and that is deliberate — see
   of 68dp at the default font scale, 61.5dp at 0.85 and 103.5dp at 200%. It is now built from the
   same padding and the same line heights as `KansoListItem`, and matches it at every font scale.
   *Visible change:* a two-line skeleton row is 4dp shorter at the default font scale.
+- **A `KansoStatus.Neutral` badge or banner had no visible container on a `KansoCard`.** Its
+  container was `surfaceVariant`, the same tone as the filled card (1.00:1 in the light scheme) —
+  the gallery's own "Unknown" badge was a label with no pill beside three that had one. The
+  neutral container is now the content colour laid thinly over whatever is underneath.
+  *Visible change:* on the bare surface it is within a tone of where it was.
 
 ### Changed
 
