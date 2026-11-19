@@ -6,9 +6,7 @@ package dev.ayanami.kanso.component
 
 import android.content.pm.PackageManager
 import android.os.Build
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
@@ -30,21 +28,33 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.takeOrElse
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.layout.AlignmentLine
+import androidx.compose.ui.layout.FirstBaseline
+import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.style.TextOverflow
 import dev.ayanami.kanso.R
 import dev.ayanami.kanso.theme.Kanso
+import kotlin.math.max
 
 /**
  * The standard kanso screen scaffold: a Material 3 top app bar that reacts to scroll, an
  * optional navigation icon + actions, an optional bottom bar and FAB, and a snackbar host. The
  * content receives the inner [PaddingValues] to consume the app-bar + system insets.
  *
- * The [title] is followed on the same line by the app's version — "CertWatch v5.33.11" —
- * resolved from the installed package by [kansoAppVersionLabel], so every kanso screen carries
- * the running build's version with no wiring, and the shown value can never drift from the
- * build it shipped in. Pass [version] to show a different string, rendered verbatim (a build
- * variant, a git hash), or an empty string for the rare screen that must not carry one.
+ * The [title] is followed on the same line by the app's version — "Acme v1.2.3" — resolved from
+ * the installed package by [kansoAppVersionLabel], so every kanso screen carries the running
+ * build's version with no wiring, and the shown value can never drift from the build it shipped
+ * in. Pass [version] to show a different string, rendered verbatim (a build variant, a git
+ * hash), or an empty string for the rare screen that must not carry one.
+ *
+ * Neither text wraps. A title too long for the bar is ellipsised — on one line, or two under
+ * [largeTopBar] — and the version is drawn only when the whole of it fits beside the title: cut
+ * short, "v1.2.31" reads as "v1.2.3", which is worse than not showing it. The pair is a single
+ * heading for accessibility services.
  *
  * The title is centred by default; pass `centeredTitle = false` for the start-aligned bar that
  * suits a screen with several actions, or [titleContent] to put something other than text there
@@ -90,16 +100,8 @@ public fun KansoScaffold(
         TopAppBarDefaults.enterAlwaysScrollBehavior()
     }
     val titleSlot: @Composable () -> Unit = titleContent ?: {
-        if (version.isBlank()) {
-            Text(title)
-        } else {
-            // The version inherits the bar's own title style — it is part of the name the
-            // header states ("CertWatch v5.33.11"), not a caption beside it.
-            Row(horizontalArrangement = Arrangement.spacedBy(Kanso.spacing.xs)) {
-                Text(title, Modifier.alignByBaseline())
-                Text(version, Modifier.alignByBaseline())
-            }
-        }
+        // A large bar has room for a second line of title; a single-row bar does not.
+        TitleLine(title = title, version = version, maxTitleLines = if (largeTopBar) 2 else 1)
     }
     Scaffold(
         modifier = modifier.fillMaxSize().nestedScroll(scrollBehavior.nestedScrollConnection),
@@ -137,6 +139,74 @@ public fun KansoScaffold(
         contentWindowInsets = contentWindowInsets,
         content = content,
     )
+}
+
+/**
+ * The scaffold's title and, when there is room for the whole of it, the version after it.
+ *
+ * A `Row` of two texts is the obvious way to write this, and it fails at every width that
+ * matters. Once the title fills the bar the version is measured with nothing left, wraps one
+ * character per line and runs down the screen; with a little room left it breaks mid-number.
+ * The rule here is that neither text wraps on the other's account: the title is ellipsised at
+ * [maxTitleLines], and the version is drawn whole or not at all, because a clipped version is a
+ * different version.
+ */
+@Composable
+private fun TitleLine(title: String, version: String, maxTitleLines: Int) {
+    val gap = Kanso.spacing.xs
+    Layout(
+        content = {
+            Text(title, maxLines = maxTitleLines, overflow = TextOverflow.Ellipsis)
+            // The version inherits the bar's own title style — it is part of the name the
+            // header states ("Acme v1.2.3"), not a caption beside it.
+            if (version.isNotBlank()) Text(version, maxLines = 1, softWrap = false)
+        },
+        // One stop for a screen reader, announced as the heading it is. Read apart, "Peers" and
+        // "v1.4.2" are two unrelated fragments, and a title that is not a heading cannot be
+        // reached by heading navigation the way a card's title can.
+        modifier = Modifier.semantics(mergeDescendants = true) { heading() },
+    ) { measurables, constraints ->
+        val loose = constraints.copy(minWidth = 0, minHeight = 0)
+        val titleMeasurable = measurables[0]
+        val versionMeasurable = measurables.getOrNull(1)
+        val gapPx = gap.roundToPx()
+
+        val versionPlaceable = versionMeasurable?.let { measurable ->
+            val wanted = titleMeasurable.maxIntrinsicWidth(loose.maxHeight) + gapPx +
+                measurable.maxIntrinsicWidth(loose.maxHeight)
+            if (!constraints.hasBoundedWidth || wanted <= constraints.maxWidth) {
+                measurable.measure(loose)
+            } else {
+                null
+            }
+        }
+        val titleMaxWidth = if (versionPlaceable != null && constraints.hasBoundedWidth) {
+            (constraints.maxWidth - gapPx - versionPlaceable.width).coerceAtLeast(0)
+        } else {
+            constraints.maxWidth
+        }
+        val titlePlaceable = titleMeasurable.measure(loose.copy(maxWidth = titleMaxWidth))
+
+        // Both texts share the bar's title style, so these offsets are normally zero; they only
+        // matter when a caller's typography gives the two different metrics.
+        val titleBaseline = titlePlaceable[FirstBaseline]
+        val versionBaseline = versionPlaceable?.get(FirstBaseline) ?: AlignmentLine.Unspecified
+        val aligned = titleBaseline != AlignmentLine.Unspecified &&
+            versionBaseline != AlignmentLine.Unspecified
+        val baseline = if (aligned) max(titleBaseline, versionBaseline) else 0
+        val titleY = if (aligned) baseline - titleBaseline else 0
+        val versionY = if (aligned) baseline - versionBaseline else 0
+
+        val width = titlePlaceable.width + (versionPlaceable?.let { gapPx + it.width } ?: 0)
+        val height = max(
+            titleY + titlePlaceable.height,
+            versionY + (versionPlaceable?.height ?: 0),
+        )
+        layout(width, height) {
+            titlePlaceable.placeRelative(0, titleY)
+            versionPlaceable?.placeRelative(titlePlaceable.width + gapPx, versionY)
+        }
+    }
 }
 
 /**

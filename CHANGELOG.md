@@ -85,6 +85,18 @@ kanso is not published to a Maven repository, and that is deliberate — see
   `androidx.activity.ComponentActivity`, both `exported="true"`, into its manifest — from a
   library whose own manifest says "no components, no permissions". They are declared from the
   root script now and stay inside kanso's own build.
+- **`KansoScaffold`'s title line broke at the widths it most needs to survive.** The title and
+  the version were two texts in a plain `Row`. Ten full-width characters with a back arrow and
+  two actions on a 360dp screen — at the default font size — wrapped the title and left the
+  version no width at all, so it ran down the screen one character per line; at 200% font scale
+  "v1.2.31" broke after "v1.2.3", which reads as a different version.
+
+  Neither text wraps now. The title is ellipsised (one line; two under `largeTopBar`), and the
+  version is drawn only when the whole of it fits beside the title. The pair is also a single
+  accessibility node marked as a heading, where it used to be two unrelated stops and no
+  heading. *Visible change:* a title that used to wrap onto a second line in a single-row bar
+  is now ellipsised.
+
 ### Changed
 
 - **Installing kanso no longer means mirroring its version catalog.** `kanso/build.gradle.kts` is
