@@ -536,8 +536,7 @@ class LayoutContractTest {
             }
         }
 
-        fun contentColor(label: String) =
-            textLayout(placed(label).single()).layoutInput.style.color
+        fun contentColor(label: String) = textLayout(placed(label).single()).layoutInput.style.color
 
         assertEquals(enabledContent, contentColor("Busy"))
         assertNotEquals(enabledContent, contentColor("Off"))
