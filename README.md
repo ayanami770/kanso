@@ -109,7 +109,22 @@ git submodule add https://github.com/ayanami770/kanso.git third_party/kanso
 ```kotlin
 include(":kanso")
 project(":kanso").projectDir = file("third_party/kanso/kanso")
+
+dependencyResolutionManagement {
+    versionCatalogs {
+        // kanso's own dependency versions, read straight from the submodule — nothing to mirror.
+        create("kansoLibs") { from(files("third_party/kanso/gradle/libs.versions.toml")) }
+    }
+}
 ```
+
+If your settings file already has a `dependencyResolutionManagement { }` block, put the
+`versionCatalogs { }` part inside it. That block is the whole contract: kanso's module script
+reads its dependency versions from `kansoLibs`, and applies the Android library and Compose
+compiler plugins by id, so they come from the versions your own build already uses. Its tests,
+lint rules and documentation tooling are declared in kanso's root script, which your build never
+evaluates — none of it reaches your classpath, your debug manifest or your dependency
+verification file.
 
 `app/build.gradle.kts`:
 

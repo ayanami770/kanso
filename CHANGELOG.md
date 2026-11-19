@@ -77,8 +77,40 @@ kanso is not published to a Maven repository, and that is deliberate — see
   100, which is where the code already wrapped: the 14 lines that exceeded it were rewrapped
   rather than the ceiling raised.
 
+### Fixed
+
+- **A debug build of your app no longer carries two exported activities it never declared.**
+  kanso's `debugImplementation(ui-tooling)` and `debugImplementation(ui-test-manifest)` reached
+  every consumer's debug variant and merged `androidx.compose.ui.tooling.PreviewActivity` and
+  `androidx.activity.ComponentActivity`, both `exported="true"`, into its manifest — from a
+  library whose own manifest says "no components, no permissions". They are declared from the
+  root script now and stay inside kanso's own build.
 ### Changed
 
+- **Installing kanso no longer means mirroring its version catalog.** `kanso/build.gradle.kts` is
+  evaluated by the consuming build, and it used to name 24 aliases through `libs.…` — which in a
+  consuming build is the *consumer's* catalog. Following the README's three steps therefore
+  stopped at `Unresolved reference 'libs'`, and every app that did adopt kanso carried a
+  hand-kept copy of kanso's catalog that had to gain an entry whenever kanso's did.
+
+  The module script now applies the Android library and Compose compiler plugins by id (their
+  versions come from your build, which already has both) and looks its libraries up in a catalog
+  named `kansoLibs`.
+
+  *Migration:* add one block to `settings.gradle.kts` —
+  `versionCatalogs { create("kansoLibs") { from(files("third_party/kanso/gradle/libs.versions.toml")) } }`
+  — and delete the mirrored aliases at your leisure. Nothing breaks if you do neither: without
+  `kansoLibs` the script falls back to `libs`, so an existing mirror keeps working. The
+  `roborazzi` plugin alias and the test-library aliases are no longer read at all.
+- **kanso's own tests, lint rules and preview tooling are no longer part of a consuming build.**
+  Roborazzi, Robolectric, the Compose test artifacts, compose-lints, `ui-tooling` and
+  `ui-test-manifest` are declared from kanso's root script — the move Dokka made earlier, for the
+  same reason — and the module's unit-test component is disabled outside kanso's own build.
+  `./gradlew test` in your app no longer compiles and runs kanso's suite, and you no longer pin
+  that toolchain in your own `verification-metadata.xml`.
+
+  *Migration:* none, unless your app relied on kanso to supply `ui-tooling` for its own
+  `@Preview`s — declare `debugImplementation("androidx.compose.ui:ui-tooling")` yourself.
 - **Releases are no longer tagged.** The four `v0.1.x` tags stay on the remote as history; from
   here on a consumer moves their submodule to a commit SHA, and every section in this file is
   headed with the SHA to move to. Nothing about how breaking changes are communicated has
