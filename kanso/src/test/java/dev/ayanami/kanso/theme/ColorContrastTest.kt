@@ -83,9 +83,10 @@ class ColorContrastTest {
         Triple("error/onError", s.error, s.onError),
         Triple("errorContainer/onErrorContainer", s.errorContainer, s.onErrorContainer),
         Triple("inverseSurface/inverseOnSurface", s.inverseSurface, s.inverseOnSurface),
-        // Not an on-pair, but the one kanso paints most: KansoCard and KansoSectionHeader
-        // both draw their title in `primary` directly on `surface`.
+        // Not on-pairs, but the ones kanso paints most: KansoSectionHeader draws its title in
+        // `primary` on `surface`, and KansoCard draws its own on the filled card's container.
         Triple("surface/primary", s.surface, s.primary),
+        Triple("surfaceContainerHighest/primary", s.surfaceContainerHighest, s.primary),
     )
 
     private fun assertPairsMeetAa(label: String, scheme: (Color) -> ColorScheme) {
@@ -205,7 +206,8 @@ class ColorContrastTest {
 
     /**
      * Each extended role must also be legible as text straight on the surface, which is how a
-     * status label is most often used — not only inside its own container.
+     * status label is most often used — not only inside its own container — and on a filled
+     * card, which is where a list of statuses usually lives.
      */
     @Test
     fun `extended roles are legible on the scheme surface`() {
@@ -216,8 +218,13 @@ class ColorContrastTest {
             val (scheme, e) = pair
             listOf("success" to e.success, "warning" to e.warning, "info" to e.info)
                 .forEach { (name, color) ->
-                    val ratio = contrast(scheme.surface, color)
-                    assertTrue("$mode $name on surface = ${"%.2f".format(ratio)}", ratio >= aa)
+                    listOf(
+                        "surface" to scheme.surface,
+                        "card" to scheme.surfaceContainerHighest,
+                    ).forEach { (where, under) ->
+                        val ratio = contrast(under, color)
+                        assertTrue("$mode $name on $where = ${"%.2f".format(ratio)}", ratio >= aa)
+                    }
                 }
         }
     }

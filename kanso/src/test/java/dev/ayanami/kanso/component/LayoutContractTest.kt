@@ -34,6 +34,7 @@ import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
@@ -345,5 +346,65 @@ class LayoutContractTest {
         compose.onNodeWithText("再試行").assertIsDisplayed()
         compose.onNodeWithContentDescription("戻る").assertIsDisplayed()
         compose.onNodeWithText("Retry").assertDoesNotExist()
+    }
+
+    // ---- touch targets --------------------------------------------------------------
+
+    /**
+     * Padding alone brings a one-line row to 48dp only from a font scale of 1.0 up; at the
+     * "Small" setting it is 44.4dp. The explicit floor is what holds it there — and at the two
+     * scales the goldens are taken at, removing the floor changes nothing they can see.
+     */
+    @Test
+    fun `tappable rows keep the 48dp floor at a small font scale`() {
+        compose.setContent {
+            Host(fontScale = 0.85f) {
+                Column {
+                    KansoListItem("Peers", Modifier.testTag("list"), onClick = {})
+                    KansoCheckboxRow(
+                        "Send diagnostics",
+                        checked = false,
+                        onCheckedChange = {},
+                        modifier = Modifier.testTag("checkbox"),
+                    )
+                    KansoRadioRow(
+                        "Metric",
+                        selected = true,
+                        onSelect = {},
+                        modifier = Modifier.testTag("radio"),
+                    )
+                }
+            }
+        }
+
+        val floor = 48 * compose.density.density
+        listOf("list", "checkbox", "radio").forEach { tag ->
+            val height = compose.onNodeWithTag(tag).fetchSemanticsNode().size.height
+            assertTrue("the $tag row is ${height}px tall, under the 48dp floor", height >= floor)
+        }
+    }
+
+    /**
+     * The regression that gave the full-area states their `scrollState`: at 200% in a short
+     * parent the call-to-action is below the fold, and it has to be reachable.
+     */
+    @Test
+    fun `an empty state's action can be scrolled into view at a large font scale`() {
+        compose.setContent {
+            Host(fontScale = 2f) {
+                Box(Modifier.size(360.dp, 420.dp)) {
+                    KansoEmptyState(
+                        icon = ErrorIcon,
+                        title = "Nothing here yet",
+                        description = "Empty, loading and error states share one visual " +
+                            "language so every screen feels the same.",
+                        scrollState = rememberScrollState(),
+                        action = { KansoButton("Add a peer", onClick = {}) },
+                    )
+                }
+            }
+        }
+
+        compose.onNodeWithText("Add a peer").performScrollTo().assertIsDisplayed()
     }
 }

@@ -6,14 +6,21 @@ package dev.ayanami.kanso.theme
 
 import android.app.Activity
 import android.view.ContextThemeWrapper
+import androidx.compose.foundation.layout.Column
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.junit4.v2.createComposeRule
+import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.unit.dp
 import androidx.core.view.WindowCompat
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import dev.ayanami.kanso.component.KansoDivider
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Rule
@@ -96,15 +103,82 @@ class ThemeTokensTest {
      * rather than restating the 40dp they currently come to, so moving the token has to move the
      * divider with it.
      *
-     * Asserted on the arithmetic rather than on pixels deliberately: what would break is the
-     * *relationship*, and a golden only ever sees one instance of it — at the defaults, where a
-     * hardcoded 40dp and a derived one look identical.
+     * Measured on the composed divider. An earlier version of this test added the two tokens
+     * together and compared the sum with a literal — it never called `KansoDivider`, so it kept
+     * passing with the indent hard-coded back to 40dp, which is the one regression it was
+     * written for.
      */
     @Test
     fun `the divider inset is derived from the icon token, not restated`() {
-        val spacing = KansoSpacing()
-        assertEquals(40.dp, KansoSizing().icon + spacing.lg)
-        assertEquals(56.dp, KansoSizing(icon = 40.dp).icon + spacing.lg)
+        compose.setContent {
+            Column {
+                KansoTheme(dynamicColor = false) {
+                    KansoDivider(Modifier.testTag("flush"))
+                    KansoDivider(Modifier.testTag("default"), inset = true)
+                }
+                KansoTheme(dynamicColor = false, sizing = KansoSizing(icon = 40.dp)) {
+                    KansoDivider(Modifier.testTag("wide-icon"), inset = true)
+                }
+            }
+        }
+
+        // The line itself starts where the innermost coordinates do — after the start padding.
+        fun lineStart(tag: String): Float = compose.onNodeWithTag(tag).fetchSemanticsNode()
+            .layoutInfo.coordinates.positionInRoot().x / compose.density.density
+        assertEquals(0f, lineStart("flush"), 0.01f)
+        assertEquals(40f, lineStart("default"), 0.01f)
+        assertEquals(56f, lineStart("wide-icon"), 0.01f)
+    }
+
+    // The three holders the tests above did not read back. Dropping any one of their
+    // `provides` lines left every test green: nothing in the library reads `Kanso.brand` or
+    // `Kanso.elevation`, and the goldens only ever render the light scheme.
+
+    @Test
+    fun `brand passed to the theme reaches Kanso brand`() {
+        val brand = KansoBrand("contract", Color(0xFF123456))
+        val seen = readFromTheme {
+            var value = KansoDefaultBrand
+            KansoTheme(brand = brand, dynamicColor = false) { value = Kanso.brand }
+            value
+        }
+        assertEquals(brand, seen)
+    }
+
+    @Test
+    fun `elevation passed to the theme reaches Kanso elevation`() {
+        val seen = readFromTheme {
+            var value = 0.dp
+            KansoTheme(dynamicColor = false, elevation = KansoElevation(level1 = 9.dp)) {
+                value = Kanso.elevation.level1
+            }
+            value
+        }
+        assertEquals(9.dp, seen)
+    }
+
+    @Test
+    fun `extended colours passed to the theme reach Kanso extendedColors`() {
+        val custom = KansoLightExtendedColors.copy(success = Color(0xFF00FF00))
+        val seen = readFromTheme {
+            var value = KansoLightExtendedColors
+            KansoTheme(dynamicColor = false, extendedColors = custom) {
+                value = Kanso.extendedColors
+            }
+            value
+        }
+        assertEquals(custom, seen)
+    }
+
+    /** With none passed, a dark theme must not fall back to the light set's holder default. */
+    @Test
+    fun `a dark theme provides the dark extended colours`() {
+        val seen = readFromTheme {
+            var value = KansoLightExtendedColors
+            KansoTheme(darkTheme = true, dynamicColor = false) { value = Kanso.extendedColors }
+            value
+        }
+        assertEquals(KansoDarkExtendedColors, seen)
     }
 
     // ---- system bars ----------------------------------------------------------------

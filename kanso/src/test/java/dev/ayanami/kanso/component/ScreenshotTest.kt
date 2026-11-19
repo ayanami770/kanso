@@ -29,13 +29,17 @@ import org.robolectric.annotation.GraphicsMode
  * Golden images for the components whose bugs have all been text-layout bugs.
  *
  * Scoped deliberately. Not a component x theme matrix — that is unreviewable in a pull-request
- * diff and churns on every BOM bump. These four are the ones whose regressions actually
- * happened: a section header that ellipsised, a status row that starved its label, a list row
- * that lost its touch target, an empty state whose call-to-action fell off the screen. Each is
- * captured at font scale 1.0 and 2.0, because the second is where they broke.
+ * diff and churns on every BOM bump. These are the components whose regressions actually
+ * happened and show up as moved pixels: a section header that ellipsised, a status row that
+ * starved its label, a list row, a card, the setting rows and the info banner — each captured
+ * at font scale 1.0 and 2.0, because the second is where they broke. Two more are about colour
+ * rather than text and are captured once: a skeleton and a neutral status, each on the bare
+ * surface and inside a card, where both used to vanish.
  *
- * Behaviour belongs in `ComponentBehaviourTest` and visual review belongs in the previews;
- * what a golden adds is catching the change nobody looked at.
+ * What a golden cannot say is why something is wrong — that a row lost its 48dp floor, or that
+ * an empty state's call-to-action cannot be reached. Those are measured in
+ * `LayoutContractTest`; behaviour belongs in `ComponentBehaviourTest`, and visual review in the
+ * previews. What a golden adds is catching the change nobody looked at.
  *
  * Re-record after an intentional visual change:
  *
@@ -50,7 +54,15 @@ class ScreenshotTest {
     @get:Rule
     val compose = createComposeRule()
 
-    private fun golden(name: String, scale: Float, content: @Composable () -> Unit) {
+    private fun golden(
+        name: String,
+        scale: Float,
+        frozen: Boolean = false,
+        content: @Composable () -> Unit,
+    ) {
+        // A component that animates for ever never lets the composition go idle; with the clock
+        // stopped it is captured at the first frame of its animation instead.
+        if (frozen) compose.mainClock.autoAdvance = false
         compose.setContent {
             CompositionLocalProvider(
                 LocalDensity provides Density(
@@ -68,12 +80,12 @@ class ScreenshotTest {
         compose.onRoot().captureRoboImage("src/test/screenshots/$name-font$scale.png")
     }
 
-    private fun bothScales(name: String, content: @Composable () -> Unit) {
-        golden(name, 1.0f, content)
+    private fun atDefaultScale(name: String, content: @Composable () -> Unit) {
+        golden(name, 1.0f, content = content)
     }
 
     @Test
-    fun sectionHeader() = bothScales("section-header") {
+    fun sectionHeader() = atDefaultScale("section-header") {
         KansoSectionHeader("Encrypted transport", supporting = "Applies to every channel.")
         KansoSectionHeader("Encrypted transport configuration and peer verification")
     }
@@ -85,7 +97,7 @@ class ScreenshotTest {
     }
 
     @Test
-    fun statusRow() = bothScales("status-row") {
+    fun statusRow() = atDefaultScale("status-row") {
         KansoStatusRow("Last sync", "2 minutes ago")
         KansoStatusRow("Fingerprint", "SHA256:pOxq7l9mNc5vVQr2wZ8kT1hYbJ4uE6aD0fGsX3iL")
     }
@@ -97,7 +109,7 @@ class ScreenshotTest {
     }
 
     @Test
-    fun listItem() = bothScales("list-item") {
+    fun listItem() = atDefaultScale("list-item") {
         KansoListItem(
             "Search peers",
             supporting = "Discover devices on the local network",
@@ -117,7 +129,7 @@ class ScreenshotTest {
     }
 
     @Test
-    fun card() = bothScales("card") {
+    fun card() = atDefaultScale("card") {
         KansoCard(title = "Connection", subtitle = "Encrypted transport status") {
             KansoStatusRow("Protocol", "TLS 1.3")
         }
@@ -136,7 +148,7 @@ class ScreenshotTest {
      * and a control that only collides with the text at a large one.
      */
     @Test
-    fun settingRows() = bothScales("setting-rows") {
+    fun settingRows() = atDefaultScale("setting-rows") {
         KansoSwitchRow(
             headline = "Background sync",
             supporting = "Keeps peer status up to date while the app is closed",
@@ -159,7 +171,7 @@ class ScreenshotTest {
 
     /** The banner's action is what a long message pushes off the row — the empty-state bug. */
     @Test
-    fun infoBanner() = bothScales("info-banner") {
+    fun infoBanner() = atDefaultScale("info-banner") {
         KansoInfoBanner(
             text = "This device has not synced since 12 March.",
             status = KansoStatus.Warning,
@@ -174,5 +186,36 @@ class ScreenshotTest {
             status = KansoStatus.Warning,
             action = { KansoButton("Sync", onClick = {}, style = KansoButtonStyle.Text) },
         )
+    }
+
+    /**
+     * The bars are drawn relative to what is under them, and that is as often a card as the
+     * bare surface. Between two surface tones they were the card's own colour: this image had a
+     * blank where the second skeleton is.
+     */
+    @Test
+    fun skeleton() = golden("skeleton", 1.0f, frozen = true) {
+        KansoSkeleton(rows = 2, icon = true)
+        KansoCard(title = "In a card") {
+            KansoSkeleton(rows = 2, icon = true)
+        }
+    }
+
+    /** The same hazard for the one status that has no hue of its own to be seen by. */
+    @Test
+    fun neutralStatus() = golden("neutral-status", 1.0f) {
+        KansoListItem(
+            "new.example.com",
+            supporting = "Never checked",
+            trailing = { KansoStatusBadge("Unknown", KansoStatus.Neutral) },
+        )
+        KansoCard(title = "In a card") {
+            KansoListItem(
+                "new.example.com",
+                supporting = "Never checked",
+                trailing = { KansoStatusBadge("Unknown", KansoStatus.Neutral) },
+            )
+            KansoInfoBanner("Nothing has been checked yet.", status = KansoStatus.Neutral)
+        }
     }
 }
