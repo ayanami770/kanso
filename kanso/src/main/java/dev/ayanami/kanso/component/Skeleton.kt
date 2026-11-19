@@ -155,9 +155,13 @@ private fun BarLine(color: Color, lineHeight: Dp, barFraction: Float, widthFract
 /** What one line of this style occupies, in dp at the current font scale. */
 private fun TextStyle.lineHeightIn(density: Density): Dp = with(density) {
     when {
-        lineHeight.isSp -> lineHeight.toDp()
+        // A line height in sp is scaled in proportion to the font size, not converted on its
+        // own: above a font scale of 1 the system's curve is not linear, and converting the two
+        // separately gives a line shorter than the one the text is actually drawn on.
+        fontSize.isSp && lineHeight.isSp -> fontSize.toDp() * (lineHeight.value / fontSize.value)
         fontSize.isSp && lineHeight.isEm -> fontSize.toDp() * lineHeight.value
         fontSize.isSp -> fontSize.toDp() * FallbackLineHeightMultiplier
+        lineHeight.isSp -> lineHeight.toDp()
         else -> KansoMinTouchTarget / 2
     }
 }
