@@ -7,6 +7,7 @@ package dev.ayanami.kanso.component
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -37,6 +38,11 @@ import dev.ayanami.kanso.theme.KansoMinTouchTarget
  *
  * [trailing] gets at most half of the row; content wider than that wraps inside its own half
  * rather than taking the headline's.
+ *
+ * [contentPadding] is the space between the row's edge and its content, inside the area that
+ * responds to a press. To inset a row in a container that runs edge to edge — a card with no
+ * padding, a full-width list — set the inset here rather than with `Modifier.padding`, which
+ * shrinks the pressed and focused area along with the content.
  */
 @Composable
 public fun KansoListItem(
@@ -46,6 +52,7 @@ public fun KansoListItem(
     icon: ImageVector? = null,
     leading: @Composable (() -> Unit)? = null,
     onClick: (() -> Unit)? = null,
+    contentPadding: PaddingValues = PaddingValues(vertical = Kanso.spacing.md),
     trailing: @Composable (() -> Unit)? = null,
 ) {
     Row(
@@ -62,7 +69,7 @@ public fun KansoListItem(
                     Modifier.semantics(mergeDescendants = true) {}
                 },
             )
-            .padding(vertical = Kanso.spacing.md),
+            .padding(contentPadding),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         // `icon` is the shorthand; `leading` is the escape hatch for an avatar, a checkbox or

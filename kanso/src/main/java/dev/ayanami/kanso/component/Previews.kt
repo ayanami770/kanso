@@ -320,7 +320,16 @@ private fun KansoCardSeamsPreview() = PreviewHost {
             KansoStatusRow("Online", "3")
         }
         KansoCard(contentPadding = PaddingValues(Kanso.spacing.none)) {
-            KansoListItem(headline = "Edge-to-edge row", onClick = {})
+            // The inset goes on the row, not on the card: the pressed area still runs to the
+            // card's edges, and only the text moves in.
+            KansoListItem(
+                headline = "Edge-to-edge row",
+                onClick = {},
+                contentPadding = PaddingValues(
+                    horizontal = Kanso.spacing.lg,
+                    vertical = Kanso.spacing.md,
+                ),
+            )
         }
     }
 }

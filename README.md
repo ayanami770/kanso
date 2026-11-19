@@ -199,9 +199,9 @@ Everything is `Kanso`-prefixed and lives in `dev.ayanami.kanso.component`.
 
 | | |
 |---|---|
-| `KansoListItem` | One/two-line row with an optional leading `icon` — or a `leading` slot for an avatar or checkbox — and trailing content. Merged into one accessibility node; a clickable row is held to the 48dp touch target. |
+| `KansoListItem` | One/two-line row with an optional leading `icon` — or a `leading` slot for an avatar or checkbox — and trailing content. Merged into one accessibility node; a clickable row is held to the 48dp touch target. `contentPadding` insets the content inside the pressed area, for a row that runs edge to edge. |
 | `KansoStatusRow` | Key/value row. Both halves are weighted, so a long value wraps in its own half instead of starving the label. Label and value are one screen-reader stop. |
-| `KansoSwitchRow` / `KansoCheckboxRow` / `KansoRadioRow` | Settings rows where the **row** is the control. `KansoListItem(trailing = { Switch(…) })` gives you two focus stops that a screen reader reads as unrelated and a row whose tap does nothing; these carry `toggleable`/`selectable` with a `Role` on the row and render the control as a read-only indicator. 48dp minimum at any font scale. Wrap a radio group in `Modifier.selectableGroup()` so "1 of 3" is announced. |
+| `KansoSwitchRow` / `KansoCheckboxRow` / `KansoRadioRow` | Settings rows where the **row** is the control. `KansoListItem(trailing = { Switch(…) })` gives you two focus stops that a screen reader reads as unrelated and a row whose tap does nothing; these carry `toggleable`/`selectable` with a `Role` on the row and render the control as a read-only indicator. 48dp minimum at any font scale. Wrap a radio group in `Modifier.selectableGroup()` so "1 of 3" is announced. `contentPadding` works as it does on `KansoListItem`. |
 | `KansoRefreshBox` | Pull-to-refresh around a scrollable, with the indicator in the brand colour instead of Material's theme-blind grey. |
 
 ### Status

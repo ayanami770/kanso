@@ -6,6 +6,7 @@ package dev.ayanami.kanso.component
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -406,5 +407,50 @@ class LayoutContractTest {
         }
 
         compose.onNodeWithText("Add a peer").performScrollTo().assertIsDisplayed()
+    }
+
+    // ---- rows: content padding ------------------------------------------------------
+
+    /**
+     * Padding on the modifier insets the pressed area along with the text. `contentPadding`
+     * insets the text alone — the difference between a highlight that runs to the edges of a
+     * card and one that floats inside it.
+     */
+    @Test
+    fun `row content padding moves the content and leaves the pressed area full width`() {
+        val inset = PaddingValues(horizontal = 16.dp, vertical = 12.dp)
+        compose.setContent {
+            Host {
+                Column {
+                    KansoListItem("Plain", Modifier.testTag("plain"), onClick = {})
+                    KansoListItem(
+                        "Inset",
+                        Modifier.testTag("inset"),
+                        onClick = {},
+                        contentPadding = inset,
+                    )
+                    KansoSwitchRow(
+                        "Switch",
+                        checked = true,
+                        onCheckedChange = {},
+                        modifier = Modifier.testTag("switch"),
+                        contentPadding = inset,
+                    )
+                }
+            }
+        }
+        val sixteen = with(compose.density) { 16.dp.toPx() }
+        val screen = with(compose.density) { 360.dp.toPx() }
+
+        fun row(tag: String) = compose.onNodeWithTag(tag).fetchSemanticsNode().boundsInRoot
+
+        fun textLeft(text: String) = placed(text).single().boundsInRoot.left
+
+        assertEquals("by default a row pads only above and below", 0f, textLeft("Plain"), 0.5f)
+        listOf("inset" to "Inset", "switch" to "Switch").forEach { (tag, text) ->
+            assertEquals("$tag: the pressed area starts at the edge", 0f, row(tag).left, 0.5f)
+            assertEquals("$tag: and runs the full width", screen, row(tag).width, 0.5f)
+            assertEquals("$tag: while the content is inset", sixteen, textLeft(text), 0.5f)
+        }
     }
 }

@@ -489,6 +489,10 @@ private fun SettingsScreen(inner: PaddingValues) {
     var units by remember { mutableStateOf("Metric") }
     var sheetOpen by remember { mutableStateOf(false) }
 
+    // The inset lives on the rows, not on the cards around them: the pressed area runs to the
+    // card's edges and only the content moves in.
+    val rowInset = PaddingValues(horizontal = Kanso.spacing.lg, vertical = Kanso.spacing.md)
+
     if (sheetOpen) {
         KansoBottomSheet(onDismiss = { sheetOpen = false }) {
             Column(Modifier.padding(Kanso.spacing.screen)) {
@@ -515,13 +519,14 @@ private fun SettingsScreen(inner: PaddingValues) {
             supporting = "Tap anywhere on a row — the row is the control, not the switch.",
             modifier = Modifier.padding(top = Kanso.spacing.sm),
         )
-        KansoCard(contentPadding = PaddingValues(horizontal = Kanso.spacing.lg)) {
+        KansoCard(contentPadding = PaddingValues(Kanso.spacing.none)) {
             KansoSwitchRow(
                 headline = "Background sync",
                 supporting = "Keeps peer status up to date while the app is closed",
                 checked = sync,
                 onCheckedChange = { sync = it },
                 icon = Icons.Filled.Bolt,
+                contentPadding = rowInset,
             )
             KansoDivider()
             KansoCheckboxRow(
@@ -529,19 +534,21 @@ private fun SettingsScreen(inner: PaddingValues) {
                 supporting = "Anonymous crash reports only",
                 checked = diagnostics,
                 onCheckedChange = { diagnostics = it },
+                contentPadding = rowInset,
             )
         }
 
         KansoSectionHeader("Units")
         // selectableGroup is what makes a screen reader announce "1 of 2" — a radio row on its
         // own cannot know how many siblings it has.
-        KansoCard(contentPadding = PaddingValues(horizontal = Kanso.spacing.lg)) {
+        KansoCard(contentPadding = PaddingValues(Kanso.spacing.none)) {
             Column(Modifier.selectableGroup()) {
                 listOf("Metric", "Imperial").forEach { option ->
                     KansoRadioRow(
                         headline = option,
                         selected = units == option,
                         onSelect = { units = option },
+                        contentPadding = rowInset,
                     )
                 }
             }

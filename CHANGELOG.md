@@ -82,6 +82,14 @@ kanso is not published to a Maven repository, and that is deliberate — see
   `KansoErrorState`'s default "Retry" label — the one that is drawn on screen, and until now was
   drawn in English whatever the app's language.
 
+- **`contentPadding` on `KansoListItem`, `KansoSwitchRow`, `KansoCheckboxRow` and
+  `KansoRadioRow`** — the space between the row's edge and its content, applied *inside* the
+  pressed area. Until now a row padded itself above and below only, so in an edge-to-edge
+  container the choice was text touching the edge, or `Modifier.padding`, which shrinks the
+  highlight along with the text. The default is the vertical padding the rows already had, so
+  nothing moves. On `KansoListItem` the parameter sits before `trailing`, which stays last for
+  trailing-lambda call sites.
+
 ### Fixed
 
 - **A debug build of your app no longer carries two exported activities it never declared.**
