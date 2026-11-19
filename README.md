@@ -21,10 +21,12 @@ and a small component library, so a screen you write reads the same as every oth
   varying with it: `onPrimary` on `primary` measures 6.41–6.51 across all 360 hues. That guarantee
   is [pinned by tests](kanso/src/test/java/dev/ayanami/kanso/theme/ColorContrastTest.kt), not
   asserted here.
-- **A component library** — eleven components covering a screen's structure, forms, lists and
-  states, listed below. Each reads spacing, colour, type and shape from the tokens, absorbs its
-  own Material 3 experimental opt-ins, and is reviewed in four configurations (light, dark, 200%
-  font scale, RTL) by a preview.
+- **A component library** — the building blocks of a screen's structure, forms, lists, status,
+  overlays and states, listed below. Each reads spacing, colour, type and shape from the tokens
+  and absorbs its own Material 3 experimental opt-ins. All but two are reviewed in four
+  configurations (light, dark, 200% font scale, RTL) by a preview; `KansoBottomSheet` and
+  `KansoRefreshBox` animate in and draw nothing in a static preview, so the gallery app is where
+  those two are looked at.
 - **Aligned versions, and nothing more** — a single Compose BOM is exposed via `api`, so consuming
   apps inherit the same aligned Compose and Material 3 versions. `api` carries only the artifacts
   that appear in kanso's own public signatures; your activity plumbing, icon set and navigation
@@ -248,7 +250,7 @@ Read through the `Kanso` object, which is valid anywhere inside `KansoTheme`.
 | module   | type                      | contents |
 |----------|---------------------------|----------|
 | `:kanso` | `com.android.library`     | the design system (`theme/` + `component/`) |
-| `:demo`  | `com.android.application` | a gallery app: every token + component, live brand switch, dark/light, dynamic-colour toggle |
+| `:demo`  | `com.android.application` | a gallery app: the components in use, live brand switch, dark/light, dynamic-colour toggle |
 
 ## Build
 

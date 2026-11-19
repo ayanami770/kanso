@@ -225,7 +225,7 @@ private fun GalleryScreen(
     ) {
         KansoSectionHeader(
             "Buttons",
-            supporting = "One emphasis system, five weights.",
+            supporting = "One emphasis system, six weights.",
             modifier = Modifier.padding(top = Kanso.spacing.sm),
         )
         Row(
@@ -244,6 +244,23 @@ private fun GalleryScreen(
             }, style = KansoButtonStyle.Outlined, modifier = Modifier.weight(1f))
             KansoButton("Text", onClick = {
             }, style = KansoButtonStyle.Text, modifier = Modifier.weight(1f))
+        }
+        Row(
+            Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(Kanso.spacing.sm),
+        ) {
+            KansoButton(
+                "Elevated",
+                onClick = {},
+                style = KansoButtonStyle.Elevated,
+                modifier = Modifier.weight(1f),
+            )
+            KansoButton(
+                "Destructive",
+                onClick = {},
+                style = KansoButtonStyle.Destructive,
+                modifier = Modifier.weight(1f),
+            )
         }
         KansoButton("Working…", onClick = {}, loading = true, modifier = Modifier.fillMaxWidth())
         KansoButton("Unlock", onClick = {
@@ -309,6 +326,12 @@ private fun GalleryScreen(
                 "new.example.com",
                 supporting = "Never checked",
                 trailing = { KansoStatusBadge("Unknown", KansoStatus.Neutral) },
+            )
+            KansoDivider()
+            KansoListItem(
+                "queue.example.com",
+                supporting = "Check scheduled",
+                trailing = { KansoStatusBadge("Queued", KansoStatus.Info) },
             )
         }
     }

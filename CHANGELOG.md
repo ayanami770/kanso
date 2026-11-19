@@ -47,8 +47,9 @@ kanso is not published to a Maven repository, and that is deliberate — see
   the three call sites share.
 
 - **Slack's `compose-lints`** on both modules, and on `:kanso` **every lint warning is now an
-  error** — with `GradleDependency` as the single exclusion, since it only reports that a newer
-  version of something exists and would turn each upstream release into a red build.
+  error** — with the two checks that only report that a newer version of something exists,
+  `GradleDependency` and `AndroidGradlePluginVersion`, as the exclusions: either would turn each
+  upstream release into a red build.
 
   The severity change is what makes the checks a gate rather than a report: most compose-lints
   rules land at warning level. It caught a modifier parameter without a default in `KansoSkeleton`
@@ -226,6 +227,13 @@ kanso is not published to a Maven repository, and that is deliberate — see
   states two limits it left out: a seed's chroma is carried through only between 24 and 56 (and
   a seed below 5 counts as grey), and a constant CIELAB hue bends a pure blue towards violet.
   No colour changes.
+- Documentation, previews and gallery agree with the code again. The README no longer counts
+  the components ("eleven"; the table below it lists two dozen), no longer says every one has a
+  four-way preview (the bottom sheet and the refresh box animate in and draw nothing in a static
+  preview) and no longer promises a token gallery the demo does not have. The gallery gained the
+  `Elevated` and `Destructive` buttons and the `Info` badge it was missing, the content
+  container's preview gained the four standard configurations, and the large-top-bar preview no
+  longer pairs the tall header with a back button — the one combination its own KDoc rules out.
 - **Releases are no longer tagged.** The four `v0.1.x` tags stay on the remote as history; from
   here on a consumer moves their submodule to a commit SHA, and every section in this file is
   headed with the SHA to move to. Nothing about how breaking changes are communicated has

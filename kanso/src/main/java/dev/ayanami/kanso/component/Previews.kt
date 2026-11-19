@@ -475,6 +475,7 @@ private fun KansoSkeletonPreview() = PreviewHost {
  * shared annotation, where it would triple the matrix for components that have no adaptive
  * behaviour to show.
  */
+@KansoPreviews
 @Preview(name = "tablet", device = "spec:width=1280dp,height=800dp,dpi=240")
 @Preview(name = "phone", device = "spec:width=411dp,height=891dp,dpi=420")
 @Composable
@@ -497,12 +498,17 @@ private fun KansoContentContainerPreview() = PreviewHost {
 
 /**
  * The version is passed explicitly because a preview host resolves no real package — what is
- * under review is the title-then-version line the default produces in a running app.
+ * under review is the title-then-version line the default produces in a running app, beside a
+ * back button whose arrow has to mirror in the RTL configuration.
  */
 @KansoPreviews
 @Composable
 private fun KansoScaffoldPreview() = KansoTheme(dynamicColor = false) {
-    KansoScaffold(title = "Peers", version = "v1.4.2") { inner ->
+    KansoScaffold(
+        title = "Peers",
+        version = "v1.4.2",
+        navigationIcon = { KansoBackButton(onBack = {}) },
+    ) { inner ->
         Column(Modifier.padding(inner).padding(horizontal = Kanso.spacing.screen)) {
             KansoSectionHeader("Nearby")
             KansoListItem(headline = "dao-node", supporting = "192.168.1.24", onClick = {})
@@ -511,7 +517,7 @@ private fun KansoScaffoldPreview() = KansoTheme(dynamicColor = false) {
     }
 }
 
-/** The tall header with a back button beside it — including the RTL mirror of the arrow. */
+/** The tall header, on the kind of screen it is for: one that starts a hierarchy. */
 @KansoPreviews
 @Composable
 private fun KansoScaffoldLargeBarPreview() = KansoTheme(dynamicColor = false) {
@@ -519,7 +525,6 @@ private fun KansoScaffoldLargeBarPreview() = KansoTheme(dynamicColor = false) {
         title = "Settings",
         version = "v1.4.2",
         largeTopBar = true,
-        navigationIcon = { KansoBackButton(onBack = {}) },
     ) { inner ->
         Column(Modifier.padding(inner).padding(horizontal = Kanso.spacing.screen)) {
             KansoSwitchRow(headline = "Background sync", checked = true, onCheckedChange = {})
