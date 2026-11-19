@@ -125,6 +125,12 @@ kanso is not published to a Maven repository, and that is deliberate — see
   only the outermost theme sets the bars, and the activity is found through any wrappers.
   *Behaviour change:* a nested theme no longer affects the bars; to darken them for one screen,
   change `darkTheme` on the outermost `KansoTheme`.
+- **A wide trailing slot starved the text beside it.** `KansoListItem`'s `trailing`, the
+  `titleTrailing` of `KansoCard`, `KansoSectionHeader`'s `trailing` and `KansoInfoBanner`'s
+  `action` were measured first and given whatever they asked for. A timestamp at 200% font scale
+  took the whole row and left the headline a 25dp column, wrapped into nineteen lines — the bug
+  0.1.2 removed from `KansoStatusRow`, still present everywhere else. A trailing slot now gets at
+  most half of the width available to it and wraps inside that.
 
 ### Changed
 

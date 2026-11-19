@@ -7,6 +7,7 @@ package dev.ayanami.kanso.component
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
@@ -32,6 +33,7 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.dp
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import dev.ayanami.kanso.theme.KansoTheme
 import org.junit.Assert.assertEquals
@@ -234,5 +236,37 @@ class LayoutContractTest {
             assertEquals("two-line row at font scale $scale", height("two-$scale"), height("skeleton-two-$scale"))
             assertEquals("one-line row at font scale $scale", height("one-$scale"), height("skeleton-one-$scale"))
         }
+    }
+
+    // ---- trailing slots -------------------------------------------------------------
+
+    /**
+     * A timestamp in the trailing slot at 200% font scale used to take the whole row: the
+     * headline was left a 25dp column and wrapped into nineteen lines, one or two characters
+     * each.
+     */
+    @Test
+    fun `a wide trailing slot leaves the headline half of the row`() {
+        compose.setContent {
+            Host(fontScale = 2f) {
+                Column(Modifier.width(360.dp).padding(16.dp)) {
+                    KansoListItem(
+                        headline = "Weekly sync with the relay",
+                        supporting = "Last run finished without errors",
+                        trailing = { Text("2026-11-19 15:16 JST") },
+                    )
+                }
+            }
+        }
+
+        val headline = placed("Weekly sync with the relay").single()
+        val trailing = placed("2026-11-19 15:16 JST").single()
+        val halfRow = (328 / 2) * compose.density.density
+        assertTrue(
+            "the trailing slot must stop at half of the row, was ${trailing.size.width}px",
+            trailing.size.width <= halfRow,
+        )
+        assertTrue("the headline must keep real width", headline.size.width >= halfRow / 2)
+        assertTrue("and wrap like a sentence, not a column", lineCount(headline) <= 6)
     }
 }
