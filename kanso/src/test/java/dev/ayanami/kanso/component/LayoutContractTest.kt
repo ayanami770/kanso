@@ -197,7 +197,10 @@ class LayoutContractTest {
 
         compose.onNodeWithText(message).assert(hasScrollAction())
         val layout = textLayout(compose.onNodeWithText(message).fetchSemanticsNode())
-        assertFalse("no part of the message may be dropped to make it fit", layout.didOverflowHeight)
+        assertFalse(
+            "no part of the message may be dropped to make it fit",
+            layout.didOverflowHeight,
+        )
         compose.onNodeWithText("Forget").assertIsDisplayed()
     }
 
@@ -224,7 +227,14 @@ class LayoutContractTest {
                                 onClick = {},
                             )
                             Box(Modifier.testTag("skeleton-two-$scale")) { KansoSkeleton(rows = 1) }
-                            KansoListItem("Search peers", Modifier.testTag("one-$scale"), onClick = {})
+                            KansoListItem(
+                                "Search peers",
+                                Modifier.testTag(
+                                    "one-$scale",
+                                ),
+                                onClick = {
+                                },
+                            )
                             Box(Modifier.testTag("skeleton-one-$scale")) {
                                 KansoSkeleton(rows = 1, supporting = false)
                             }
@@ -236,8 +246,16 @@ class LayoutContractTest {
 
         fun height(tag: String) = compose.onNodeWithTag(tag).fetchSemanticsNode().size.height
         scales.forEach { scale ->
-            assertEquals("two-line row at font scale $scale", height("two-$scale"), height("skeleton-two-$scale"))
-            assertEquals("one-line row at font scale $scale", height("one-$scale"), height("skeleton-one-$scale"))
+            assertEquals(
+                "two-line row at font scale $scale",
+                height("two-$scale"),
+                height("skeleton-two-$scale"),
+            )
+            assertEquals(
+                "one-line row at font scale $scale",
+                height("one-$scale"),
+                height("skeleton-one-$scale"),
+            )
         }
     }
 
@@ -311,7 +329,14 @@ class LayoutContractTest {
         compose.setContent {
             Host {
                 Column {
-                    KansoErrorState(title = "接続できません", modifier = Modifier.height(300.dp), onRetry = {})
+                    KansoErrorState(
+                        title = "接続できません",
+                        modifier = Modifier.height(
+                            300.dp,
+                        ),
+                        onRetry = {
+                        },
+                    )
                     KansoBackButton(onBack = {})
                 }
             }

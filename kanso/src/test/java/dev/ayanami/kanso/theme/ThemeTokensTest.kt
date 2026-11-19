@@ -118,7 +118,10 @@ class ThemeTokensTest {
         }
         compose.waitForIdle()
         val window = activity!!.window
-        return WindowCompat.getInsetsController(window, window.decorView).isAppearanceLightStatusBars
+        return WindowCompat.getInsetsController(
+            window,
+            window.decorView,
+        ).isAppearanceLightStatusBars
     }
 
     /**
