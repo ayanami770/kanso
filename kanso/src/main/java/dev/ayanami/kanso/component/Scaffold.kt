@@ -273,7 +273,7 @@ public fun KansoBackButton(
 
 /**
  * The version label of the app kanso is running inside: the installed package's `versionName`
- * prefixed with `v` — `versionName = "5.33.11"` reads back as `"v5.33.11"`. This is what
+ * prefixed with `v` — `versionName = "1.2.3"` reads back as `"v1.2.3"`. This is what
  * [KansoScaffold] shows after its title by default, and it is a variable rather than a literal
  * on purpose: the header always states the version of the build actually running, with nothing
  * for a release checklist to forget. A `versionName` that already starts with `v` is not

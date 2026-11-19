@@ -152,7 +152,7 @@ private fun KansoPasswordFieldPreview() = PreviewHost {
 private fun KansoTextFieldPreview() = PreviewHost {
     Column {
         KansoTextField(
-            value = "ayanami",
+            value = "Alex",
             onValueChange = {},
             label = "Display name",
             supporting = "Shown to peers on the control channel.",
@@ -295,7 +295,7 @@ private fun KansoSettingRowsPreview() = PreviewHost {
 private fun KansoAlertDialogPreview() = PreviewHost {
     KansoAlertDialog(
         title = "Delete this peer?",
-        text = "dao-node will be removed from every channel. This cannot be undone.",
+        text = "node-a will be removed from every channel. This cannot be undone.",
         confirmText = "Delete",
         dismissText = "Cancel",
         destructive = true,
@@ -511,8 +511,8 @@ private fun KansoScaffoldPreview() = KansoTheme(dynamicColor = false) {
     ) { inner ->
         Column(Modifier.padding(inner).padding(horizontal = Kanso.spacing.screen)) {
             KansoSectionHeader("Nearby")
-            KansoListItem(headline = "dao-node", supporting = "192.168.1.24", onClick = {})
-            KansoListItem(headline = "edge-01", supporting = "192.168.1.31", onClick = {})
+            KansoListItem(headline = "node-a", supporting = "192.0.2.24", onClick = {})
+            KansoListItem(headline = "node-b", supporting = "192.0.2.31", onClick = {})
         }
     }
 }
@@ -557,7 +557,7 @@ private fun KansoScaffoldWithBarsPreview() = KansoTheme(dynamicColor = false) {
         },
     ) { inner ->
         Column(Modifier.padding(inner).padding(horizontal = Kanso.spacing.screen)) {
-            KansoListItem(headline = "dao-node", supporting = "192.168.1.24", onClick = {})
+            KansoListItem(headline = "node-a", supporting = "192.0.2.24", onClick = {})
         }
     }
 }

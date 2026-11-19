@@ -140,10 +140,10 @@ class ColorContrastTest {
     fun `every shipped brand seed meets AA`() {
         val brands = listOf(
             "kanso" to KansoDefaultBrand.seed,
-            "LMSA" to Color(0xFF006A60),
-            "CertWatch" to Color(0xFF3F5AA6),
-            "Semicon" to Color(0xFF8A4F00),
-            "medcal" to Color(0xFF386A20),
+            "teal" to Color(0xFF006A60),
+            "indigo" to Color(0xFF3F5AA6),
+            "amber" to Color(0xFF8A4F00),
+            "green" to Color(0xFF386A20),
         )
         brands.forEach { (name, seed) ->
             listOf(

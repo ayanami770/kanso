@@ -138,10 +138,10 @@ class LayoutContractTest {
 
     @Test
     fun `a short title keeps the whole version beside it`() {
-        scaffold(title = "Peers", version = "v5.33.11", actions = 0)
+        scaffold(title = "Peers", version = "v10.20.30", actions = 0)
 
         val title = placed("Peers").single()
-        val version = placed("v5.33.11").single()
+        val version = placed("v10.20.30").single()
         assertEquals(1, lineCount(title))
         assertEquals(1, lineCount(version))
         assertTrue(
@@ -151,13 +151,13 @@ class LayoutContractTest {
         )
     }
 
-    /** At 200% the version used to break mid-number: "v5.33.1" with a stray "1" under it. */
+    /** At 200% the version used to break mid-number: "v10.20.3" with a stray "0" under it. */
     @Test
     fun `the version is drawn whole or not at all at a large font scale`() {
-        scaffold(title = "Settings", version = "v5.33.11", actions = 1, fontScale = 2f)
+        scaffold(title = "Settings", version = "v10.20.30", actions = 1, fontScale = 2f)
 
         assertEquals(1, lineCount(placed("Settings").single()))
-        placed("v5.33.11").forEach { version ->
+        placed("v10.20.30").forEach { version ->
             assertEquals("a version that is drawn is drawn on one line", 1, lineCount(version))
         }
     }

@@ -10,7 +10,7 @@ the `Kanso` object:
 KansoTheme(brand = KansoBrand("my app", Color(0xFF6750A4))) {
     KansoScaffold(title = "Peers") { inner ->
         Column(Modifier.padding(inner)) {
-            KansoListItem("dao-node", supporting = "192.168.1.24", onClick = {})
+            KansoListItem("node-a", supporting = "192.0.2.24", onClick = {})
         }
     }
 }

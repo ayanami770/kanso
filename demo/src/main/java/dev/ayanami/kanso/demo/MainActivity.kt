@@ -98,10 +98,10 @@ class MainActivity : ComponentActivity() {
  */
 private val Brands = listOf(
     KansoDefaultBrand,
-    KansoBrand("LMSA", Color(0xFF006A60)), // secure teal
-    KansoBrand("CertWatch", Color(0xFF3F5AA6)), // trust blue
-    KansoBrand("Semicon News", Color(0xFF8A4F00)), // amber/silicon
-    KansoBrand("medcal", Color(0xFF386A20)), // clinical green
+    KansoBrand("Indigo", Color(0xFF3F5AA6)),
+    KansoBrand("Amber", Color(0xFF8A4F00)),
+    KansoBrand("Green", Color(0xFF386A20)),
+    KansoBrand("Plum", Color(0xFF7D4E8C)),
 )
 
 private enum class Tab(val label: String, val icon: ImageVector) {
@@ -280,18 +280,18 @@ private fun GalleryScreen(
 
         KansoCard(title = "List items") {
             KansoListItem(
-                "Envelope-sealed transport",
-                supporting = "cnsa2-e2ee-v3 · P-384 + ML-KEM-1024",
+                "Encrypted in transit",
+                supporting = "TLS 1.3 to every server",
                 icon = Icons.Filled.CheckCircle,
             )
             KansoDivider(inset = true)
             KansoListItem(
-                "Encrypted ClientHello",
-                supporting = "kid hidden from the relay",
+                "Locked when idle",
+                supporting = "Asks for the PIN after five minutes",
                 icon = Icons.Filled.Lock,
             )
             KansoDivider(inset = true)
-            KansoListItem("Fast path", supporting = "session pool + SSE", icon = Icons.Filled.Bolt)
+            KansoListItem("Fast path", supporting = "Cache first", icon = Icons.Filled.Bolt)
         }
 
         KansoSectionHeader(
