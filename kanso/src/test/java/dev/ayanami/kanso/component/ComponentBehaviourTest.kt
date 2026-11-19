@@ -5,6 +5,7 @@
 package dev.ayanami.kanso.component
 
 import android.content.Context
+import androidx.compose.foundation.layout.Column
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.Text
 import androidx.compose.ui.graphics.Color
@@ -16,6 +17,8 @@ import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotEnabled
+import androidx.compose.ui.test.hasText
+import androidx.compose.ui.test.isPopup
 import androidx.compose.ui.test.isSelectable
 import androidx.compose.ui.test.isToggleable
 import androidx.compose.ui.test.junit4.v2.createComposeRule
@@ -572,6 +575,57 @@ class ComponentBehaviourTest {
         }
         compose.onNodeWithText("body").assertIsDisplayed()
         assertEquals(Color.Magenta, content)
+    }
+
+    // ---- select field: the menu -----------------------------------------------------
+
+    /** An empty menu is a sliver of popup that takes the tap and offers nothing. */
+    @Test
+    fun `the select field does not open with nothing to choose from`() {
+        compose.setContent {
+            KansoTheme(dynamicColor = false) {
+                Column {
+                    KansoSelectField<String>(
+                        value = null,
+                        options = emptyList(),
+                        onSelect = {},
+                        label = "Empty",
+                    )
+                    KansoSelectField(
+                        value = null,
+                        options = listOf("mg/dL"),
+                        onSelect = {},
+                        label = "Unit",
+                    )
+                }
+            }
+        }
+        compose.onNodeWithText("Empty").performClick()
+        compose.onAllNodes(isPopup()).assertCountEquals(0)
+        // The same tap on a field that has options does open one, so the zero above means
+        // something.
+        compose.onNodeWithText("Unit").performClick()
+        compose.onAllNodes(isPopup()).assertCountEquals(1)
+    }
+
+    /** The menu says which option the field is showing, in a way a screen reader can hear. */
+    @Test
+    fun `the select field marks the option in force as selected`() {
+        compose.setContent {
+            KansoTheme(dynamicColor = false) {
+                KansoSelectField(
+                    value = "mmol/L",
+                    options = listOf("mg/dL", "mmol/L"),
+                    onSelect = {},
+                    label = "Unit",
+                )
+            }
+        }
+        compose.onNodeWithText("Unit").performClick()
+        val selected = SemanticsMatcher.expectValue(SemanticsProperties.Selected, true)
+        compose.onNodeWithText("mg/dL").assertIsDisplayed()
+        compose.onAllNodes(hasText("mmol/L") and selected).assertCountEquals(1)
+        compose.onAllNodes(hasText("mg/dL") and selected).assertCountEquals(0)
     }
 }
 

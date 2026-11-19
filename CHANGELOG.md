@@ -163,6 +163,11 @@ kanso is not published to a Maven repository, and that is deliberate — see
 - `KansoInfoBanner` sizes its icon with `Kanso.sizing.icon`, like every other leading icon, not
   with `Kanso.spacing.xl`. Both are 24dp by default, so nothing moves unless a theme changed one
   of them.
+- **`KansoSelectField` opened an empty menu, and its menu did not say which option was chosen.**
+  With no options the field no longer opens — it used to show a sliver of popup that took the
+  tap. The option in force now carries a tick and is announced as selected. The KDoc also says
+  what was always true: every option is composed when the menu opens, so this is a picker for a
+  handful of choices.
 
 ### Changed
 
