@@ -122,7 +122,14 @@ androidComponents {
         // kanso's own root script declares. In a consuming build they are absent by design, so
         // the unit-test component is switched off there rather than left to fail at compile time
         // the first time someone runs `./gradlew test`.
-        variant.hostTests[HostTestBuilder.UNIT_TEST_TYPE]?.enable = kansoOwnBuild
+        //
+        // Only ever switched OFF. In kanso's own build the component stays as the Android plugin
+        // set it, which is on for the tested build type alone: assigning `true` here would also
+        // turn it on for release, adding a unit-test classpath nothing runs and that lint then
+        // has to resolve and analyse.
+        if (!kansoOwnBuild) {
+            variant.hostTests[HostTestBuilder.UNIT_TEST_TYPE]?.enable = false
+        }
     }
 }
 
