@@ -4,11 +4,18 @@
  */
 package dev.ayanami.kanso.theme
 
+import android.app.Activity
+import android.view.ContextThemeWrapper
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.remember
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.unit.dp
+import androidx.core.view.WindowCompat
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -98,5 +105,47 @@ class ThemeTokensTest {
         val spacing = KansoSpacing()
         assertEquals(40.dp, KansoSizing().icon + spacing.lg)
         assertEquals(56.dp, KansoSizing(icon = 40.dp).icon + spacing.lg)
+    }
+
+    // ---- system bars ----------------------------------------------------------------
+
+    /** Composes [content] and reports whether the window ended up with dark status-bar icons. */
+    private fun lightStatusBarsAfter(content: @Composable () -> Unit): Boolean {
+        var activity: Activity? = null
+        compose.setContent {
+            activity = LocalContext.current as Activity
+            content()
+        }
+        compose.waitForIdle()
+        val window = activity!!.window
+        return WindowCompat.getInsetsController(window, window.decorView).isAppearanceLightStatusBars
+    }
+
+    /**
+     * A dark island on a light screen must not turn the window's bar icons light. The nested
+     * theme's side effect used to run after its parent's, so the last theme composed decided
+     * for the whole window.
+     */
+    @Test
+    fun `a nested theme leaves the window's bars to the outermost one`() {
+        val light = lightStatusBarsAfter {
+            KansoTheme(darkTheme = false, dynamicColor = false) {
+                KansoTheme(darkTheme = true, dynamicColor = false) {}
+            }
+        }
+        assertTrue("a light screen keeps dark status-bar icons", light)
+    }
+
+    /** `LocalContext` wrapped in a ContextThemeWrapper is still a screen in an activity. */
+    @Test
+    fun `the bars follow the theme through a wrapped context`() {
+        val light = lightStatusBarsAfter {
+            val base = LocalContext.current
+            val wrapped = remember(base) { ContextThemeWrapper(base, 0) }
+            CompositionLocalProvider(LocalContext provides wrapped) {
+                KansoTheme(darkTheme = false, dynamicColor = false) {}
+            }
+        }
+        assertTrue("the activity is found behind the wrapper", light)
     }
 }

@@ -117,6 +117,14 @@ kanso is not published to a Maven repository, and that is deliberate — see
   the gallery's own "Unknown" badge was a label with no pill beside three that had one. The
   neutral container is now the content colour laid thinly over whatever is underneath.
   *Visible change:* on the bare surface it is within a tone of where it was.
+- **A nested `KansoTheme` took over the whole window's system bars, and a wrapped context got
+  none.** Every `KansoTheme` wrote the bar-icon appearance for its own `darkTheme`, so a dark
+  card on a light screen left light icons on a light status bar — until the outer theme
+  recomposed and flipped them back. And the activity was found with a plain cast of
+  `LocalContext`, which fails silently behind a `ContextThemeWrapper` or a locale override. Now
+  only the outermost theme sets the bars, and the activity is found through any wrappers.
+  *Behaviour change:* a nested theme no longer affects the bars; to darken them for one screen,
+  change `darkTheme` on the outermost `KansoTheme`.
 
 ### Changed
 
