@@ -21,6 +21,7 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.AbsoluteAlignment
 import androidx.compose.ui.BiasAlignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.SemanticsActions
@@ -42,10 +43,12 @@ import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import dev.ayanami.kanso.theme.Kanso
 import dev.ayanami.kanso.theme.KansoSizing
 import dev.ayanami.kanso.theme.KansoTheme
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
@@ -509,5 +512,35 @@ class LayoutContractTest {
         // The icon is the tallest thing in the row: 40dp, plus the banner's 12dp above and below.
         val expected = with(compose.density) { 64.dp.roundToPx() }
         assertEquals(expected, banner.size.height)
+    }
+
+    // ---- buttons --------------------------------------------------------------------
+
+    /**
+     * Loading disables the button, and a disabled Material button greys out — so "busy" looked
+     * like "unavailable", with the spinner at 38% over a 12% container. The label is laid out
+     * invisibly while loading and still carries the content colour the spinner is drawn in,
+     * which is what this reads.
+     */
+    @Test
+    fun `a loading button keeps its colours and a disabled one does not`() {
+        var enabledContent = Color.Unspecified
+        compose.setContent {
+            Host {
+                enabledContent = Kanso.colors.onPrimary
+                Column {
+                    KansoButton("Busy", onClick = {}, loading = true)
+                    KansoButton("Off", onClick = {}, enabled = false)
+                    KansoButton("Off and busy", onClick = {}, enabled = false, loading = true)
+                }
+            }
+        }
+
+        fun contentColor(label: String) =
+            textLayout(placed(label).single()).layoutInput.style.color
+
+        assertEquals(enabledContent, contentColor("Busy"))
+        assertNotEquals(enabledContent, contentColor("Off"))
+        assertNotEquals(enabledContent, contentColor("Off and busy"))
     }
 }

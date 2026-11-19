@@ -168,6 +168,14 @@ kanso is not published to a Maven repository, and that is deliberate — see
   tap. The option in force now carries a tick and is announced as selected. The KDoc also says
   what was always true: every option is composed when the menu opens, so this is a picker for a
   handful of choices.
+- **A loading `KansoButton` looked disabled.** Loading has to disable the button, and a disabled
+  Material button greys itself out — so "busy" and "unavailable" were the same picture, with
+  the spinner, the only thing telling them apart, at about 2.3:1 against its container. A
+  loading button now keeps the colours it had and gains the spinner in its content colour. This
+  changes pixels on purpose: a screenshot of yours that shows a loading button will differ. A
+  button that is not `enabled` stays grey, loading or not. The `Elevated` style's resting
+  elevation is read from `Kanso.elevation.level1` — 1dp, as before, unless your theme says
+  otherwise.
 
 ### Changed
 

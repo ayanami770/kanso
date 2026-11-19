@@ -190,7 +190,7 @@ Everything is `Kanso`-prefixed and lives in `dev.ayanami.kanso.component`.
 
 | | |
 |---|---|
-| `KansoButton` | One emphasis system, six weights — `Filled`, `Tonal`, `Outlined`, `Text`, `Elevated`, `Destructive`. Optional leading `icon`, and a `loading` state that disables the button, announces itself to a screen reader and does not change the button's width. |
+| `KansoButton` | One emphasis system, six weights — `Filled`, `Tonal`, `Outlined`, `Text`, `Elevated`, `Destructive`. Optional leading `icon`, and a `loading` state that disables the button, announces itself to a screen reader and changes neither the button's width nor its colours. |
 | `KansoTextField` | Outlined field with label, supporting text and an error state whose message reaches the semantics tree. `enabled`, `readOnly`, `placeholder`, leading/trailing icons, `minLines`, `imeAction`, `keyboardActions`, `visualTransformation`. |
 | `KansoPasswordField` | Masked field with a reveal toggle whose content description follows its state. `numeric = true` for a PIN, `revealable = false` for a value that must never be shown. |
 | `KansoSelectField` | A value chosen from a list rather than typed. Generic in the option type, so `onSelect` hands back your enum and `optionLabel` is the only thing that knows about text — no index to map back. Read-only anchor: it opens the menu, never the keyboard. The menu marks the option in force, and does not open while there is nothing to choose. Absorbs `ExperimentalMaterial3Api`. |

@@ -4,7 +4,9 @@
  */
 package dev.ayanami.kanso.component
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Surface
@@ -34,7 +36,8 @@ import org.robolectric.annotation.GraphicsMode
  * starved its label, a list row, a card, the setting rows and the info banner — each captured
  * at font scale 1.0 and 2.0, because the second is where they broke. Two more are about colour
  * rather than text and are captured once: a skeleton and a neutral status, each on the bare
- * surface and inside a card, where both used to vanish.
+ * surface and inside a card, where both used to vanish. A third puts a loading button
+ * between its idle and its disabled form, which it used to be indistinguishable from.
  *
  * What a golden cannot say is why something is wrong — that a row lost its 48dp floor, or that
  * an empty state's call-to-action cannot be reached. Those are measured in
@@ -58,6 +61,7 @@ class ScreenshotTest {
         name: String,
         scale: Float,
         frozen: Boolean = false,
+        advanceMillis: Long = 0,
         content: @Composable () -> Unit,
     ) {
         // A component that animates for ever never lets the composition go idle; with the clock
@@ -77,6 +81,8 @@ class ScreenshotTest {
                 }
             }
         }
+        // …or a fixed time into it, when the first frame has nothing to show yet.
+        if (advanceMillis > 0) compose.mainClock.advanceTimeBy(advanceMillis)
         compose.onRoot().captureRoboImage("src/test/screenshots/$name-font$scale.png")
     }
 
@@ -216,6 +222,26 @@ class ScreenshotTest {
                 trailing = { KansoStatusBadge("Unknown", KansoStatus.Neutral) },
             )
             KansoInfoBanner("Nothing has been checked yet.", status = KansoStatus.Neutral)
+        }
+    }
+
+    /**
+     * Idle, loading and disabled, side by side. The loading button is the idle one with a spinner
+     * in it; only the disabled one is grey. Captured a third of a second into the spinner's turn,
+     * because at its very first frame there is no arc to see.
+     */
+    @Test
+    fun loadingButtons() = golden("loading-buttons", 1.0f, frozen = true, advanceMillis = 300) {
+        listOf(
+            KansoButtonStyle.Filled,
+            KansoButtonStyle.Tonal,
+            KansoButtonStyle.Outlined,
+        ).forEach { style ->
+            Row(horizontalArrangement = Arrangement.spacedBy(Kanso.spacing.sm)) {
+                KansoButton("Save", onClick = {}, style = style)
+                KansoButton("Save", onClick = {}, style = style, loading = true)
+                KansoButton("Save", onClick = {}, style = style, enabled = false)
+            }
         }
     }
 }
