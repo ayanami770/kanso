@@ -150,6 +150,9 @@ kanso is not published to a Maven repository, and that is deliberate — see
   differently; an app that passes `Kanso.motion.exitEasing` to its own exit transitions will see
   them accelerate out instead. `KansoMotion(exitEasing = LinearOutSlowInEasing)` keeps the old
   curve.
+- **`KansoContentContainer` ignored most alignments.** Only `Alignment.Start` and `Alignment.End`
+  had an effect; `AbsoluteAlignment.Left`, `.Right` and any `BiasAlignment.Horizontal` were
+  silently centred. Every horizontal alignment is honoured now.
 
 ### Changed
 

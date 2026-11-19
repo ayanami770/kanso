@@ -18,6 +18,8 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.ui.AbsoluteAlignment
+import androidx.compose.ui.BiasAlignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
@@ -452,5 +454,40 @@ class LayoutContractTest {
             assertEquals("$tag: and runs the full width", screen, row(tag).width, 0.5f)
             assertEquals("$tag: while the content is inset", sixteen, textLeft(text), 0.5f)
         }
+    }
+
+    // ---- content container ----------------------------------------------------------
+
+    /** `AbsoluteAlignment.Left`, `.Right` and any bias used to fall through to "centre". */
+    @Test
+    fun `the content container honours an absolute or a biased alignment`() {
+        compose.setContent {
+            Host {
+                Column {
+                    KansoContentContainer(maxWidth = 100.dp, alignment = AbsoluteAlignment.Right) {
+                        Text("right")
+                    }
+                    KansoContentContainer(maxWidth = 100.dp, alignment = AbsoluteAlignment.Left) {
+                        Text("left")
+                    }
+                    KansoContentContainer(
+                        maxWidth = 100.dp,
+                        alignment = BiasAlignment.Horizontal(0.5f),
+                    ) {
+                        Text("biased")
+                    }
+                    KansoContentContainer(maxWidth = 100.dp) { Text("centred") }
+                }
+            }
+        }
+        val density = compose.density.density
+
+        fun left(text: String) = placed(text).single().boundsInRoot.left
+
+        // 260dp of slack on a 360dp screen: all of it, none of it, three quarters, half.
+        assertEquals(260f * density, left("right"), 1f)
+        assertEquals(0f, left("left"), 1f)
+        assertEquals(195f * density, left("biased"), 1f)
+        assertEquals(130f * density, left("centred"), 1f)
     }
 }
