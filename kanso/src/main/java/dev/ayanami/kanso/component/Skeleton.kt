@@ -36,6 +36,7 @@ import androidx.compose.ui.unit.Dp
 import dev.ayanami.kanso.R
 import dev.ayanami.kanso.theme.Kanso
 import dev.ayanami.kanso.theme.KansoMinTouchTarget
+import kotlin.math.ceil
 
 /** A bar's thickness as a share of the text line it stands in for — 16dp and 12dp by default. */
 private const val HeadlineBarFraction = 2f / 3f
@@ -51,6 +52,10 @@ private const val BarAlphaFaint = 0.09f
 
 /** What a text style's line occupies when the style does not say. */
 private const val FallbackLineHeightMultiplier = 1.2f
+
+// The font scale above which Compose keeps a text's line height in proportion to its font size
+// rather than converting it from sp by itself.
+private const val NonLinearFontScale = 1.05f
 
 /**
  * The shape of a list, drawn as bars, while the list itself is still loading.
@@ -152,18 +157,31 @@ private fun BarLine(color: Color, lineHeight: Dp, barFraction: Float, widthFract
     }
 }
 
-/** What one line of this style occupies, in dp at the current font scale. */
+/**
+ * What one line of this style occupies, in dp at the current font scale — worked out the way the
+ * text layout works it out, because a pixel of difference per line is a row that jumps when the
+ * content replaces its placeholder.
+ */
 private fun TextStyle.lineHeightIn(density: Density): Dp = with(density) {
-    when {
-        // A line height in sp is scaled in proportion to the font size, not converted on its
-        // own: above a font scale of 1 the system's curve is not linear, and converting the two
-        // separately gives a line shorter than the one the text is actually drawn on.
-        fontSize.isSp && lineHeight.isSp -> fontSize.toDp() * (lineHeight.value / fontSize.value)
-        fontSize.isSp && lineHeight.isEm -> fontSize.toDp() * lineHeight.value
-        fontSize.isSp -> fontSize.toDp() * FallbackLineHeightMultiplier
-        lineHeight.isSp -> lineHeight.toDp()
-        else -> KansoMinTouchTarget / 2
+    val fontPx = if (fontSize.isSp) fontSize.toPx() else Float.NaN
+    val px = when {
+        // At an ordinary font scale a line height in sp is converted on its own. Above that the
+        // system's font-scale curve is not linear, and text keeps the line height in proportion
+        // to the font size instead: converted separately, the placeholder's line comes out
+        // shorter than the one the text is drawn on.
+        lineHeight.isSp && fontSize.isSp && fontScale > NonLinearFontScale ->
+            lineHeight.value / fontPx.toSp().value * fontPx
+
+        lineHeight.isSp -> lineHeight.toPx()
+
+        lineHeight.isEm && fontSize.isSp -> fontPx * lineHeight.value
+
+        fontSize.isSp -> fontPx * FallbackLineHeightMultiplier
+
+        else -> (KansoMinTouchTarget / 2).toPx()
     }
+    // A line is rounded up to a whole pixel, not to the nearest one.
+    ceil(px).toDp()
 }
 
 @Composable
