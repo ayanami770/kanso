@@ -128,7 +128,7 @@ public fun KansoInfoBanner(
                 icon,
                 contentDescription = null,
                 tint = onContainer,
-                modifier = Modifier.size(Kanso.spacing.xl),
+                modifier = Modifier.size(Kanso.sizing.icon),
             )
             Spacer(Modifier.size(Kanso.spacing.md))
         }

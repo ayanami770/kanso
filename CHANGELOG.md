@@ -153,6 +153,9 @@ kanso is not published to a Maven repository, and that is deliberate — see
 - **`KansoContentContainer` ignored most alignments.** Only `Alignment.Start` and `Alignment.End`
   had an effect; `AbsoluteAlignment.Left`, `.Right` and any `BiasAlignment.Horizontal` were
   silently centred. Every horizontal alignment is honoured now.
+- `KansoInfoBanner` sizes its icon with `Kanso.sizing.icon`, like every other leading icon, not
+  with `Kanso.spacing.xl`. Both are 24dp by default, so nothing moves unless a theme changed one
+  of them.
 
 ### Changed
 

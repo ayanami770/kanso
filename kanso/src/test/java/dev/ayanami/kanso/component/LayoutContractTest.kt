@@ -42,6 +42,7 @@ import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import dev.ayanami.kanso.theme.KansoSizing
 import dev.ayanami.kanso.theme.KansoTheme
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -489,5 +490,24 @@ class LayoutContractTest {
         assertEquals(0f, left("left"), 1f)
         assertEquals(195f * density, left("biased"), 1f)
         assertEquals(130f * density, left("centred"), 1f)
+    }
+
+    // ---- banner ---------------------------------------------------------------------
+
+    /**
+     * The banner's icon is an icon: a theme that resizes its icons resizes this one too. It was
+     * sized by a spacing token that happens to hold the same 24dp.
+     */
+    @Test
+    fun `the banner icon follows the icon size token`() {
+        compose.setContent {
+            KansoTheme(dynamicColor = false, sizing = KansoSizing(icon = 40.dp)) {
+                KansoInfoBanner("Cached", Modifier.testTag("banner"), icon = ErrorIcon)
+            }
+        }
+        val banner = compose.onNodeWithTag("banner").fetchSemanticsNode()
+        // The icon is the tallest thing in the row: 40dp, plus the banner's 12dp above and below.
+        val expected = with(compose.density) { 64.dp.roundToPx() }
+        assertEquals(expected, banner.size.height)
     }
 }
