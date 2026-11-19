@@ -138,7 +138,7 @@ kanso brings the Compose BOM and the Compose artifacts in its public API. It doe
 activity integration, an icon set or a navigation library — declare whichever you use:
 
 ```kotlin
-implementation("androidx.activity:activity-compose:1.9.3")
+implementation("androidx.activity:activity-compose:1.13.0")          // or newer
 implementation("androidx.compose.material:material-icons-extended")  // version from the BOM
 ```
 
@@ -147,11 +147,16 @@ implementation("androidx.compose.material:material-icons-extended")  // version 
 | | |
 |---|---|
 | `minSdk` | 24 (`:demo` is 26) |
-| `compileSdk` | 36 — required by `core-ktx` 1.18.0 via AAR metadata, so your app needs it too |
-| Compose | BOM 2026.06.01, exposed via `api` — this sets your **floor**; declare a newer BOM to move past it |
-| Kotlin | 2.4.10 (AGP 9's built-in Kotlin), with the Compose compiler plugin |
+| `compileSdk` | 37 — required by `core-ktx` via AAR metadata and passed on by kanso's own, so your app needs it too |
+| Compose | the BOM kanso exposes via `api` sets your **floor**; declare a newer BOM to move past it |
+| Kotlin / AGP | AGP 9 with its built-in Kotlin, and the Compose compiler plugin |
 | JDK | 17 |
-| AGP / Gradle | 9.3.1 / 9.6.1 |
+
+The versions kanso builds itself with — the Compose BOM, Kotlin, AGP — are in
+[`gradle/libs.versions.toml`](gradle/libs.versions.toml) and nowhere else: they move with every
+dependency update, and the copy that used to sit in this table did not. `compileSdk` is the
+exception, because it is the one number your build has to match; a test fails if that row and
+the build file ever disagree.
 
 ## Components
 

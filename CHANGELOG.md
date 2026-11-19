@@ -168,6 +168,18 @@ kanso is not published to a Maven repository, and that is deliberate — see
   placeholder" sitting at the top of the screen. `KansoEmptyState`'s KDoc now says what a
   scrolling parent does to it and how to pair it with `KansoRefreshBox`. Demo and documentation
   only; the component is unchanged.
+- **`compileSdk` 36 → 37 on both modules — a consuming app has to follow.** `core-ktx` 1.19.0
+  requires it through its AAR metadata, and kanso's own metadata passes the requirement on: an
+  app still on `compileSdk 36` stops at `checkDebugAarMetadata`. The change itself landed on
+  2026-08-09 (`0e25158`) without an entry here, and the README's compatibility table went on
+  saying 36.
+
+  *Migration:* `compileSdk = 37` in the app. `targetSdk` and `minSdk` are separate decisions and
+  do not have to move.
+- `core-ktx` 1.18.0 → 1.19.0 and the Compose BOM 2026.06.01 → 2026.09.00 — the BOM is the floor
+  an app inherits through `api`. The README's compatibility table no longer repeats version
+  numbers that move with every dependency update; it points at `gradle/libs.versions.toml`, and
+  a test holds its `compileSdk` row to the build file.
 - **Releases are no longer tagged.** The four `v0.1.x` tags stay on the remote as history; from
   here on a consumer moves their submodule to a commit SHA, and every section in this file is
   headed with the SHA to move to. Nothing about how breaking changes are communicated has
