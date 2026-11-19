@@ -10,8 +10,11 @@ import androidx.compose.ui.graphics.compositeOver
 import dev.ayanami.kanso.component.neutralStatusContainer
 import dev.ayanami.kanso.component.skeletonBarColor
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import kotlin.math.abs
+import kotlin.math.cbrt
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.pow
@@ -54,8 +57,19 @@ class ColorContrastTest {
     }
 
     /** A seed at [hue] with enough chroma to exercise the coloured (non-neutral) path. */
-    private fun seedAt(hue: Int, chroma: Double = 45.0, tone: Int = 45): Color =
+    private fun seedAt(hue: Int, chroma: Double = 0.11, tone: Int = 45): Color =
         toneColor(hue.toDouble(), chroma, tone)
+
+    /** A colour's tone — CIE L* — worked out here rather than asked of the engine. */
+    private fun tone(color: Color): Double {
+        val y = luminance(color)
+        return if (y > 216.0 / 24389.0) 116.0 * cbrt(y) - 16.0 else y * 24389.0 / 27.0
+    }
+
+    private fun hueDistance(a: Double, b: Double): Double {
+        val d = abs(a - b) % 360.0
+        return min(d, 360.0 - d)
+    }
 
     private fun everyHue(step: Int = 1, block: (Int, Color) -> Unit) {
         var hue = 0
@@ -253,12 +267,12 @@ class ColorContrastTest {
     fun `seed chroma is preserved`() {
         // Real sRGB seeds, not colours built with toneColor — that gamut-clips on the way in,
         // which would hand both sides nearly the same chroma and make this assert nothing.
-        val mutedChroma = kansoLightColorScheme(Color(0xFF44506E)).primary.toLch().chroma
-        val vividChroma = kansoLightColorScheme(Color(0xFF1A3FE0)).primary.toLch().chroma
+        val mutedChroma = kansoLightColorScheme(Color(0xFF44506E)).primary.toOklch().chroma
+        val vividChroma = kansoLightColorScheme(Color(0xFF1A3FE0)).primary.toOklch().chroma
         assertTrue(
             "a muted navy ($mutedChroma) and a vivid blue ($vividChroma) produced the same " +
                 "chroma — the seed's own saturation was normalised away",
-            vividChroma - mutedChroma > 20.0,
+            vividChroma - mutedChroma > 0.05,
         )
     }
 
@@ -270,9 +284,9 @@ class ColorContrastTest {
         listOf(0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 95, 99, 100).forEach { tone ->
             (0 until 360 step 5).forEach { hue ->
                 // Deliberately far outside the sRGB gamut, to force the chroma search.
-                val actual = toneColor(hue.toDouble(), 150.0, tone).toLch().lightness
+                val actual = tone(toneColor(hue.toDouble(), 0.4, tone))
                 // Compose packs an sRGB Color at 8 bits per channel, so a round trip carries
-                // that quantisation with it — measured worst case is 0.43 of a tone.
+                // that quantisation with it — measured worst case is 0.22 of a tone.
                 assertEquals(
                     "tone $tone at hue $hue came back as $actual",
                     tone.toDouble(),
@@ -286,8 +300,8 @@ class ColorContrastTest {
     @Test
     fun `tone 0 is black and tone 100 is white`() {
         (0 until 360 step 30).forEach { hue ->
-            val black = toneColor(hue.toDouble(), 40.0, 0)
-            val white = toneColor(hue.toDouble(), 40.0, 100)
+            val black = toneColor(hue.toDouble(), 0.15, 0)
+            val white = toneColor(hue.toDouble(), 0.15, 100)
             assertTrue("tone 0 at hue $hue was $black", luminance(black) < 0.001)
             assertTrue("tone 100 at hue $hue was $white", luminance(white) > 0.99)
         }
@@ -295,10 +309,10 @@ class ColorContrastTest {
 
     /**
      * Gamut mapping moves along the chroma axis only, so a colour's hue must survive a
-     * decompose/rebuild round trip even when its chroma gets clipped.
+     * decompose/rebuild round trip even when its chroma has to be reduced.
      */
     @Test
-    fun `lch round-trip preserves hue`() {
+    fun `an oklch round trip preserves hue`() {
         listOf(
             Color(0xFF006A60),
             Color(0xFF3F5AA6),
@@ -308,14 +322,34 @@ class ColorContrastTest {
             Color(0xFF00FF00),
             Color(0xFF0000FF),
         ).forEach { original ->
-            val lch = original.toLch()
-            val roundTripped = toneColor(lch.hue, lch.chroma, lch.lightness.toInt()).toLch()
+            val lch = original.toOklch()
+            val rebuilt = toneColor(lch.hue, lch.chroma, tone(original).toInt()).toOklch()
             assertEquals(
-                "$original round-tripped from hue ${lch.hue} to ${roundTripped.hue}",
+                "$original round-tripped from hue ${lch.hue} to ${rebuilt.hue}",
                 lch.hue,
-                roundTripped.hue,
+                rebuilt.hue,
                 2.0,
             )
+        }
+    }
+
+    /**
+     * Asked for more chroma than sRGB has at a tone, the engine gives less chroma at the same
+     * hue. Clipping the channel that overshoots would land inside the gamut too — at another
+     * hue. Tones 20 to 90, because nearer the ends there is too little chroma left for a hue
+     * to be read back out of eight bits a channel.
+     */
+    @Test
+    fun `gamut mapping preserves hue`() {
+        listOf(20, 30, 40, 50, 60, 70, 80, 90).forEach { tone ->
+            (0 until 360 step 5).forEach { hue ->
+                // Far more chroma than sRGB holds anywhere, to force the search at every hue.
+                val mapped = toneColor(hue.toDouble(), 0.4, tone).toOklch()
+                assertTrue(
+                    "tone $tone at hue $hue came back at hue ${mapped.hue}",
+                    hueDistance(hue.toDouble(), mapped.hue) <= 3.0,
+                )
+            }
         }
     }
 
@@ -403,13 +437,34 @@ class ColorContrastTest {
 
     /** The README states the band a seed's chroma is held to; this is what keeps it there. */
     @Test
-    fun `seed chroma is carried through between 24 and 56 and no further`() {
-        fun primaryChroma(seed: Color) = kansoLightColorScheme(seed).primary.toLch().chroma
+    fun `seed chroma is carried through inside its band and no further`() {
+        fun primaryChroma(seed: Color) = kansoLightColorScheme(seed).primary.toOklch().chroma
 
-        // Above the band: a vivid red and a very vivid one end up at the same edge.
-        assertEquals(primaryChroma(Color(0xFFFF0000)), primaryChroma(Color(0xFFE0453A)), 1.0)
-        assertTrue(primaryChroma(Color(0xFFFF0000)) <= 57.0)
-        // Below it but not grey: lifted to the lower edge, not left almost colourless.
-        assertTrue(primaryChroma(Color(0xFF808A80)) >= 23.0)
+        // Above the band: a vivid red and a very vivid one end up at the same edge, 0.15.
+        assertEquals(primaryChroma(Color(0xFFFF0000)), primaryChroma(Color(0xFFE0453A)), 0.004)
+        assertTrue(primaryChroma(Color(0xFFFF0000)) <= 0.154)
+        // Below it but not grey: lifted to the lower edge, 0.068, not left almost colourless.
+        assertTrue(primaryChroma(Color(0xFF808A80)) >= 0.064)
+        // Inside it: the seed's own chroma, as it came.
+        val seed = KansoDefaultBrand.seed
+        assertEquals(seed.toOklch().chroma, primaryChroma(seed), 0.004)
+    }
+
+    /**
+     * The grey line is where it always was: CIELAB chroma 5, the one number still measured on
+     * that axis. The two seeds the README names sit either side of it, and a seed nobody can
+     * tell from black is grey — on the OKLab axis #010000 would have counted as a colour and
+     * been given a red scheme.
+     */
+    @Test
+    fun `the grey line is where the documentation puts it`() {
+        fun isNeutral(seed: Color): Boolean {
+            val primary = kansoLightColorScheme(seed).primary
+            return maxOf(primary.red, primary.green, primary.blue) -
+                minOf(primary.red, primary.green, primary.blue) < 0.02f
+        }
+        assertFalse("#F0FFFF is just on the coloured side", isNeutral(Color(0xFFF0FFFF)))
+        assertTrue("#000F0F is just on the grey side", isNeutral(Color(0xFF000F0F)))
+        assertTrue("#010000 is black to look at", isNeutral(Color(0xFF010000)))
     }
 }
