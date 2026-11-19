@@ -180,6 +180,45 @@ kanso is not published to a Maven repository, and that is deliberate — see
 
 ### Changed
 
+- **Derived colours change for every seed — most for seeds in the blue range.** The engine now
+  holds every role to its seed's hue on the OKLab axis. It used to hold CIELAB's hue angle, and
+  CIELAB's hue lines are not perceptually straight through the blues, so a blue seed's roles
+  bent towards violet. Over 72 fully saturated seeds round the hue circle, the four primary
+  roles used to sit up to 38.8° of OKLab hue from their seed, 15 of the 72 by more than 12°;
+  they are now within 1.5° for all 72.
+
+  | seed | light `primary` | light `primaryContainer` | dark `primary` | dark `primaryContainer` |
+  |---|---|---|---|---|
+  | `#0000FF` | `#6A4DA9` → `#335AB4` | `#EADDFF` → `#D5E3FF` | `#D5BBFF` → `#ABC7FF` | `#4F368E` → `#1D4098` |
+  | `#0055FF` | `#5254B0` → `#2F5AB4` | `#E4DFFF` → `#D4E3FF` | `#C7BFFF` → `#A9C7FF` | `#353D95` → `#184198` |
+  | `#3F5AA6` | `#405BA7` → `#3F5BA7` | `#DEE1FF` → `#D6E3FF` | `#BAC3FF` → `#AEC6FF` | `#1F438C` → `#2A428B` |
+  | `#FF0000` | `#A53A25` → `#A8372C` | `#FFDBD1` → `#FFDAD4` | `#FFB4A1` → `#FFB4A8` | `#881F0F` → `#8B1911` |
+  | `#386A20` | `#386A20` → `#386A20` | `#BDF19E` → `#B9F2A3` | `#A1D583` → `#9ED588` | `#1E5106` → `#205100` |
+  | `#006A60` (the default) | `#016A60` → `#016A60` | `#9DF2E5` → `#9EF2E5` | `#81D5C9` → `#82D5C9` | `#005048` → `#005048` |
+
+  Away from blue the move is small, but it is not nothing for any seed. For the default seed
+  about half the roles change at all, nearly all of those by one step of one or two channels;
+  only its tertiary roles, and the darkest surface of the dark scheme, move further. A fully
+  saturated red moves by up to 14 steps of a channel. And it is not only hue:
+
+  - **Chroma is measured on the same axis as hue.** The band a seed's chroma is held to was
+    24–56 in CIELAB and is 0.068–0.15 in OKLCH, and the neutral palettes' tint moved the same
+    way. Those are the same amounts averaged round the hue circle, not hue by hue, so one
+    seed's scheme is a little more saturated than it was and another's a little less.
+  - **The tertiary palette is still 60° on from the seed, but on the OKLab circle,** which is
+    not the same sixty degrees: the default seed's light `tertiary` goes from `#3B6378` to
+    `#446179`, and pure blue's from `#934659` to `#7B4E7F`.
+  - **A colour sRGB cannot show at its tone gives up chroma and nothing else.** The old search
+    let a channel overshoot the gamut by up to 0.0005 and clipped it; nothing is clipped now.
+
+  What does not change is tone. Every role has the luminance it had, so every contrast ratio
+  is what it was: `onPrimary` on `primary` still measures 6.41–6.51 round the hue circle, and
+  the same tests hold it. Which seeds count as grey does not change either — that line is
+  still CIELAB chroma 5, because on the OKLab axis `#010000` would count as a colour.
+
+  *Migration:* no code has to change; no signature moved. Re-record any screenshot that shows
+  a kanso colour. If one role has to stay exactly what it was, pass the scheme with that role
+  put back: `KansoTheme(colorScheme = kansoLightColorScheme(seed).copy(primary = …))`.
 - **Installing kanso no longer means mirroring its version catalog.** `kanso/build.gradle.kts` is
   evaluated by the consuming build, and it used to name 24 aliases through `libs.…` — which in a
   consuming build is the *consumer's* catalog. Following the README's three steps therefore
@@ -224,9 +263,8 @@ kanso is not published to a Maven repository, and that is deliberate — see
 - The colour engine's published numbers are the measured ones. `onPrimary` on `primary` ranges
   from 6.41 to 6.51 across the hue circle — the README and the API docs said 6.42–6.46 — and a
   test now holds that band, which "pinned by a test" had claimed all along. The README also
-  states two limits it left out: a seed's chroma is carried through only between 24 and 56 (and
-  a seed below 5 counts as grey), and a constant CIELAB hue bends a pure blue towards violet.
-  No colour changes.
+  states the limit it left out: a seed's chroma is carried through only inside a band, and a
+  seed whose CIELAB chroma is under 5 counts as grey.
 - Documentation, previews and gallery agree with the code again. The README no longer counts
   the components ("eleven"; the table below it lists two dozen), no longer says every one has a
   four-way preview (the bottom sheet and the refresh box animate in and draw nothing in a static
