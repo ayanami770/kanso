@@ -5,7 +5,11 @@
 package dev.ayanami.kanso.component
 
 import android.content.Context
+import androidx.compose.foundation.layout.Column
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.Text
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.SemanticsMatcher
@@ -13,6 +17,8 @@ import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotEnabled
+import androidx.compose.ui.test.hasText
+import androidx.compose.ui.test.isPopup
 import androidx.compose.ui.test.isSelectable
 import androidx.compose.ui.test.isToggleable
 import androidx.compose.ui.test.junit4.v2.createComposeRule
@@ -21,8 +27,10 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import dev.ayanami.kanso.theme.Kanso
 import dev.ayanami.kanso.theme.KansoTheme
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -502,6 +510,122 @@ class ComponentBehaviourTest {
             }
         }
         compose.onNodeWithContentDescription("Loading content").assertExists()
+    }
+
+    // ---- scaffold colours -----------------------------------------------------------
+
+    /**
+     * A background from outside the scheme has no content colour paired with it. Material falls
+     * back to whatever `LocalContentColor` holds — black, here — which on a dark background of
+     * the caller's own left the screen's text at about 1.1:1.
+     */
+    @Test
+    fun `a scaffold on a colour outside the scheme still gets readable content`() {
+        val custom = Color(0xFF10141A)
+        var content = Color.Unspecified
+        compose.setContent {
+            KansoTheme(darkTheme = true, dynamicColor = false) {
+                KansoScaffold(title = "Peers", version = "", containerColor = custom) {
+                    content = LocalContentColor.current
+                    Text("body")
+                }
+            }
+        }
+        compose.onNodeWithText("body").assertIsDisplayed()
+        val lighter = maxOf(content.luminance(), custom.luminance())
+        val darker = minOf(content.luminance(), custom.luminance())
+        assertTrue(
+            "content colour $content on $custom must reach 4.5:1",
+            (lighter + 0.05f) / (darker + 0.05f) >= 4.5f,
+        )
+    }
+
+    /** A role of the scheme keeps the content colour Material pairs with it. */
+    @Test
+    fun `a scaffold on a scheme role keeps the role paired with it`() {
+        var content = Color.Unspecified
+        var expected = Color.Unspecified
+        compose.setContent {
+            KansoTheme(dynamicColor = false) {
+                expected = Kanso.colors.onPrimaryContainer
+                KansoScaffold(
+                    title = "Peers",
+                    version = "",
+                    containerColor = Kanso.colors.primaryContainer,
+                ) {
+                    content = LocalContentColor.current
+                    Text("body")
+                }
+            }
+        }
+        compose.onNodeWithText("body").assertIsDisplayed()
+        assertEquals(expected, content)
+    }
+
+    @Test
+    fun `a scaffold uses the content colour it is given`() {
+        var content = Color.Unspecified
+        compose.setContent {
+            KansoTheme(dynamicColor = false) {
+                KansoScaffold(title = "Peers", version = "", contentColor = Color.Magenta) {
+                    content = LocalContentColor.current
+                    Text("body")
+                }
+            }
+        }
+        compose.onNodeWithText("body").assertIsDisplayed()
+        assertEquals(Color.Magenta, content)
+    }
+
+    // ---- select field: the menu -----------------------------------------------------
+
+    /** An empty menu is a sliver of popup that takes the tap and offers nothing. */
+    @Test
+    fun `the select field does not open with nothing to choose from`() {
+        compose.setContent {
+            KansoTheme(dynamicColor = false) {
+                Column {
+                    KansoSelectField<String>(
+                        value = null,
+                        options = emptyList(),
+                        onSelect = {},
+                        label = "Empty",
+                    )
+                    KansoSelectField(
+                        value = null,
+                        options = listOf("mg/dL"),
+                        onSelect = {},
+                        label = "Unit",
+                    )
+                }
+            }
+        }
+        compose.onNodeWithText("Empty").performClick()
+        compose.onAllNodes(isPopup()).assertCountEquals(0)
+        // The same tap on a field that has options does open one, so the zero above means
+        // something.
+        compose.onNodeWithText("Unit").performClick()
+        compose.onAllNodes(isPopup()).assertCountEquals(1)
+    }
+
+    /** The menu says which option the field is showing, in a way a screen reader can hear. */
+    @Test
+    fun `the select field marks the option in force as selected`() {
+        compose.setContent {
+            KansoTheme(dynamicColor = false) {
+                KansoSelectField(
+                    value = "mmol/L",
+                    options = listOf("mg/dL", "mmol/L"),
+                    onSelect = {},
+                    label = "Unit",
+                )
+            }
+        }
+        compose.onNodeWithText("Unit").performClick()
+        val selected = SemanticsMatcher.expectValue(SemanticsProperties.Selected, true)
+        compose.onNodeWithText("mg/dL").assertIsDisplayed()
+        compose.onAllNodes(hasText("mmol/L") and selected).assertCountEquals(1)
+        compose.onAllNodes(hasText("mg/dL") and selected).assertCountEquals(0)
     }
 }
 

@@ -18,13 +18,16 @@ and a small component library, so a screen you write reads the same as every oth
   type/shape scales and the kanso spacing + elevation tokens, plus edge-to-edge system-bar contrast.
 - **A whole scheme from one seed** — every Material 3 colour role is derived from a single brand
   colour. Tone maps to CIE L\*, so contrast between two tones is the same at every hue rather than
-  varying with it: `onPrimary` on `primary` measures 6.42–6.46 across all 360 hues. That guarantee
-  is [pinned by tests](kanso/src/test/java/dev/ayanami/kanso/theme/ColorContrastTest.kt), not
+  varying with it: `onPrimary` on `primary` measures 6.41–6.51 across all 360 hues. Hue is held on
+  the OKLab axis, so every role stays the colour its seed is: a blue seed gives blue roles, not
+  violet ones. Both are [pinned by tests](kanso/src/test/java/dev/ayanami/kanso/theme), not
   asserted here.
-- **A component library** — eleven components covering a screen's structure, forms, lists and
-  states, listed below. Each reads spacing, colour, type and shape from the tokens, absorbs its
-  own Material 3 experimental opt-ins, and is reviewed in four configurations (light, dark, 200%
-  font scale, RTL) by a preview.
+- **A component library** — the building blocks of a screen's structure, forms, lists, status,
+  overlays and states, listed below. Each reads spacing, colour, type and shape from the tokens
+  and absorbs its own Material 3 experimental opt-ins. All but two are reviewed in four
+  configurations (light, dark, 200% font scale, RTL) by a preview; `KansoBottomSheet` and
+  `KansoRefreshBox` animate in and draw nothing in a static preview, so the gallery app is where
+  those two are looked at.
 - **Aligned versions, and nothing more** — a single Compose BOM is exposed via `api`, so consuming
   apps inherit the same aligned Compose and Material 3 versions. `api` carries only the artifacts
   that appear in kanso's own public signatures; your activity plumbing, icon set and navigation
@@ -51,8 +54,22 @@ setContent {
 ```
 
 Any `Color` works as a seed. Achromatic seeds (grey, black, white) produce a neutral scheme rather
-than picking an arbitrary hue, and a seed's own saturation is preserved, so a muted navy and a
+than picking an arbitrary hue, and a seed's own saturation carries through, so a muted navy and a
 vivid blue give visibly different schemes.
+
+Two things are worth knowing before you choose one:
+
+- **Saturation carries through inside a band.** Chroma (OKLCH) is held between 0.068 and 0.15, so
+  the palest scheme still reads as a colour and the loudest does not take over a screen; a seed
+  outside the band is moved to its edge. A seed whose CIELAB chroma is under 5 counts as grey —
+  the one line still drawn in CIELAB, because OKLab would call `#010000` a colour. An
+  almost-grey seed therefore lands on one side of that line or the other — `#F0FFFF` gives a
+  teal scheme and `#000F0F` a neutral one — so pick it on purpose.
+- **Hue is the seed's, at every tone.** Roles are built at the seed's OKLab hue, which stays put
+  to the eye from the darkest tone to the lightest: `#0000FF` gives a `#335AB4` primary, and
+  round the whole hue circle the primary roles sit within 3° of their seed. Where sRGB cannot
+  show a tone at the seed's saturation, the role gives up chroma — never hue, and never
+  contrast. If one role has to be an exact colour all the same, override it as shown below.
 
 ### Theming it to your brand
 
@@ -109,7 +126,22 @@ git submodule add https://github.com/ayanami770/kanso.git third_party/kanso
 ```kotlin
 include(":kanso")
 project(":kanso").projectDir = file("third_party/kanso/kanso")
+
+dependencyResolutionManagement {
+    versionCatalogs {
+        // kanso's own dependency versions, read straight from the submodule — nothing to mirror.
+        create("kansoLibs") { from(files("third_party/kanso/gradle/libs.versions.toml")) }
+    }
+}
 ```
+
+If your settings file already has a `dependencyResolutionManagement { }` block, put the
+`versionCatalogs { }` part inside it. That block is the whole contract: kanso's module script
+reads its dependency versions from `kansoLibs`, and applies the Android library and Compose
+compiler plugins by id, so they come from the versions your own build already uses. Its tests,
+lint rules and documentation tooling are declared in kanso's root script, which your build never
+evaluates — none of it reaches your classpath, your debug manifest or your dependency
+verification file.
 
 `app/build.gradle.kts`:
 
@@ -123,7 +155,7 @@ kanso brings the Compose BOM and the Compose artifacts in its public API. It doe
 activity integration, an icon set or a navigation library — declare whichever you use:
 
 ```kotlin
-implementation("androidx.activity:activity-compose:1.9.3")
+implementation("androidx.activity:activity-compose:1.13.0")          // or newer
 implementation("androidx.compose.material:material-icons-extended")  // version from the BOM
 ```
 
@@ -132,11 +164,16 @@ implementation("androidx.compose.material:material-icons-extended")  // version 
 | | |
 |---|---|
 | `minSdk` | 24 (`:demo` is 26) |
-| `compileSdk` | 36 — required by `core-ktx` 1.18.0 via AAR metadata, so your app needs it too |
-| Compose | BOM 2026.06.01, exposed via `api` — this sets your **floor**; declare a newer BOM to move past it |
-| Kotlin | 2.4.10 (AGP 9's built-in Kotlin), with the Compose compiler plugin |
+| `compileSdk` | 37 — required by `core-ktx` via AAR metadata and passed on by kanso's own, so your app needs it too |
+| Compose | the BOM kanso exposes via `api` sets your **floor**; declare a newer BOM to move past it |
+| Kotlin / AGP | AGP 9 with its built-in Kotlin, and the Compose compiler plugin |
 | JDK | 17 |
-| AGP / Gradle | 9.3.1 / 9.6.1 |
+
+The versions kanso builds itself with — the Compose BOM, Kotlin, AGP — are in
+[`gradle/libs.versions.toml`](gradle/libs.versions.toml) and nowhere else: they move with every
+dependency update, and the copy that used to sit in this table did not. `compileSdk` is the
+exception, because it is the one number your build has to match; a test fails if that row and
+the build file ever disagree.
 
 ## Components
 
@@ -146,7 +183,7 @@ Everything is `Kanso`-prefixed and lives in `dev.ayanami.kanso.component`.
 
 | | |
 |---|---|
-| `KansoScaffold` | Screen shell — top app bar that reacts to scroll, `navigationIcon`, `actions`, `bottomBar`, FAB, snackbar host. The title is followed by the app's version — "CertWatch v5.33.11" — so every screen states the build actually running with no wiring; pass `version` for a different string, or `""` to omit it. `centeredTitle = false` for a start-aligned bar; `largeTopBar = true` for the tall header that collapses on scroll, on a screen that *starts* a hierarchy; `titleContent` replaces the whole title line, version included. Absorbs `ExperimentalMaterial3Api` so you never opt in. |
+| `KansoScaffold` | Screen shell — top app bar that reacts to scroll, `navigationIcon`, `actions`, `bottomBar`, FAB, snackbar host. The title is followed by the app's version — "Acme v1.2.3" — so every screen states the build actually running with no wiring; pass `version` for a different string, or `""` to omit it. Neither text wraps: a long title is ellipsised, and the version is shown only when the whole of it fits beside the title. `centeredTitle = false` for a start-aligned bar; `largeTopBar = true` for the tall header that collapses on scroll, on a screen that *starts* a hierarchy; `titleContent` replaces the whole title line, version included. Absorbs `ExperimentalMaterial3Api` so you never opt in. |
 | `KansoBackButton` | The back affordance for `KansoScaffold`'s `navigationIcon`. Four lines you would otherwise write yourself, minus the two things that go wrong: the arrow mirrors in RTL, and it carries a translatable content description. |
 | `kansoAppVersionLabel()` | The `v`-prefixed version of the installed package, read at composition. `KansoScaffold`'s default — call it directly if you want the same string elsewhere, such as an About screen. |
 | `KansoContentContainer` | Caps content width (`Kanso.spacing.contentMaxWidth`, 640dp) and centres it. A no-op on a phone; on a tablet it stops body text running to ~160 characters a line. Needs no changes to the components inside it. |
@@ -158,18 +195,18 @@ Everything is `Kanso`-prefixed and lives in `dev.ayanami.kanso.component`.
 
 | | |
 |---|---|
-| `KansoButton` | One emphasis system, six weights — `Filled`, `Tonal`, `Outlined`, `Text`, `Elevated`, `Destructive`. Optional leading `icon`, and a `loading` state that disables the button, announces itself to a screen reader and does not change the button's width. |
+| `KansoButton` | One emphasis system, six weights — `Filled`, `Tonal`, `Outlined`, `Text`, `Elevated`, `Destructive`. Optional leading `icon`, and a `loading` state that disables the button, announces itself to a screen reader and changes neither the button's width nor its colours. |
 | `KansoTextField` | Outlined field with label, supporting text and an error state whose message reaches the semantics tree. `enabled`, `readOnly`, `placeholder`, leading/trailing icons, `minLines`, `imeAction`, `keyboardActions`, `visualTransformation`. |
 | `KansoPasswordField` | Masked field with a reveal toggle whose content description follows its state. `numeric = true` for a PIN, `revealable = false` for a value that must never be shown. |
-| `KansoSelectField` | A value chosen from a list rather than typed. Generic in the option type, so `onSelect` hands back your enum and `optionLabel` is the only thing that knows about text — no index to map back. Read-only anchor: it opens the menu, never the keyboard. Absorbs `ExperimentalMaterial3Api`. |
+| `KansoSelectField` | A value chosen from a list rather than typed. Generic in the option type, so `onSelect` hands back your enum and `optionLabel` is the only thing that knows about text — no index to map back. Read-only anchor: it opens the menu, never the keyboard. The menu marks the option in force, and does not open while there is nothing to choose. Absorbs `ExperimentalMaterial3Api`. |
 
 ### Lists
 
 | | |
 |---|---|
-| `KansoListItem` | One/two-line row with an optional leading `icon` — or a `leading` slot for an avatar or checkbox — and trailing content. Merged into one accessibility node; a clickable row is held to the 48dp touch target. |
+| `KansoListItem` | One/two-line row with an optional leading `icon` — or a `leading` slot for an avatar or checkbox — and trailing content. Merged into one accessibility node; a clickable row is held to the 48dp touch target. `contentPadding` insets the content inside the pressed area, for a row that runs edge to edge. |
 | `KansoStatusRow` | Key/value row. Both halves are weighted, so a long value wraps in its own half instead of starving the label. Label and value are one screen-reader stop. |
-| `KansoSwitchRow` / `KansoCheckboxRow` / `KansoRadioRow` | Settings rows where the **row** is the control. `KansoListItem(trailing = { Switch(…) })` gives you two focus stops that a screen reader reads as unrelated and a row whose tap does nothing; these carry `toggleable`/`selectable` with a `Role` on the row and render the control as a read-only indicator. 48dp minimum at any font scale. Wrap a radio group in `Modifier.selectableGroup()` so "1 of 3" is announced. |
+| `KansoSwitchRow` / `KansoCheckboxRow` / `KansoRadioRow` | Settings rows where the **row** is the control. `KansoListItem(trailing = { Switch(…) })` gives you two focus stops that a screen reader reads as unrelated and a row whose tap does nothing; these carry `toggleable`/`selectable` with a `Role` on the row and render the control as a read-only indicator. 48dp minimum at any font scale. Wrap a radio group in `Modifier.selectableGroup()` so "1 of 3" is announced. `contentPadding` works as it does on `KansoListItem`. |
 | `KansoRefreshBox` | Pull-to-refresh around a scrollable, with the indicator in the brand colour instead of Material's theme-blind grey. |
 
 ### Status
@@ -216,7 +253,7 @@ Read through the `Kanso` object, which is valid anywhere inside `KansoTheme`.
 | module   | type                      | contents |
 |----------|---------------------------|----------|
 | `:kanso` | `com.android.library`     | the design system (`theme/` + `component/`) |
-| `:demo`  | `com.android.application` | a gallery app: every token + component, live brand switch, dark/light, dynamic-colour toggle |
+| `:demo`  | `com.android.application` | a gallery app: the components in use, live brand switch, dark/light, dynamic-colour toggle |
 
 ## Build
 

@@ -5,6 +5,8 @@
 package dev.ayanami.kanso.theme
 
 import android.app.Activity
+import android.content.Context
+import android.content.ContextWrapper
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.ColorScheme
@@ -28,7 +30,9 @@ import androidx.core.view.WindowCompat
  *  - a colour scheme derived from the app's [brand] seed (per-app accent), OR the wallpaper
  *    (Material You) when [dynamicColor] is on and the device is Android 12+,
  *  - the type / shape scales and the kanso spacing + elevation tokens,
- *  - edge-to-edge system-bar icon contrast that follows light/dark.
+ *  - edge-to-edge system-bar icon contrast that follows light/dark. The window has one set of
+ *    bars, so only the outermost `KansoTheme` sets it: a nested theme re-themes its content and
+ *    leaves the bars alone. To darken the bars for one screen, change [darkTheme] at the top.
  *
  * Usage (in an app):  setContent { KansoTheme(brand = MyBrand) { AppRoot() } }
  *
@@ -85,9 +89,13 @@ public fun KansoTheme(
     }
 
     val view = LocalView.current
-    if (!view.isInEditMode) {
+    // Only the outermost KansoTheme speaks for the window. A nested one — a dark card on a light
+    // screen, a themed preview inside a themed host — used to run this same effect after its
+    // parent's, and turned the whole window's bar icons to suit one corner of the screen.
+    val outermost = !LocalKansoThemePresent.current
+    if (outermost && !view.isInEditMode) {
         SideEffect {
-            (context as? Activity)?.window?.let { window ->
+            context.findActivity()?.window?.let { window ->
                 val controller = WindowCompat.getInsetsController(window, view)
                 controller.isAppearanceLightStatusBars = !darkTheme
                 controller.isAppearanceLightNavigationBars = !darkTheme
@@ -101,6 +109,7 @@ public fun KansoTheme(
         ?: if (darkTheme) KansoDarkExtendedColors else KansoLightExtendedColors
 
     CompositionLocalProvider(
+        LocalKansoThemePresent provides true,
         LocalKansoBrand provides brand,
         LocalKansoExtendedColors provides resolvedExtendedColors,
         LocalKansoSpacing provides spacing,
@@ -115,6 +124,23 @@ public fun KansoTheme(
             content = content,
         )
     }
+}
+
+/** True inside any [KansoTheme], so a nested one knows the window already has an owner. */
+@Suppress("ComposeCompositionLocalUsage")
+private val LocalKansoThemePresent = staticCompositionLocalOf { false }
+
+/**
+ * The activity behind a context, through however many wrappers.
+ *
+ * `LocalContext` is often not the activity itself — a `ContextThemeWrapper`, a per-screen locale
+ * override and most dependency-injection containers all sit in front of it — and a plain cast
+ * then fails without a trace: the bars simply never follow the theme.
+ */
+private tailrec fun Context.findActivity(): Activity? = when (this) {
+    is Activity -> this
+    is ContextWrapper -> baseContext.findActivity()
+    else -> null
 }
 
 /**

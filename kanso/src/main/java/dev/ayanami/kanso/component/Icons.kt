@@ -16,7 +16,8 @@ import androidx.compose.ui.unit.dp
 // The library deliberately depends on no icon set — an app picks its own, and material3 no
 // longer brings even material-icons-core transitively. These exist because each is part of a
 // component's own behaviour rather than decoration a caller supplies: the password reveal
-// toggle, the error state's glyph, the scaffold's back affordance. Everything else is the
+// toggle, the error state's glyph, the scaffold's back affordance, the tick on a picker's
+// current option. Everything else is the
 // consumer's to pass in.
 //
 // Filled with SolidColor(Black) as a placeholder: Icon() applies its own tint over the whole
@@ -145,5 +146,18 @@ internal val ArrowBackIcon: ImageVector = kansoIcon("kanso_arrow_back", autoMirr
         moveTo(11f, 4.5f)
         lineTo(3.5f, 12f)
         lineTo(11f, 19.5f)
+    }
+}
+
+/** A tick — the option a picker is currently showing. */
+internal val CheckIcon: ImageVector = kansoIcon("kanso_check") {
+    path(
+        stroke = SolidColor(Color.Black),
+        strokeLineWidth = 2.2f,
+        strokeLineCap = StrokeCap.Round,
+    ) {
+        moveTo(4.5f, 12.5f)
+        lineTo(9.5f, 17.5f)
+        lineTo(19.5f, 6.5f)
     }
 }

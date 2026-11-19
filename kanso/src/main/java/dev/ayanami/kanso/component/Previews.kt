@@ -152,7 +152,7 @@ private fun KansoPasswordFieldPreview() = PreviewHost {
 private fun KansoTextFieldPreview() = PreviewHost {
     Column {
         KansoTextField(
-            value = "ayanami",
+            value = "Alex",
             onValueChange = {},
             label = "Display name",
             supporting = "Shown to peers on the control channel.",
@@ -295,7 +295,7 @@ private fun KansoSettingRowsPreview() = PreviewHost {
 private fun KansoAlertDialogPreview() = PreviewHost {
     KansoAlertDialog(
         title = "Delete this peer?",
-        text = "dao-node will be removed from every channel. This cannot be undone.",
+        text = "node-a will be removed from every channel. This cannot be undone.",
         confirmText = "Delete",
         dismissText = "Cancel",
         destructive = true,
@@ -320,7 +320,16 @@ private fun KansoCardSeamsPreview() = PreviewHost {
             KansoStatusRow("Online", "3")
         }
         KansoCard(contentPadding = PaddingValues(Kanso.spacing.none)) {
-            KansoListItem(headline = "Edge-to-edge row", onClick = {})
+            // The inset goes on the row, not on the card: the pressed area still runs to the
+            // card's edges, and only the text moves in.
+            KansoListItem(
+                headline = "Edge-to-edge row",
+                onClick = {},
+                contentPadding = PaddingValues(
+                    horizontal = Kanso.spacing.lg,
+                    vertical = Kanso.spacing.md,
+                ),
+            )
         }
     }
 }
@@ -466,6 +475,7 @@ private fun KansoSkeletonPreview() = PreviewHost {
  * shared annotation, where it would triple the matrix for components that have no adaptive
  * behaviour to show.
  */
+@KansoPreviews
 @Preview(name = "tablet", device = "spec:width=1280dp,height=800dp,dpi=240")
 @Preview(name = "phone", device = "spec:width=411dp,height=891dp,dpi=420")
 @Composable
@@ -488,21 +498,26 @@ private fun KansoContentContainerPreview() = PreviewHost {
 
 /**
  * The version is passed explicitly because a preview host resolves no real package — what is
- * under review is the title-then-version line the default produces in a running app.
+ * under review is the title-then-version line the default produces in a running app, beside a
+ * back button whose arrow has to mirror in the RTL configuration.
  */
 @KansoPreviews
 @Composable
 private fun KansoScaffoldPreview() = KansoTheme(dynamicColor = false) {
-    KansoScaffold(title = "Peers", version = "v1.4.2") { inner ->
+    KansoScaffold(
+        title = "Peers",
+        version = "v1.4.2",
+        navigationIcon = { KansoBackButton(onBack = {}) },
+    ) { inner ->
         Column(Modifier.padding(inner).padding(horizontal = Kanso.spacing.screen)) {
             KansoSectionHeader("Nearby")
-            KansoListItem(headline = "dao-node", supporting = "192.168.1.24", onClick = {})
-            KansoListItem(headline = "edge-01", supporting = "192.168.1.31", onClick = {})
+            KansoListItem(headline = "node-a", supporting = "192.0.2.24", onClick = {})
+            KansoListItem(headline = "node-b", supporting = "192.0.2.31", onClick = {})
         }
     }
 }
 
-/** The tall header with a back button beside it — including the RTL mirror of the arrow. */
+/** The tall header, on the kind of screen it is for: one that starts a hierarchy. */
 @KansoPreviews
 @Composable
 private fun KansoScaffoldLargeBarPreview() = KansoTheme(dynamicColor = false) {
@@ -510,7 +525,6 @@ private fun KansoScaffoldLargeBarPreview() = KansoTheme(dynamicColor = false) {
         title = "Settings",
         version = "v1.4.2",
         largeTopBar = true,
-        navigationIcon = { KansoBackButton(onBack = {}) },
     ) { inner ->
         Column(Modifier.padding(inner).padding(horizontal = Kanso.spacing.screen)) {
             KansoSwitchRow(headline = "Background sync", checked = true, onCheckedChange = {})
@@ -543,7 +557,7 @@ private fun KansoScaffoldWithBarsPreview() = KansoTheme(dynamicColor = false) {
         },
     ) { inner ->
         Column(Modifier.padding(inner).padding(horizontal = Kanso.spacing.screen)) {
-            KansoListItem(headline = "dao-node", supporting = "192.168.1.24", onClick = {})
+            KansoListItem(headline = "node-a", supporting = "192.0.2.24", onClick = {})
         }
     }
 }

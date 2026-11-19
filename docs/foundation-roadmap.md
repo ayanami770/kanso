@@ -126,6 +126,12 @@ between two tones is hue-independent **by construction** rather than by tuning: 
 take a neutral palette, and seed chroma is clamped into a 24–56 band instead of normalised away,
 so a muted navy and a vivid blue still differ by ~32 points of chroma.
 
+**Since then:** hue and chroma moved from the CIELAB axis to the OKLab one, because CIELAB's hue
+bent blue seeds towards violet (`#0000FF` gave a `#6A4DA9` primary; it gives `#335AB4` now). Tone
+is still CIE L\*, so nothing above about contrast moved — the band measured for `onPrimary` on
+`primary` is 6.41–6.51 — and the chroma band is 0.068–0.15 on the new axis. The grey test alone is
+still made in CIELAB. [CHANGELOG.md](../CHANGELOG.md) has the before and after.
+
 ### 1.2 Flip `dynamicColor` to default `false` — `S`, breaking — ❌ not adopted
 
 On every Android 12+ device the wallpaper branch wins before the seed is ever read

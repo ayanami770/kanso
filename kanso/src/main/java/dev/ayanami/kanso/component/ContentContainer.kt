@@ -9,9 +9,11 @@ import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.IntOffset
 import dev.ayanami.kanso.theme.Kanso
 
 /**
@@ -32,6 +34,9 @@ import dev.ayanami.kanso.theme.Kanso
  * }
  * ```
  *
+ * [alignment] places the capped content when there is width to spare. It is centred by
+ * default, and any `Alignment.Horizontal` is honoured — the absolute and the biased ones too.
+ *
  * It deliberately applies no horizontal padding of its own — screens already pad with
  * `Kanso.spacing.screen`, and adding more here would double it everywhere.
  *
@@ -46,13 +51,22 @@ public fun KansoContentContainer(
     alignment: Alignment.Horizontal = Alignment.CenterHorizontally,
     content: @Composable BoxScope.() -> Unit,
 ) {
-    Box(modifier.fillMaxWidth(), contentAlignment = alignment.toBoxAlignment()) {
+    val boxAlignment = remember(alignment) { alignment.toBoxAlignment() }
+    Box(modifier.fillMaxWidth(), contentAlignment = boxAlignment) {
         Box(Modifier.widthIn(max = maxWidth).fillMaxWidth(), content = content)
     }
 }
 
-private fun Alignment.Horizontal.toBoxAlignment(): Alignment = when (this) {
-    Alignment.Start -> Alignment.TopStart
-    Alignment.End -> Alignment.TopEnd
-    else -> Alignment.TopCenter
+/**
+ * Any horizontal alignment as the two-dimensional one a `Box` takes, pinned to the top.
+ *
+ * It goes through the alignment's own `align` instead of a table of the usual three. A table
+ * has to end in an `else`, and that is where `AbsoluteAlignment.Left` and every
+ * `BiasAlignment.Horizontal` used to land: silently centred.
+ */
+private fun Alignment.Horizontal.toBoxAlignment(): Alignment {
+    val horizontal = this
+    return Alignment { size, space, layoutDirection ->
+        IntOffset(horizontal.align(size.width, space.width, layoutDirection), 0)
+    }
 }

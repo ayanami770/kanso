@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  Strings kanso components announce to accessibility services. They are never drawn on
-  screen, so they carry no visual weight — but they must be translatable, which is why they
-  live here rather than as Kotlin string literals.
+  Strings kanso components announce to accessibility services, plus the one default label that
+  is drawn (kanso_retry). They must be translatable, which is why they live here rather than as
+  Kotlin string literals. A translation goes in values-<language>/strings.xml; values-ja is the
+  first.
 -->
 <resources>
     <!-- Announced by KansoButton while its `loading` spinner is showing. -->

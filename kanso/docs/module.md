@@ -10,7 +10,7 @@ the `Kanso` object:
 KansoTheme(brand = KansoBrand("my app", Color(0xFF6750A4))) {
     KansoScaffold(title = "Peers") { inner ->
         Column(Modifier.padding(inner)) {
-            KansoListItem("dao-node", supporting = "192.168.1.24", onClick = {})
+            KansoListItem("node-a", supporting = "192.0.2.24", onClick = {})
         }
     }
 }
@@ -23,9 +23,12 @@ from the user's wallpaper and the seed is never read. That is deliberate — a u
 colour preference outranks an app's — but if brand identity has to hold, pass
 `dynamicColor = false`.
 
-**Colour is not a suggestion.** Tone is CIE L\*, built in CIELCh(ab) and gamut-mapped by reducing
-chroma only, so contrast survives the mapping. `onPrimary` on `primary` measures 6.42–6.46 at
-every hue on the circle, and that is pinned by a test rather than by inspection.
+**Colour is not a suggestion.** Tone is CIE L\*; hue and chroma are OKLCH's. A role has its tone's
+luminance and its seed's hue, with as much chroma as sRGB can show there, and a colour sRGB cannot
+show is brought into gamut by giving up chroma alone. So contrast survives the mapping, and so
+does the brand's colour: a blue seed gives blue roles. `onPrimary` on `primary` measures 6.41–6.51
+at every hue on the circle, and the primary roles sit within 3° of their seed's hue round the
+whole of it — both pinned by tests rather than by inspection.
 
 # Package dev.ayanami.kanso.theme
 

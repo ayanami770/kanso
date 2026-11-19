@@ -21,4 +21,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "kanso"
 include(":kanso") // the shared Material 3 design-system library
-include(":demo") // a gallery app that showcases every token + component
+include(":demo") // a gallery app that shows the components in use

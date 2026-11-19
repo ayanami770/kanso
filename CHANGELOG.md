@@ -47,8 +47,9 @@ kanso is not published to a Maven repository, and that is deliberate — see
   the three call sites share.
 
 - **Slack's `compose-lints`** on both modules, and on `:kanso` **every lint warning is now an
-  error** — with `GradleDependency` as the single exclusion, since it only reports that a newer
-  version of something exists and would turn each upstream release into a red build.
+  error** — with the two checks that only report that a newer version of something exists,
+  `GradleDependency` and `AndroidGradlePluginVersion`, as the exclusions: either would turn each
+  upstream release into a red build.
 
   The severity change is what makes the checks a gate rather than a report: most compose-lints
   rules land at warning level. It caught a modifier parameter without a default in `KansoSkeleton`
@@ -77,8 +78,209 @@ kanso is not published to a Maven repository, and that is deliberate — see
   100, which is where the code already wrapped: the 14 lines that exceeded it were rewrapped
   rather than the ceiling raised.
 
+- **Japanese translations** of the six strings kanso supplies itself (`values-ja`): the loading
+  and loading-content announcements, the password reveal toggle, the back button and
+  `KansoErrorState`'s default "Retry" label — the one that is drawn on screen, and until now was
+  drawn in English whatever the app's language.
+
+- **`contentPadding` on `KansoListItem`, `KansoSwitchRow`, `KansoCheckboxRow` and
+  `KansoRadioRow`** — the space between the row's edge and its content, applied *inside* the
+  pressed area. Until now a row padded itself above and below only, so in an edge-to-edge
+  container the choice was text touching the edge, or `Modifier.padding`, which shrinks the
+  highlight along with the text. The default is the vertical padding the rows already had, so
+  nothing moves. On `KansoListItem` the parameter sits before `trailing`, which stays last for
+  trailing-lambda call sites.
+
+- **`KansoScaffold(contentColor = …)`**, and a readable default without it. A `containerColor`
+  from outside the scheme has no content colour paired with it, and Material falls back to
+  whatever `LocalContentColor` holds — black, at the top of a composition, which left a screen
+  on a dark background of its own at about 1.1:1. Unset, the content colour is still the
+  scheme's pair for a scheme role; for any other colour it is now whichever of `onSurface` and
+  `inverseOnSurface` reads better on it. The parameter is the last one before `content`.
+
+### Fixed
+
+- **A debug build of your app no longer carries two exported activities it never declared.**
+  kanso's `debugImplementation(ui-tooling)` and `debugImplementation(ui-test-manifest)` reached
+  every consumer's debug variant and merged `androidx.compose.ui.tooling.PreviewActivity` and
+  `androidx.activity.ComponentActivity`, both `exported="true"`, into its manifest — from a
+  library whose own manifest says "no components, no permissions". They are declared from the
+  root script now and stay inside kanso's own build.
+- **`KansoScaffold`'s title line broke at the widths it most needs to survive.** The title and
+  the version were two texts in a plain `Row`. Ten full-width characters with a back arrow and
+  two actions on a 360dp screen — at the default font size — wrapped the title and left the
+  version no width at all, so it ran down the screen one character per line; at 200% font scale
+  "v1.2.31" broke after "v1.2.3", which reads as a different version.
+
+  Neither text wraps now. The title is ellipsised (one line; two under `largeTopBar`), and the
+  version is drawn only when the whole of it fits beside the title. The pair is also a single
+  accessibility node marked as a heading, where it used to be two unrelated stops and no
+  heading. *Visible change:* a title that used to wrap onto a second line in a single-row bar
+  is now ellipsised.
+- **`KansoAlertDialog` cut a long message off with no way to read the rest.** Material 3 sizes
+  the dialog to its content and stops at the window; past that the text was clipped mid-line, and
+  because this component is deliberately not a slot API a caller could not add a scroll. At 200%
+  font scale on a 320x480dp or landscape screen, a four-sentence confirmation lost its last
+  sentence — the "this cannot be undone" one. The message now scrolls inside the dialog.
+- **`KansoSkeleton` was invisible inside a `KansoCard`.** Its bars pulsed between
+  `surfaceContainerHighest` and `surfaceContainerHigh` — and the first of those is what a filled
+  card is painted in, so against a card the bars measured 1.00:1 at one end of the pulse and
+  1.05:1 at the other, for every seed. They are now the content colour laid over whatever is
+  underneath, which shows on the bare surface, in a card and in a sheet alike. *Visible change:*
+  on the bare surface the bars are within a tone of where they were.
+- **A skeleton row was not the height of the row it stands in for**, so the layout did jump when
+  the data landed. The row was a fixed 72dp (48dp without a supporting line) against a list row
+  of 68dp at the default font scale, 61.5dp at 0.85 and 103.5dp at 200%. It is now built from the
+  same padding and the same line heights as `KansoListItem`, and matches it at every font scale.
+  *Visible change:* a two-line skeleton row is 4dp shorter at the default font scale.
+- **A `KansoStatus.Neutral` badge or banner had no visible container on a `KansoCard`.** Its
+  container was `surfaceVariant`, the same tone as the filled card (1.00:1 in the light scheme) —
+  the gallery's own "Unknown" badge was a label with no pill beside three that had one. The
+  neutral container is now the content colour laid thinly over whatever is underneath.
+  *Visible change:* on the bare surface it is within a tone of where it was.
+- **A nested `KansoTheme` took over the whole window's system bars, and a wrapped context got
+  none.** Every `KansoTheme` wrote the bar-icon appearance for its own `darkTheme`, so a dark
+  card on a light screen left light icons on a light status bar — until the outer theme
+  recomposed and flipped them back. And the activity was found with a plain cast of
+  `LocalContext`, which fails silently behind a `ContextThemeWrapper` or a locale override. Now
+  only the outermost theme sets the bars, and the activity is found through any wrappers.
+  *Behaviour change:* a nested theme no longer affects the bars; to darken them for one screen,
+  change `darkTheme` on the outermost `KansoTheme`.
+- **A wide trailing slot starved the text beside it.** `KansoListItem`'s `trailing`, the
+  `titleTrailing` of `KansoCard`, `KansoSectionHeader`'s `trailing` and `KansoInfoBanner`'s
+  `action` were measured first and given whatever they asked for. A timestamp at 200% font scale
+  took the whole row and left the headline a 25dp column, wrapped into nineteen lines — the bug
+  0.1.2 removed from `KansoStatusRow`, still present everywhere else. A trailing slot now gets at
+  most half of the width available to it and wraps inside that.
+- **`KansoMotion.exitEasing` slowed to a stop.** Its default was `LinearOutSlowInEasing`, the
+  curve for something arriving, under a KDoc that asks for the opposite. It is now
+  `FastOutLinearInEasing`. No kanso component reads it, so nothing in the library moves
+  differently; an app that passes `Kanso.motion.exitEasing` to its own exit transitions will see
+  them accelerate out instead. `KansoMotion(exitEasing = LinearOutSlowInEasing)` keeps the old
+  curve.
+- **`KansoContentContainer` ignored most alignments.** Only `Alignment.Start` and `Alignment.End`
+  had an effect; `AbsoluteAlignment.Left`, `.Right` and any `BiasAlignment.Horizontal` were
+  silently centred. Every horizontal alignment is honoured now.
+- `KansoInfoBanner` sizes its icon with `Kanso.sizing.icon`, like every other leading icon, not
+  with `Kanso.spacing.xl`. Both are 24dp by default, so nothing moves unless a theme changed one
+  of them.
+- **`KansoSelectField` opened an empty menu, and its menu did not say which option was chosen.**
+  With no options the field no longer opens — it used to show a sliver of popup that took the
+  tap. The option in force now carries a tick and is announced as selected. The KDoc also says
+  what was always true: every option is composed when the menu opens, so this is a picker for a
+  handful of choices.
+- **A loading `KansoButton` looked disabled.** Loading has to disable the button, and a disabled
+  Material button greys itself out — so "busy" and "unavailable" were the same picture, with
+  the spinner, the only thing telling them apart, at about 2.3:1 against its container. A
+  loading button now keeps the colours it had and gains the spinner in its content colour. This
+  changes pixels on purpose: a screenshot of yours that shows a loading button will differ. A
+  button that is not `enabled` stays grey, loading or not. The `Elevated` style's resting
+  elevation is read from `Kanso.elevation.level1` — 1dp, as before, unless your theme says
+  otherwise.
+
 ### Changed
 
+- **Derived colours change for every seed — most for seeds in the blue range.** The engine now
+  holds every role to its seed's hue on the OKLab axis. It used to hold CIELAB's hue angle, and
+  CIELAB's hue lines are not perceptually straight through the blues, so a blue seed's roles
+  bent towards violet. Over 72 fully saturated seeds round the hue circle, the four primary
+  roles used to sit up to 38.8° of OKLab hue from their seed, 15 of the 72 by more than 12°;
+  they are now within 1.5° for all 72.
+
+  | seed | light `primary` | light `primaryContainer` | dark `primary` | dark `primaryContainer` |
+  |---|---|---|---|---|
+  | `#0000FF` | `#6A4DA9` → `#335AB4` | `#EADDFF` → `#D5E3FF` | `#D5BBFF` → `#ABC7FF` | `#4F368E` → `#1D4098` |
+  | `#0055FF` | `#5254B0` → `#2F5AB4` | `#E4DFFF` → `#D4E3FF` | `#C7BFFF` → `#A9C7FF` | `#353D95` → `#184198` |
+  | `#3F5AA6` | `#405BA7` → `#3F5BA7` | `#DEE1FF` → `#D6E3FF` | `#BAC3FF` → `#AEC6FF` | `#1F438C` → `#2A428B` |
+  | `#FF0000` | `#A53A25` → `#A8372C` | `#FFDBD1` → `#FFDAD4` | `#FFB4A1` → `#FFB4A8` | `#881F0F` → `#8B1911` |
+  | `#386A20` | `#386A20` → `#386A20` | `#BDF19E` → `#B9F2A3` | `#A1D583` → `#9ED588` | `#1E5106` → `#205100` |
+  | `#006A60` (the default) | `#016A60` → `#016A60` | `#9DF2E5` → `#9EF2E5` | `#81D5C9` → `#82D5C9` | `#005048` → `#005048` |
+
+  Away from blue the move is small, but it is not nothing for any seed. For the default seed
+  about half the roles change at all, nearly all of those by one step of one or two channels;
+  only its tertiary roles, and the darkest surface of the dark scheme, move further. A fully
+  saturated red moves by up to 14 steps of a channel. And it is not only hue:
+
+  - **Chroma is measured on the same axis as hue.** The band a seed's chroma is held to was
+    24–56 in CIELAB and is 0.068–0.15 in OKLCH, and the neutral palettes' tint moved the same
+    way. Those are the same amounts averaged round the hue circle, not hue by hue, so one
+    seed's scheme is a little more saturated than it was and another's a little less.
+  - **The tertiary palette is still 60° on from the seed, but on the OKLab circle,** which is
+    not the same sixty degrees: the default seed's light `tertiary` goes from `#3B6378` to
+    `#446179`, and pure blue's from `#934659` to `#7B4E7F`.
+  - **A colour sRGB cannot show at its tone gives up chroma and nothing else.** The old search
+    let a channel overshoot the gamut by up to 0.0005 and clipped it; nothing is clipped now.
+
+  What does not change is tone. Every role has the luminance it had, so every contrast ratio
+  is what it was: `onPrimary` on `primary` still measures 6.41–6.51 round the hue circle, and
+  the same tests hold it. Which seeds count as grey does not change either — that line is
+  still CIELAB chroma 5, because on the OKLab axis `#010000` would count as a colour.
+
+  *Migration:* no code has to change; no signature moved. Re-record any screenshot that shows
+  a kanso colour. If one role has to stay exactly what it was, pass the scheme with that role
+  put back: `KansoTheme(colorScheme = kansoLightColorScheme(seed).copy(primary = …))`.
+- **Installing kanso no longer means mirroring its version catalog.** `kanso/build.gradle.kts` is
+  evaluated by the consuming build, and it used to name 24 aliases through `libs.…` — which in a
+  consuming build is the *consumer's* catalog. Following the README's three steps therefore
+  stopped at `Unresolved reference 'libs'`, and every app that did adopt kanso carried a
+  hand-kept copy of kanso's catalog that had to gain an entry whenever kanso's did.
+
+  The module script now applies the Android library and Compose compiler plugins by id (their
+  versions come from your build, which already has both) and looks its libraries up in a catalog
+  named `kansoLibs`.
+
+  *Migration:* add one block to `settings.gradle.kts` —
+  `versionCatalogs { create("kansoLibs") { from(files("third_party/kanso/gradle/libs.versions.toml")) } }`
+  — and delete the mirrored aliases at your leisure. Nothing breaks if you do neither: without
+  `kansoLibs` the script falls back to `libs`, so an existing mirror keeps working. The
+  `roborazzi` plugin alias and the test-library aliases are no longer read at all.
+- **kanso's own tests, lint rules and preview tooling are no longer part of a consuming build.**
+  Roborazzi, Robolectric, the Compose test artifacts, compose-lints, `ui-tooling` and
+  `ui-test-manifest` are declared from kanso's root script — the move Dokka made earlier, for the
+  same reason — and the module's unit-test component is disabled outside kanso's own build.
+  `./gradlew test` in your app no longer compiles and runs kanso's suite, and you no longer pin
+  that toolchain in your own `verification-metadata.xml`.
+
+  *Migration:* none, unless your app relied on kanso to supply `ui-tooling` for its own
+  `@Preview`s — declare `debugImplementation("androidx.compose.ui:ui-tooling")` yourself.
+- The gallery's States tab hosts each full-area state as the scrollable itself (`scrollState`)
+  instead of wrapping them all in one scrolling column, which had left "a centred full-area
+  placeholder" sitting at the top of the screen. `KansoEmptyState`'s KDoc now says what a
+  scrolling parent does to it and how to pair it with `KansoRefreshBox`. Demo and documentation
+  only; the component is unchanged.
+- **`compileSdk` 36 → 37 on both modules — a consuming app has to follow.** `core-ktx` 1.19.0
+  requires it through its AAR metadata, and kanso's own metadata passes the requirement on: an
+  app still on `compileSdk 36` stops at `checkDebugAarMetadata`. The change itself landed on
+  2026-08-09 (`0e25158`) without an entry here, and the README's compatibility table went on
+  saying 36.
+
+  *Migration:* `compileSdk = 37` in the app. `targetSdk` and `minSdk` are separate decisions and
+  do not have to move.
+- `core-ktx` 1.18.0 → 1.19.0 and the Compose BOM 2026.06.01 → 2026.09.00 — the BOM is the floor
+  an app inherits through `api`. The README's compatibility table no longer repeats version
+  numbers that move with every dependency update; it points at `gradle/libs.versions.toml`, and
+  a test holds its `compileSdk` row to the build file.
+- The colour engine's published numbers are the measured ones. `onPrimary` on `primary` ranges
+  from 6.41 to 6.51 across the hue circle — the README and the API docs said 6.42–6.46 — and a
+  test now holds that band, which "pinned by a test" had claimed all along. The README also
+  states the limit it left out: a seed's chroma is carried through only inside a band, and a
+  seed whose CIELAB chroma is under 5 counts as grey.
+- Documentation, previews and gallery agree with the code again. The README no longer counts
+  the components ("eleven"; the table below it lists two dozen), no longer says every one has a
+  four-way preview (the bottom sheet and the refresh box animate in and draw nothing in a static
+  preview) and no longer promises a token gallery the demo does not have. The gallery gained the
+  `Elevated` and `Destructive` buttons and the `Info` badge it was missing, the content
+  container's preview gained the four standard configurations, and the large-top-bar preview no
+  longer pairs the tall header with a back button — the one combination its own KDoc rules out.
+- The gallery keeps its state across a rotation or a theme change (`rememberSaveable`), starts
+  in the system's light or dark mode instead of always light, has a dark window background and
+  a launcher icon, and no longer opts into backup. Demo only.
+- kanso's own tests no longer let Robolectric download its Android runtime. That jar — about
+  150 MB of framework code that runs inside the test JVM — was fetched at test time by
+  Robolectric's own Maven client, outside Gradle and so outside
+  `gradle/verification-metadata.xml`. Gradle resolves it now, under the same SHA-256 pins as
+  everything else, and the tests run Robolectric offline against that copy. Contributors only;
+  nothing reaches a consuming build.
 - **Releases are no longer tagged.** The four `v0.1.x` tags stay on the remote as history; from
   here on a consumer moves their submodule to a commit SHA, and every section in this file is
   headed with the SHA to move to. Nothing about how breaking changes are communicated has

@@ -8,7 +8,9 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -44,7 +46,9 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -96,10 +100,10 @@ class MainActivity : ComponentActivity() {
  */
 private val Brands = listOf(
     KansoDefaultBrand,
-    KansoBrand("LMSA", Color(0xFF006A60)), // secure teal
-    KansoBrand("CertWatch", Color(0xFF3F5AA6)), // trust blue
-    KansoBrand("Semicon News", Color(0xFF8A4F00)), // amber/silicon
-    KansoBrand("medcal", Color(0xFF386A20)), // clinical green
+    KansoBrand("Indigo", Color(0xFF3F5AA6)),
+    KansoBrand("Amber", Color(0xFF8A4F00)),
+    KansoBrand("Green", Color(0xFF386A20)),
+    KansoBrand("Plum", Color(0xFF7D4E8C)),
 )
 
 private enum class Tab(val label: String, val icon: ImageVector) {
@@ -111,9 +115,11 @@ private enum class Tab(val label: String, val icon: ImageVector) {
 
 @Composable
 private fun DemoApp() {
-    var brandIndex by remember { mutableIntStateOf(0) }
-    var dark by remember { mutableStateOf(false) }
-    var dynamic by remember { mutableStateOf(false) }
+    var brandIndex by rememberSaveable { mutableIntStateOf(0) }
+    // Starts wherever the system is, and from then on stays where the user put it.
+    val systemDark = isSystemInDarkTheme()
+    var dark by rememberSaveable { mutableStateOf(systemDark) }
+    var dynamic by rememberSaveable { mutableStateOf(false) }
     val brand: KansoBrand = Brands[brandIndex]
 
     KansoTheme(brand = brand, darkTheme = dark, dynamicColor = dynamic) {
@@ -137,7 +143,7 @@ private fun DemoShell(
     onToggleDark: () -> Unit,
     onToggleDynamic: () -> Unit,
 ) {
-    var tab by remember { mutableStateOf(Tab.Gallery) }
+    var tab by rememberSaveable { mutableStateOf(Tab.Gallery) }
     var menuOpen by remember { mutableStateOf(false) }
 
     // The gallery runs on KansoScaffold rather than a hand-rolled Scaffold on purpose: if the
@@ -223,7 +229,7 @@ private fun GalleryScreen(
     ) {
         KansoSectionHeader(
             "Buttons",
-            supporting = "One emphasis system, five weights.",
+            supporting = "One emphasis system, six weights.",
             modifier = Modifier.padding(top = Kanso.spacing.sm),
         )
         Row(
@@ -243,6 +249,23 @@ private fun GalleryScreen(
             KansoButton("Text", onClick = {
             }, style = KansoButtonStyle.Text, modifier = Modifier.weight(1f))
         }
+        Row(
+            Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(Kanso.spacing.sm),
+        ) {
+            KansoButton(
+                "Elevated",
+                onClick = {},
+                style = KansoButtonStyle.Elevated,
+                modifier = Modifier.weight(1f),
+            )
+            KansoButton(
+                "Destructive",
+                onClick = {},
+                style = KansoButtonStyle.Destructive,
+                modifier = Modifier.weight(1f),
+            )
+        }
         KansoButton("Working…", onClick = {}, loading = true, modifier = Modifier.fillMaxWidth())
         KansoButton("Unlock", onClick = {
         }, icon = Icons.Filled.Lock, style = KansoButtonStyle.Tonal)
@@ -261,18 +284,18 @@ private fun GalleryScreen(
 
         KansoCard(title = "List items") {
             KansoListItem(
-                "Envelope-sealed transport",
-                supporting = "cnsa2-e2ee-v3 · P-384 + ML-KEM-1024",
+                "Encrypted in transit",
+                supporting = "TLS 1.3 to every server",
                 icon = Icons.Filled.CheckCircle,
             )
             KansoDivider(inset = true)
             KansoListItem(
-                "Encrypted ClientHello",
-                supporting = "kid hidden from the relay",
+                "Locked when idle",
+                supporting = "Asks for the PIN after five minutes",
                 icon = Icons.Filled.Lock,
             )
             KansoDivider(inset = true)
-            KansoListItem("Fast path", supporting = "session pool + SSE", icon = Icons.Filled.Bolt)
+            KansoListItem("Fast path", supporting = "Cache first", icon = Icons.Filled.Bolt)
         }
 
         KansoSectionHeader(
@@ -308,6 +331,12 @@ private fun GalleryScreen(
                 supporting = "Never checked",
                 trailing = { KansoStatusBadge("Unknown", KansoStatus.Neutral) },
             )
+            KansoDivider()
+            KansoListItem(
+                "queue.example.com",
+                supporting = "Check scheduled",
+                trailing = { KansoStatusBadge("Queued", KansoStatus.Info) },
+            )
         }
     }
 }
@@ -321,10 +350,12 @@ private enum class Transport(val label: String) {
 
 @Composable
 private fun FormsScreen(inner: PaddingValues) {
-    var name by remember { mutableStateOf("") }
+    var name by rememberSaveable { mutableStateOf("") }
+    // Not saveable, on purpose: a secret does not belong in saved instance state, so a rotation
+    // clears it and the user types it again.
     var pin by remember { mutableStateOf("") }
-    var transport by remember { mutableStateOf<Transport?>(null) }
-    var confirming by remember { mutableStateOf(false) }
+    var transport by rememberSaveable { mutableStateOf<Transport?>(null) }
+    var confirming by rememberSaveable { mutableStateOf(false) }
     val pinError = pin.isNotEmpty() && pin.length < 6
 
     if (confirming) {
@@ -404,7 +435,7 @@ private enum class DemoState { Empty, Loading, Skeleton, Error }
 
 @Composable
 private fun StatesScreen(inner: PaddingValues) {
-    var state by remember { mutableStateOf(DemoState.Empty) }
+    var state by rememberSaveable { mutableStateOf(DemoState.Empty) }
     var refreshing by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
 
@@ -420,58 +451,76 @@ private fun StatesScreen(inner: PaddingValues) {
         },
         modifier = Modifier.fillMaxSize().padding(inner),
     ) {
-        Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
-            when (state) {
-                DemoState.Empty -> KansoEmptyState(
-                    icon = Icons.Filled.Inbox,
-                    title = "Nothing here yet",
-                    description = "Empty, loading, skeleton and error states share one visual " +
-                        "language so every screen feels the same.",
-                    action = {
-                        KansoButton("Next state", onClick = { state = DemoState.Loading })
-                    },
+        // Each state is itself the scrollable the refresh gesture needs — `scrollState` on the
+        // full-area states, a scrolling column around the skeleton. One scrolling column around
+        // all of them would be shorter and would un-centre them: inside a scroll, a full-area
+        // state has no height to be centred in.
+        when (state) {
+            DemoState.Empty -> KansoEmptyState(
+                icon = Icons.Filled.Inbox,
+                title = "Nothing here yet",
+                description = "Empty, loading, skeleton and error states share one visual " +
+                    "language so every screen feels the same.",
+                scrollState = rememberScrollState(),
+                action = {
+                    KansoButton("Next state", onClick = { state = DemoState.Loading })
+                },
+            )
+
+            DemoState.Loading -> Box {
+                KansoLoadingState(
+                    label = "Establishing session…",
+                    scrollState = rememberScrollState(),
                 )
-
-                DemoState.Loading -> KansoLoadingState(label = "Establishing session…")
-
-                // A skeleton promises the shape of what is coming; a spinner promises nothing.
-                DemoState.Skeleton -> Column(Modifier.padding(Kanso.spacing.screen)) {
-                    KansoSkeleton(rows = 5, icon = true)
+                NextStateButton(Modifier.align(Alignment.BottomCenter)) {
+                    state = DemoState.Skeleton
                 }
+            }
 
-                DemoState.Error -> KansoErrorState(
-                    title = "Could not reach the relay",
-                    description = "The demo does not actually connect to anything — this is " +
-                        "the state a failed load lands in.",
-                    onRetry = { state = DemoState.Empty },
-                )
+            // A skeleton promises the shape of what is coming; a spinner promises nothing.
+            DemoState.Skeleton -> Column(
+                Modifier
+                    .fillMaxSize()
+                    .verticalScroll(rememberScrollState())
+                    .padding(Kanso.spacing.screen),
+            ) {
+                KansoSkeleton(rows = 5, icon = true)
+                NextStateButton { state = DemoState.Error }
             }
-            if (state == DemoState.Loading || state == DemoState.Skeleton) {
-                KansoButton(
-                    "Next state",
-                    onClick = {
-                        state = if (state == DemoState.Loading) {
-                            DemoState.Skeleton
-                        } else {
-                            DemoState.Error
-                        }
-                    },
-                    style = KansoButtonStyle.Text,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(Kanso.spacing.screen),
-                )
-            }
+
+            DemoState.Error -> KansoErrorState(
+                title = "Could not reach the relay",
+                description = "The demo does not actually connect to anything — this is " +
+                    "the state a failed load lands in.",
+                scrollState = rememberScrollState(),
+                onRetry = { state = DemoState.Empty },
+            )
         }
     }
 }
 
 @Composable
+private fun NextStateButton(modifier: Modifier = Modifier, onClick: () -> Unit) {
+    KansoButton(
+        "Next state",
+        onClick = onClick,
+        style = KansoButtonStyle.Text,
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(vertical = Kanso.spacing.screen),
+    )
+}
+
+@Composable
 private fun SettingsScreen(inner: PaddingValues) {
-    var sync by remember { mutableStateOf(true) }
-    var diagnostics by remember { mutableStateOf(false) }
-    var units by remember { mutableStateOf("Metric") }
-    var sheetOpen by remember { mutableStateOf(false) }
+    var sync by rememberSaveable { mutableStateOf(true) }
+    var diagnostics by rememberSaveable { mutableStateOf(false) }
+    var units by rememberSaveable { mutableStateOf("Metric") }
+    var sheetOpen by rememberSaveable { mutableStateOf(false) }
+
+    // The inset lives on the rows, not on the cards around them: the pressed area runs to the
+    // card's edges and only the content moves in.
+    val rowInset = PaddingValues(horizontal = Kanso.spacing.lg, vertical = Kanso.spacing.md)
 
     if (sheetOpen) {
         KansoBottomSheet(onDismiss = { sheetOpen = false }) {
@@ -499,13 +548,14 @@ private fun SettingsScreen(inner: PaddingValues) {
             supporting = "Tap anywhere on a row — the row is the control, not the switch.",
             modifier = Modifier.padding(top = Kanso.spacing.sm),
         )
-        KansoCard(contentPadding = PaddingValues(horizontal = Kanso.spacing.lg)) {
+        KansoCard(contentPadding = PaddingValues(Kanso.spacing.none)) {
             KansoSwitchRow(
                 headline = "Background sync",
                 supporting = "Keeps peer status up to date while the app is closed",
                 checked = sync,
                 onCheckedChange = { sync = it },
                 icon = Icons.Filled.Bolt,
+                contentPadding = rowInset,
             )
             KansoDivider()
             KansoCheckboxRow(
@@ -513,19 +563,21 @@ private fun SettingsScreen(inner: PaddingValues) {
                 supporting = "Anonymous crash reports only",
                 checked = diagnostics,
                 onCheckedChange = { diagnostics = it },
+                contentPadding = rowInset,
             )
         }
 
         KansoSectionHeader("Units")
         // selectableGroup is what makes a screen reader announce "1 of 2" — a radio row on its
         // own cannot know how many siblings it has.
-        KansoCard(contentPadding = PaddingValues(horizontal = Kanso.spacing.lg)) {
+        KansoCard(contentPadding = PaddingValues(Kanso.spacing.none)) {
             Column(Modifier.selectableGroup()) {
                 listOf("Metric", "Imperial").forEach { option ->
                     KansoRadioRow(
                         headline = option,
                         selected = units == option,
                         onSelect = { units = option },
+                        contentPadding = rowInset,
                     )
                 }
             }

@@ -5,6 +5,7 @@
 package dev.ayanami.kanso.component
 
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -40,11 +41,12 @@ private fun SettingRowBody(
     supporting: String?,
     icon: ImageVector?,
     enabled: Boolean,
+    contentPadding: PaddingValues,
     control: @Composable () -> Unit,
 ) {
     val contentAlpha = if (enabled) 1f else 0.38f
     Row(
-        Modifier.padding(vertical = Kanso.spacing.md),
+        Modifier.padding(contentPadding),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         if (icon != null) {
@@ -81,6 +83,9 @@ private fun SettingRowBody(
  * The row carries the interaction and the `Switch` is a read-only indicator, so there is one
  * focusable target announced as a switch with its state — not a row and a control that disagree
  * about what was tapped. Held to the 48dp minimum at any font scale.
+ *
+ * [contentPadding] sits inside the pressed area, as it does on [KansoListItem]: it is how the
+ * row's content is inset in a container that runs edge to edge.
  */
 @Composable
 public fun KansoSwitchRow(
@@ -91,6 +96,7 @@ public fun KansoSwitchRow(
     supporting: String? = null,
     icon: ImageVector? = null,
     enabled: Boolean = true,
+    contentPadding: PaddingValues = PaddingValues(vertical = Kanso.spacing.md),
 ) {
     Row(
         modifier
@@ -104,7 +110,7 @@ public fun KansoSwitchRow(
             ),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        SettingRowBody(headline, supporting, icon, enabled) {
+        SettingRowBody(headline, supporting, icon, enabled, contentPadding) {
             // null: the row owns the interaction, so the control must not be a second target.
             Switch(checked = checked, onCheckedChange = null, enabled = enabled)
         }
@@ -121,6 +127,7 @@ public fun KansoCheckboxRow(
     supporting: String? = null,
     icon: ImageVector? = null,
     enabled: Boolean = true,
+    contentPadding: PaddingValues = PaddingValues(vertical = Kanso.spacing.md),
 ) {
     Row(
         modifier
@@ -134,7 +141,7 @@ public fun KansoCheckboxRow(
             ),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        SettingRowBody(headline, supporting, icon, enabled) {
+        SettingRowBody(headline, supporting, icon, enabled, contentPadding) {
             Checkbox(checked = checked, onCheckedChange = null, enabled = enabled)
         }
     }
@@ -155,6 +162,7 @@ public fun KansoRadioRow(
     supporting: String? = null,
     icon: ImageVector? = null,
     enabled: Boolean = true,
+    contentPadding: PaddingValues = PaddingValues(vertical = Kanso.spacing.md),
 ) {
     Row(
         modifier
@@ -168,7 +176,7 @@ public fun KansoRadioRow(
             ),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        SettingRowBody(headline, supporting, icon, enabled) {
+        SettingRowBody(headline, supporting, icon, enabled, contentPadding) {
             RadioButton(selected = selected, onClick = null, enabled = enabled)
         }
     }

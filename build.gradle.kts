@@ -81,6 +81,93 @@ spotless {
 // under their own dependency verification before their build would configure. This script is
 // kanso's alone, so none of that reaches a consumer.
 project(":kanso") {
+    // Tells kanso/build.gradle.kts that it is being evaluated by kanso's own build. That file is
+    // also evaluated by every consuming build, where none of what follows exists.
+    extra["kansoOwnBuild"] = true
+
+    // The tooling kanso needs to lint and test itself. Declared here for the reason the Dokka
+    // note above gives — and once the Android plugin is applied, because the configurations
+    // these names refer to do not exist before that.
+    pluginManager.withPlugin("com.android.library") {
+        // Screenshot goldens, scoped to the text-layout-sensitive components at the two font
+        // scales that actually break them. Roborazzi rather than Paparazzi (which cannot run
+        // interaction tests) or AGP's screenshotTest (still alpha, and it renders only @Preview
+        // functions): it shares the Robolectric runtime, so goldens, behaviour tests and the pure
+        // colour tests all run in one invocation with no emulator.
+        apply(plugin = "io.github.takahirom.roborazzi")
+
+        dependencies {
+            // Slack's compose-lints. Android's own lint knows nothing about Compose conventions,
+            // so the rules that keep this library usable — `modifier` first among the optional
+            // parameters, a component never overriding the caller's sizing, no Material 2
+            // leaking in — were until now enforced only by a sentence in CONTRIBUTING.md and by
+            // whoever reviewed the pull request. `lintChecks` runs them inside the lint task
+            // that already gates every build.
+            "lintChecks"(libs.compose.lint.checks)
+
+            // What Android Studio needs to render component/Previews.kt, and the empty activity
+            // the Compose test rule launches. Both merge an exported activity into the debug
+            // manifest of whatever depends on them, which is the reason they are here and not in
+            // the module script: a consumer's debug APK is not kanso's to add components to.
+            "debugImplementation"(libs.compose.ui.tooling)
+            "debugImplementation"(libs.compose.ui.test.manifest)
+
+            // The colour engine is pure Kotlin (no android.graphics), so its contract — every
+            // seed yields a WCAG AA scheme — is pinned by plain JVM tests. Deliberately NOT
+            // paired with `testOptions.unitTests.isReturnDefaultValues`: stubbed framework calls
+            // return zeroes, which would collapse every seed onto one hue and pass against a
+            // broken scheme.
+            "testImplementation"(libs.junit)
+
+            // Behaviour tests for the contracts that live in a single expression and would
+            // otherwise only be checked by reading the code: that `loading` really swallows a
+            // click, that errorText really wins over supporting. Robolectric keeps them on the
+            // JVM.
+            "testImplementation"(libs.robolectric)
+            "testImplementation"(libs.androidx.test.ext.junit)
+            "testImplementation"(platform(libs.compose.bom))
+            "testImplementation"(libs.compose.ui.test.junit4)
+
+            "testImplementation"(libs.roborazzi)
+            "testImplementation"(libs.roborazzi.compose)
+            "testImplementation"(libs.roborazzi.junit.rule)
+        }
+
+        // Robolectric runs the tests against a real Android runtime: a jar of about 150 MB of
+        // framework code that executes inside the test JVM. Left to itself it downloads that jar
+        // at test time with its own Maven client, into ~/.m2 — outside Gradle, and so outside
+        // gradle/verification-metadata.xml. It was the one piece of executed code in this build
+        // whose bytes nothing pinned. Resolving it here puts it under the same SHA-256 pins as
+        // every other artifact, and running Robolectric offline against Gradle's copy means that
+        // is the only way it can arrive.
+        //
+        // The coordinate follows from two things and moves with them: `sdk=34` in
+        // kanso/src/test/resources/robolectric.properties, and the Robolectric release. A bump
+        // that changes it fails loudly — offline, Robolectric names the jar it could not find —
+        // and is fixed by updating `robolectric-android-all` in the catalog and adding its
+        // checksums to gradle/verification-metadata.xml.
+        val robolectricRuntime = configurations.create("robolectricRuntime") {
+            isCanBeConsumed = false
+            isTransitive = false
+        }
+        dependencies { "robolectricRuntime"(libs.robolectric.android.all) }
+        val robolectricRuntimeFiles: FileCollection = robolectricRuntime.incoming.files
+        tasks.withType<Test>().configureEach {
+            inputs.files(robolectricRuntimeFiles)
+                .withPropertyName("robolectricRuntime")
+                .withPathSensitivity(PathSensitivity.NONE)
+            jvmArgumentProviders.add(
+                CommandLineArgumentProvider {
+                    val jar = robolectricRuntimeFiles.singleFile
+                    listOf(
+                        "-Drobolectric.offline=true",
+                        "-Drobolectric.dependency.dir=${jar.parentFile.absolutePath}",
+                    )
+                },
+            )
+        }
+    }
+
     apply(plugin = "org.jetbrains.dokka")
 
     extensions.configure<DokkaExtension> {
