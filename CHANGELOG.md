@@ -180,6 +180,12 @@ kanso is not published to a Maven repository, and that is deliberate — see
   an app inherits through `api`. The README's compatibility table no longer repeats version
   numbers that move with every dependency update; it points at `gradle/libs.versions.toml`, and
   a test holds its `compileSdk` row to the build file.
+- The colour engine's published numbers are the measured ones. `onPrimary` on `primary` ranges
+  from 6.41 to 6.51 across the hue circle — the README and the API docs said 6.42–6.46 — and a
+  test now holds that band, which "pinned by a test" had claimed all along. The README also
+  states two limits it left out: a seed's chroma is carried through only between 24 and 56 (and
+  a seed below 5 counts as grey), and a constant CIELAB hue bends a pure blue towards violet.
+  No colour changes.
 - **Releases are no longer tagged.** The four `v0.1.x` tags stay on the remote as history; from
   here on a consumer moves their submodule to a commit SHA, and every section in this file is
   headed with the SHA to move to. Nothing about how breaking changes are communicated has

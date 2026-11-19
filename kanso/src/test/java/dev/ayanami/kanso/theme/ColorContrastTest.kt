@@ -384,4 +384,32 @@ class ColorContrastTest {
             }
         }
     }
+
+    /**
+     * The figure the documentation quotes. 6.46 is the exact ratio of tone 40 to tone 100;
+     * packing each colour into eight bits a channel moves it a few hundredths either way, hue by
+     * hue. The README said 6.42–6.46 and called that pinned, while the only assertions were "at
+     * least 4.5" and "a spread under 0.25".
+     */
+    @Test
+    fun `onPrimary on primary stays inside the documented band`() {
+        val ratios = (0 until 360).map { hue ->
+            val scheme = kansoLightColorScheme(seedAt(hue))
+            contrast(scheme.primary, scheme.onPrimary)
+        }
+        assertTrue("lowest ratio ${ratios.min()} is under 6.41", ratios.min() >= 6.405)
+        assertTrue("highest ratio ${ratios.max()} is over 6.51", ratios.max() <= 6.515)
+    }
+
+    /** The README states the band a seed's chroma is held to; this is what keeps it there. */
+    @Test
+    fun `seed chroma is carried through between 24 and 56 and no further`() {
+        fun primaryChroma(seed: Color) = kansoLightColorScheme(seed).primary.toLch().chroma
+
+        // Above the band: a vivid red and a very vivid one end up at the same edge.
+        assertEquals(primaryChroma(Color(0xFFFF0000)), primaryChroma(Color(0xFFE0453A)), 1.0)
+        assertTrue(primaryChroma(Color(0xFFFF0000)) <= 57.0)
+        // Below it but not grey: lifted to the lower edge, not left almost colourless.
+        assertTrue(primaryChroma(Color(0xFF808A80)) >= 23.0)
+    }
 }

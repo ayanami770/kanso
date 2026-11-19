@@ -24,7 +24,7 @@ colour preference outranks an app's — but if brand identity has to hold, pass
 `dynamicColor = false`.
 
 **Colour is not a suggestion.** Tone is CIE L\*, built in CIELCh(ab) and gamut-mapped by reducing
-chroma only, so contrast survives the mapping. `onPrimary` on `primary` measures 6.42–6.46 at
+chroma only, so contrast survives the mapping. `onPrimary` on `primary` measures 6.41–6.51 at
 every hue on the circle, and that is pinned by a test rather than by inspection.
 
 # Package dev.ayanami.kanso.theme

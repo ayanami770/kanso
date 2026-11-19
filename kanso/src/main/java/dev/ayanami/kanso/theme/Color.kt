@@ -38,6 +38,12 @@ public val KansoDefaultBrand: KansoBrand = KansoBrand("kanso", Color(0xFF006A60)
 // 3.17:1 at hue 60 and failed WCAG AA for 157 of 360 hues — including kanso's own default
 // teal, at 3.60:1. ColorContrastTest pins the guarantee across the whole hue circle.
 //
+// One known limit. CIELAB's hue is not perceptually straight through the blues, so holding its
+// hue angle while L* moves bends a pure blue towards violet: #0000FF gives a #6A4DA9 primary.
+// Contrast does not notice — it depends on L* alone — and moving the hue axis to a space that
+// is straight there would re-tint every scheme already in use, so this is documented in the
+// README rather than changed here.
+//
 // Pure Kotlin and dependency-free on purpose: no android.graphics call, so the engine is
 // covered by plain JVM unit tests rather than needing an instrumented run.
 

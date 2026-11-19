@@ -18,7 +18,7 @@ and a small component library, so a screen you write reads the same as every oth
   type/shape scales and the kanso spacing + elevation tokens, plus edge-to-edge system-bar contrast.
 - **A whole scheme from one seed** — every Material 3 colour role is derived from a single brand
   colour. Tone maps to CIE L\*, so contrast between two tones is the same at every hue rather than
-  varying with it: `onPrimary` on `primary` measures 6.42–6.46 across all 360 hues. That guarantee
+  varying with it: `onPrimary` on `primary` measures 6.41–6.51 across all 360 hues. That guarantee
   is [pinned by tests](kanso/src/test/java/dev/ayanami/kanso/theme/ColorContrastTest.kt), not
   asserted here.
 - **A component library** — eleven components covering a screen's structure, forms, lists and
@@ -51,8 +51,20 @@ setContent {
 ```
 
 Any `Color` works as a seed. Achromatic seeds (grey, black, white) produce a neutral scheme rather
-than picking an arbitrary hue, and a seed's own saturation is preserved, so a muted navy and a
+than picking an arbitrary hue, and a seed's own saturation carries through, so a muted navy and a
 vivid blue give visibly different schemes.
+
+Two limits are worth knowing before you choose one:
+
+- **Saturation carries through inside a band.** Chroma (CIELCh) is held between 24 and 56, so the
+  palest scheme still reads as a colour and the loudest does not take over a screen; a seed
+  outside the band is moved to its edge. Below a chroma of 5 a seed counts as grey. An
+  almost-grey seed therefore lands on one side of that line or the other — `#F0FFFF` gives a
+  teal scheme and `#000F0F` a neutral one — so pick it on purpose.
+- **A pure blue leans violet.** Tones are built at a constant CIELAB hue angle, and that hue is
+  not perceptually straight through the blues: `#0000FF` gives a `#6A4DA9` primary. Contrast is
+  unaffected. If your blue has to stay blue, look at the scheme it produces and override the
+  roles that matter, as shown below.
 
 ### Theming it to your brand
 
