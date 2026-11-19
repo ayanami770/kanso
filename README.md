@@ -18,8 +18,9 @@ and a small component library, so a screen you write reads the same as every oth
   type/shape scales and the kanso spacing + elevation tokens, plus edge-to-edge system-bar contrast.
 - **A whole scheme from one seed** — every Material 3 colour role is derived from a single brand
   colour. Tone maps to CIE L\*, so contrast between two tones is the same at every hue rather than
-  varying with it: `onPrimary` on `primary` measures 6.41–6.51 across all 360 hues. That guarantee
-  is [pinned by tests](kanso/src/test/java/dev/ayanami/kanso/theme/ColorContrastTest.kt), not
+  varying with it: `onPrimary` on `primary` measures 6.41–6.51 across all 360 hues. Hue is held on
+  the OKLab axis, so every role stays the colour its seed is: a blue seed gives blue roles, not
+  violet ones. Both are [pinned by tests](kanso/src/test/java/dev/ayanami/kanso/theme), not
   asserted here.
 - **A component library** — the building blocks of a screen's structure, forms, lists, status,
   overlays and states, listed below. Each reads spacing, colour, type and shape from the tokens
@@ -56,17 +57,19 @@ Any `Color` works as a seed. Achromatic seeds (grey, black, white) produce a neu
 than picking an arbitrary hue, and a seed's own saturation carries through, so a muted navy and a
 vivid blue give visibly different schemes.
 
-Two limits are worth knowing before you choose one:
+Two things are worth knowing before you choose one:
 
-- **Saturation carries through inside a band.** Chroma (CIELCh) is held between 24 and 56, so the
-  palest scheme still reads as a colour and the loudest does not take over a screen; a seed
-  outside the band is moved to its edge. Below a chroma of 5 a seed counts as grey. An
+- **Saturation carries through inside a band.** Chroma (OKLCH) is held between 0.068 and 0.15, so
+  the palest scheme still reads as a colour and the loudest does not take over a screen; a seed
+  outside the band is moved to its edge. A seed whose CIELAB chroma is under 5 counts as grey —
+  the one line still drawn in CIELAB, because OKLab would call `#010000` a colour. An
   almost-grey seed therefore lands on one side of that line or the other — `#F0FFFF` gives a
   teal scheme and `#000F0F` a neutral one — so pick it on purpose.
-- **A pure blue leans violet.** Tones are built at a constant CIELAB hue angle, and that hue is
-  not perceptually straight through the blues: `#0000FF` gives a `#6A4DA9` primary. Contrast is
-  unaffected. If your blue has to stay blue, look at the scheme it produces and override the
-  roles that matter, as shown below.
+- **Hue is the seed's, at every tone.** Roles are built at the seed's OKLab hue, which stays put
+  to the eye from the darkest tone to the lightest: `#0000FF` gives a `#335AB4` primary, and
+  round the whole hue circle the primary roles sit within 3° of their seed. Where sRGB cannot
+  show a tone at the seed's saturation, the role gives up chroma — never hue, and never
+  contrast. If one role has to be an exact colour all the same, override it as shown below.
 
 ### Theming it to your brand
 
