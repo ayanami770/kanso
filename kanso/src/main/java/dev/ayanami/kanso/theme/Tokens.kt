@@ -7,8 +7,8 @@
 package dev.ayanami.kanso.theme
 
 import androidx.compose.animation.core.Easing
+import androidx.compose.animation.core.FastOutLinearInEasing
 import androidx.compose.animation.core.FastOutSlowInEasing
-import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.ProvidableCompositionLocal
 import androidx.compose.runtime.staticCompositionLocalOf
@@ -111,7 +111,10 @@ public val LocalKansoElevation: ProvidableCompositionLocal<KansoElevation> =
  * waiting.
  *
  * These arrived with [dev.ayanami.kanso.component.KansoSkeleton], the first component that
- * animates. A token with no call site is a guess; this one has one.
+ * animates, and it is still the only one: `shimmer` and `easing` are what it reads. The other
+ * durations and `exitEasing` have no call site inside kanso yet. They are here so that an app's
+ * own transitions are named the same way, and are a starting point rather than values a
+ * component has proven.
  */
 @Immutable
 public data class KansoMotion(
@@ -121,8 +124,11 @@ public data class KansoMotion(
     val shimmer: Int = 1200,
     /** For motion that enters or settles — most things. */
     val easing: Easing = FastOutSlowInEasing,
-    /** For motion that only leaves, where slowing down at the end says nothing. */
-    val exitEasing: Easing = LinearOutSlowInEasing,
+    /**
+     * For motion that only leaves: it accelerates out and is gone, because slowing down at the
+     * end of an exit says nothing.
+     */
+    val exitEasing: Easing = FastOutLinearInEasing,
 )
 
 public val LocalKansoMotion: ProvidableCompositionLocal<KansoMotion> =

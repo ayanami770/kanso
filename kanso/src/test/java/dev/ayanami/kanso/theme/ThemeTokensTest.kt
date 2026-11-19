@@ -225,4 +225,21 @@ class ThemeTokensTest {
         }
         assertTrue("the activity is found behind the wrapper", light)
     }
+
+    /**
+     * An exit accelerates away and an entrance settles. The exit curve used to be a settling
+     * one, so anything that left with it slowed to a stop on its way out.
+     */
+    @Test
+    fun `the exit easing accelerates out and the default easing settles`() {
+        val motion = KansoMotion()
+        assertTrue(
+            "half-way through, an exit has covered less than half the distance",
+            motion.exitEasing.transform(0.5f) < 0.5f,
+        )
+        assertTrue(
+            "half-way through, the default easing has covered more than half",
+            motion.easing.transform(0.5f) > 0.5f,
+        )
+    }
 }

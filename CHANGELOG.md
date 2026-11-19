@@ -136,6 +136,12 @@ kanso is not published to a Maven repository, and that is deliberate — see
   took the whole row and left the headline a 25dp column, wrapped into nineteen lines — the bug
   0.1.2 removed from `KansoStatusRow`, still present everywhere else. A trailing slot now gets at
   most half of the width available to it and wraps inside that.
+- **`KansoMotion.exitEasing` slowed to a stop.** Its default was `LinearOutSlowInEasing`, the
+  curve for something arriving, under a KDoc that asks for the opposite. It is now
+  `FastOutLinearInEasing`. No kanso component reads it, so nothing in the library moves
+  differently; an app that passes `Kanso.motion.exitEasing` to its own exit transitions will see
+  them accelerate out instead. `KansoMotion(exitEasing = LinearOutSlowInEasing)` keeps the old
+  curve.
 
 ### Changed
 
